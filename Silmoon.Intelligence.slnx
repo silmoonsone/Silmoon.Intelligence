@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/支撑框架/">
+    <Project Path="../Silmoon.AI/Silmoon.AI.Client/Silmoon.AI.Client.csproj" />
+    <Project Path="../Silmoon.AI/Silmoon.AI/Silmoon.AI.csproj" />
+    <Project Path="../Silmoon.Windows/Silmoon.Windows.WinUI3/Silmoon.Windows.WinUI3.csproj" />
+  </Folder>
+  <Folder Name="/解决方案项/">
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE.txt" />
+    <File Path="logo.png" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Silmoon.Intelligence.MauiClient/Silmoon.Intelligence.MauiClient.csproj" Id="72e5fbb7-6c30-4325-abaa-6e3305ddea67">
+    <Deploy Solution="Debug|*" />
+  </Project>
+  <Project Path="Silmoon.Intelligence.Server/Silmoon.Intelligence.Server.csproj" Id="7c640443-fcab-45b2-8eb9-7dbe65e00c75" />
+  <Project Path="Silmoon.Intelligence.WinUIClient/Silmoon.Intelligence.WinUIClient.csproj" />
+  <Project Path="Silmoon.Intelligence/Silmoon.Intelligence.csproj" />
+</Solution>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Silmoon.Intelligence.WinUIClient (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Silmoon.Intelligence.WinUIClient (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
