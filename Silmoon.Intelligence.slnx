@@ -1,8 +1,12 @@
 <Solution>
   <Folder Name="/支撑框架/">
     <Project Path="../Silmoon.AI/Silmoon.AI.Client/Silmoon.AI.Client.csproj" />
+    <Project Path="../Silmoon.AI/Silmoon.AI.Tools/Silmoon.AI.Tools.csproj" />
     <Project Path="../Silmoon.AI/Silmoon.AI/Silmoon.AI.csproj" />
     <Project Path="../Silmoon.Windows/Silmoon.Windows.WinUI3/Silmoon.Windows.WinUI3.csproj" />
+  </Folder>
+  <Folder Name="/测试项/">
+    <Project Path="Silmoon.Intelligence.ConsoleTesting/Silmoon.Intelligence.ConsoleTesting.csproj" Id="460482ca-55fd-44f1-bc2f-33f5a93211db" />
   </Folder>
   <Folder Name="/解决方案项/">
     <File Path=".gitattributes" />
@@ -11,6 +15,7 @@
     <File Path="logo.png" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Silmoon.Intelligence.Core/Silmoon.Intelligence.Core.csproj" Id="c730e918-cfc2-4997-bec8-8ae4c7d090d0" />
   <Project Path="Silmoon.Intelligence.MauiClient/Silmoon.Intelligence.MauiClient.csproj" Id="72e5fbb7-6c30-4325-abaa-6e3305ddea67">
     <Deploy Solution="Debug|*" />
   </Project>
