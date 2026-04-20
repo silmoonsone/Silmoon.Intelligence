@@ -30,9 +30,9 @@ namespace Silmoon.Intelligence.Core.Tools
                 Ask or chat with a specific model by name. You can specify the system role, format, and language in the system parameter. If you omit the system parameter, the model will use the default settings.
                 """,
                 [
-                new ToolParameterProperty("string", "modelName", "Call a specific model by name."),
-                new ToolParameterProperty("string", "content", "Chat or ask content"),
-                new ToolParameterProperty("string", "system", "Optional. Role, format, language. Omit to keep default."),
+                    new ToolParameterProperty("string", "modelName", "Call a specific model by name."),
+                    new ToolParameterProperty("string", "content", "Chat or ask content"),
+                    new ToolParameterProperty("string", "system", "Optional. Role, format, language. Omit to keep default."),
                 ])
             ];
         }

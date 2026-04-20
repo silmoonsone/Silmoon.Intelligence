@@ -15,6 +15,7 @@
     <!--<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>-->
     <WindowsPackageType>None</WindowsPackageType>
     <LangVersion>preview</LangVersion>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
