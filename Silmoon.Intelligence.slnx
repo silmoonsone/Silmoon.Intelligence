@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/测试项/">
     <Project Path="Silmoon.Intelligence.ConsoleTesting/Silmoon.Intelligence.ConsoleTesting.csproj" Id="460482ca-55fd-44f1-bc2f-33f5a93211db" />
+    <Project Path="Silmoon.Intelligence.WinFormTesting/Silmoon.Intelligence.WinFormTesting.csproj" Id="d7b88469-df02-4834-b416-00f13e12eba9" />
   </Folder>
   <Folder Name="/解决方案项/">
     <File Path=".gitattributes" />
