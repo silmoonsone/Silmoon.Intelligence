@@ -31,8 +31,9 @@ namespace Silmoon.Intelligence.Core.Tools
                 """,
                 [
                     new ToolParameterProperty("string", "modelName", "Call a specific model by name."),
-                    new ToolParameterProperty("string", "content", "Chat or ask content"),
                     new ToolParameterProperty("string", "system", "Optional. Role, format, language. Omit to keep default."),
+                    new ToolParameterProperty("string", "content", "Chat or ask content"),
+                    new ToolParameterProperty("bool", "reasonContent", "Enable thinking and reasoning, default is false.", [true, false]),
                 ])
             ];
         }
@@ -53,7 +54,7 @@ namespace Silmoon.Intelligence.Core.Tools
                     result = true.ToStateSet(MessageContent.Create(Role.Tool, models.ToJsonString(), toolCallId));
                     break;
                 case "AskModelTool":
-                    var askResult = await ModelsManager.Ask(parameters["modelName"].ToString(), parameters["content"].ToString(), parameters["system"]?.ToString());
+                    var askResult = await ModelsManager.Ask(parameters["modelName"].ToString(), parameters["content"].ToString(), parameters["system"]?.ToString(), parameters["reasonContent"]?.Value<bool>() ?? false);
                     result = true.ToStateSet(MessageContent.Create(Role.Tool, askResult.ToJsonString(), toolCallId));
                     break;
                 default:

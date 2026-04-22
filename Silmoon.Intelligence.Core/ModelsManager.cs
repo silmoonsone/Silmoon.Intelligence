@@ -22,9 +22,10 @@ namespace Silmoon.Intelligence.Core
                 NativeChatClients.Add(model.Key, new NativeChatClient(model.Value.ApiUrl, model.Value.ApiKey, model.Value.ModelName));
             }
         }
-        public async Task<Result> Ask(string modelId, string content, string system = null)
+        public async Task<Result> Ask(string modelId, string content, string system = null, bool enableThinking = false)
         {
             var NativeChatClient = NativeChatClients[modelId];
+            NativeChatClient.EnableThinking = enableThinking;
             if (system is not null) NativeChatClient.SystemPrompt = system;
 
             List<Chunk> chunks = [];
@@ -47,7 +48,7 @@ namespace Silmoon.Intelligence.Core
             }
             Console.WriteLine();
             Console.WriteLineWithColor($"Agent({modelId}) response end:", ConsoleColor.Green, ConsoleColor.Blue);
-            var result = Result.Create([.. chunks]);
+            var result = Result.Create([.. chunks], enableThinking);
 
             return result;
         }
