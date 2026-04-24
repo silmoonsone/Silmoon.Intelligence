@@ -17,19 +17,20 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
             new FileTool(),
             new CommandTool(),
             new WaitTool(),
+            new CSharpTool(),
             ];
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
-        ModelsManager ModelsManager { get; set; }
+        AgentModelManager AgentModelManager { get; set; }
         public LocalMcpService(ISilmoonConfigureService silmoonConfigureService)
         {
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
-            ModelsManager = new ModelsManager(SilmoonConfigureService.Models);
+            AgentModelManager = new AgentModelManager(SilmoonConfigureService.ModelProviders);
         }
         public void InjectMcp(NativeChatClient nativeChatClient)
         {
             ExecuteTools.Add(new DeepThinkTool(nativeChatClient));
             ExecuteTools.Add(new MemoryTool(nativeChatClient));
-            ExecuteTools.Add(new ModelTool(ModelsManager));
+            ExecuteTools.Add(new AgentModelTool(AgentModelManager));
 
             string systemPrompt = SilmoonConfigureService.SystemPrompt;
             if (systemPrompt is not null) nativeChatClient.SystemPrompt += "\r\n" + systemPrompt;
