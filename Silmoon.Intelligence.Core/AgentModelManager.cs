@@ -13,9 +13,9 @@ namespace Silmoon.Intelligence.Core
 {
     public class AgentModelManager
     {
-        public Dictionary<string, ModelProviders> ModelProviders { get; private set; } = [];
+        public Dictionary<string, ModelProvider> ModelProviders { get; private set; } = [];
         public Dictionary<string, NativeChatClient> NativeChatClients { get; private set; } = [];
-        public AgentModelManager(Dictionary<string, ModelProviders> models)
+        public AgentModelManager(Dictionary<string, ModelProvider> models)
         {
             ModelProviders = models;
             foreach (var provider in ModelProviders)
@@ -27,7 +27,7 @@ namespace Silmoon.Intelligence.Core
             }
         }
 
-        public ModelProviders[] GetAgentModelProviders() => [.. ModelProviders.Values];
+        public ModelProvider[] GetAgentModelProviders() => [.. ModelProviders.Values];
         public async Task<StateSet<bool, Result>> CallStaticAgent(string providerName, string modelName, string content, string system = null, bool enableThinking = false)
         {
             var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
