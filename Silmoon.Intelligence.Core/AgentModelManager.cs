@@ -27,13 +27,23 @@ namespace Silmoon.Intelligence.Core
             }
         }
 
-        public ModelProviders[] GetAgentModelProvidersTool() => [.. ModelProviders.Values];
-        public async Task<StateSet<bool, Result>> CallAgentModel(string providerName, string modelName, string content, string system = null, bool enableThinking = false)
+        public ModelProviders[] GetAgentModelProviders() => [.. ModelProviders.Values];
+        public async Task<StateSet<bool, Result>> CallStaticAgent(string providerName, string modelName, string content, string system = null, bool enableThinking = false)
         {
             var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
             if (nativeChatClient is not null)
                 return await CallAgentModel($"{providerName}:{modelName}", nativeChatClient, content, system, enableThinking);
             else return false.ToStateSet<Result>(null, $"specified model ({providerName},{modelName}) not found");
+        }
+        public StateSet<bool> ResetStaticAgentHistory(string providerName, string modelName)
+        {
+            var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
+            if (nativeChatClient is not null)
+            {
+                nativeChatClient.ResetHistory();
+                return true.ToStateSet("success");
+            }
+            else return false.ToStateSet($"specified model ({providerName},{modelName}) not found");
         }
 
         private static async Task<StateSet<bool, Result>> CallAgentModel(string agentName, NativeChatClient nativeChatClient, string content, string system, bool enableThinking)
