@@ -9,15 +9,15 @@ using Silmoon.Extensions.Hosting.Interfaces;
 using Silmoon.Models;
 using System;
 
-namespace Silmoon.Intelligence.ConsoleTesting.Services;
+namespace Silmoon.Intelligence.Hosting.Services;
 
 public class ClientService : IHostedService
 {
     NativeChatClient NativeChatClient { get; set; }
     SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
     IHostApplicationLifetime ApplicationLifetime { get; set; }
-    LocalMcpService LocalMcpService { get; set; }
-    public ClientService(ISilmoonConfigureService silmoonConfigureService, LocalMcpService localMcpService, IHostApplicationLifetime applicationLifetime)
+    ToolFunctionService LocalMcpService { get; set; }
+    public ClientService(ISilmoonConfigureService silmoonConfigureService, ToolFunctionService localMcpService, IHostApplicationLifetime applicationLifetime)
     {
         ApplicationLifetime = applicationLifetime;
         LocalMcpService = localMcpService;
@@ -25,20 +25,20 @@ public class ClientService : IHostedService
         SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
 
         NativeChatClient = new NativeChatClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, UtilPrompt.ContextPrompt);
-        NativeChatClient.OnToolCallInvoke += NativeChatClient_OnToolCallInvoke;
-        NativeChatClient.OnToolCallFinished += NativeChatClient_OnToolCallFinished;
-        LocalMcpService.InjectMcp(NativeChatClient);
+        NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
+        NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
+        LocalMcpService.InjectTools(NativeChatClient);
         NativeChatClient.Tools.Add(Tool.Create("ToolCallTestTool", "This is a test tool_calling test tool.", []));
         //NativeChatClient.EnableThinking = true;
     }
 
-    private Task<StateSet<bool, string>> NativeChatClient_OnToolCallFinished(StateSet<bool, string> arg)
+    private Task<StateSet<bool, string>> NativeChatClient_OnToolCallCompleted(StateSet<bool, string> toolCallResult)
     {
-        if (arg.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {arg.State}, Message: {arg.Message ?? "#null"}", ConsoleColor.Cyan);
-        else Console.WriteLineWithColor($"[TOOL RESULT] State: {arg.State}, Message: {arg.Message ?? "#null"}", ConsoleColor.Red);
-        return Task.FromResult(arg);
+        if (toolCallResult.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.State}, Message: {toolCallResult.Message ?? "#null"}", ConsoleColor.Cyan);
+        else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.State}, Message: {toolCallResult.Message ?? "#null"}", ConsoleColor.Red);
+        return Task.FromResult(toolCallResult);
     }
-    private async Task<StateSet<bool, string>> NativeChatClient_OnToolCallInvoke(string functionName, JObject parameters, string toolCallId, StateSet<bool, string> toolMessageState)
+    private async Task<StateSet<bool, string>> NativeChatClient_OnToolCallStart(string functionName, JObject parameters, string toolCallId, StateSet<bool, string> toolMessageState)
     {
         Console.WriteLine();
         Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);

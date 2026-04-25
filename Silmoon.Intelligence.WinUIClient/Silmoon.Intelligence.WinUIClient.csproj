@@ -40,13 +40,16 @@
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Silmoon.Windows\Silmoon.Windows.WinUI3\Silmoon.Windows.WinUI3.csproj" />
+    <ProjectReference Include="..\Silmoon.Intelligence.Hosting\Silmoon.Intelligence.Hosting.csproj" />
     <ProjectReference Include="..\Silmoon.Intelligence\Silmoon.Intelligence.csproj" />
   </ItemGroup>
 
@@ -71,5 +74,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="C:\Users\silmoon\.nuget\packages\microsoft.windowsappsdk.runtime\1.8.260101001\buildTransitive\..\include\WindowsAppSDK-VersionInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="config.debug.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config.local.debug.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config.local.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
 </Project>

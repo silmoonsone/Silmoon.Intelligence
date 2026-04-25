@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Silmoon.AI.Tools;
 
-namespace Silmoon.Intelligence.Core.Tools
+namespace Silmoon.Intelligence.Tools
 {
     public class CSharpTool : ExecuteTool
     {

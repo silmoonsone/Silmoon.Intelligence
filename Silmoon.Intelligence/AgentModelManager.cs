@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Silmoon.Intelligence.Core
+namespace Silmoon.Intelligence
 {
     public class AgentModelManager
     {
@@ -45,6 +45,9 @@ namespace Silmoon.Intelligence.Core
             }
             else return false.ToStateSet($"specified model ({providerName},{modelName}) not found");
         }
+
+
+
 
         private static async Task<StateSet<bool, Result>> CallAgentModel(string agentName, NativeChatClient nativeChatClient, string content, string system, bool enableThinking)
         {

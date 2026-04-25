@@ -16,11 +16,11 @@
     <File Path="logo.png" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="Silmoon.Intelligence.Core/Silmoon.Intelligence.Core.csproj" Id="c730e918-cfc2-4997-bec8-8ae4c7d090d0" />
+  <Project Path="Silmoon.Intelligence.Hosting/Silmoon.Intelligence.Hosting.csproj" Id="99f618dc-0b84-4e21-8333-34d0e2fe9e2a" />
   <Project Path="Silmoon.Intelligence.MauiClient/Silmoon.Intelligence.MauiClient.csproj" Id="72e5fbb7-6c30-4325-abaa-6e3305ddea67">
     <Deploy Solution="Debug|*" />
   </Project>
-  <Project Path="Silmoon.Intelligence.Server/Silmoon.Intelligence.Server.csproj" Id="7c640443-fcab-45b2-8eb9-7dbe65e00c75" />
+  <Project Path="Silmoon.Intelligence.Tools/Silmoon.Intelligence.Tools.csproj" Id="37f3e0f0-8f1f-42d9-92fb-cd1ecb3c7464" />
   <Project Path="Silmoon.Intelligence.WinUIClient/Silmoon.Intelligence.WinUIClient.csproj" />
   <Project Path="Silmoon.Intelligence/Silmoon.Intelligence.csproj" />
 </Solution>

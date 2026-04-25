@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Silmoon.Intelligence.Core.Tools
+namespace Silmoon.Intelligence.Tools
 {
     public class AgentModelTool : ExecuteTool
     {

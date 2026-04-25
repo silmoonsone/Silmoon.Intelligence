@@ -3,32 +3,31 @@ using Silmoon.AI.Interfaces;
 using Silmoon.AI.Tools;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
-using Silmoon.Intelligence.Core;
-using Silmoon.Intelligence.Core.Tools;
+using Silmoon.Intelligence;
+using Silmoon.Intelligence.Tools;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Silmoon.Intelligence.ConsoleTesting.Services
+namespace Silmoon.Intelligence.Hosting.Services
 {
-    public class LocalMcpService
+    public class ToolFunctionService
     {
-        public List<IExecuteTool> ExecuteTools { get; set; } = [
-            new FileTool(),
-            new CommandTool(),
-            new WaitTool(),
-            new CSharpTool(),
-            ];
+        public List<IExecuteTool> ExecuteTools { get; set; } = [];
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
         AgentModelManager AgentModelManager { get; set; }
-        public LocalMcpService(ISilmoonConfigureService silmoonConfigureService)
+        public ToolFunctionService(ISilmoonConfigureService silmoonConfigureService)
         {
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
             AgentModelManager = new AgentModelManager(SilmoonConfigureService.ModelProviders);
         }
-        public void InjectMcp(NativeChatClient nativeChatClient)
+        public void InjectTools(NativeChatClient nativeChatClient)
         {
-            ExecuteTools.Add(new DeepThinkTool(nativeChatClient));
+            ExecuteTools.Add(new FileTool());
+            ExecuteTools.Add(new CommandTool());
+            ExecuteTools.Add(new WaitTool());
+            ExecuteTools.Add(new CSharpTool());
+
             ExecuteTools.Add(new MemoryTool(nativeChatClient));
             ExecuteTools.Add(new AgentModelTool(AgentModelManager));
 

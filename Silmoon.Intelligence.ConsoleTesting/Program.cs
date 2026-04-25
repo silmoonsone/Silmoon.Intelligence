@@ -2,15 +2,14 @@
 using Microsoft.Extensions.Hosting;
 using Silmoon.Extensions.Hosting.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
-using Silmoon.Intelligence.ConsoleTesting.Services;
-using Silmoon.Intelligence.Core;
+using Silmoon.Intelligence.Hosting.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton<ISilmoonConfigureService, SilmoonConfigureServiceImpl>();
-builder.Services.AddSingleton<ClientService>();
-builder.Services.AddSingleton<LocalMcpService>();
-builder.Services.AddHostedService(provider => provider.GetRequiredService<ClientService>());
+builder.Services.AddSingleton<ConsoleService>();
+builder.Services.AddSingleton<ToolFunctionService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<ConsoleService>());
 
 builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
 {
