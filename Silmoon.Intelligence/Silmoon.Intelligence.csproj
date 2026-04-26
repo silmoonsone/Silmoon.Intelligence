@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI.Client\Silmoon.AI.Client.csproj" />
-    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI.Tools\Silmoon.AI.Tools.csproj" />
+    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI\Silmoon.AI.csproj" />
   </ItemGroup>
 
 </Project>

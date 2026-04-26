@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
-using Silmoon.AI.Client.OpenAI;
+using Silmoon.AI.OpenAI;
 using Silmoon.AI.Handlers;
+using Silmoon.AI.Models;
 using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
 using Silmoon.Extensions;
@@ -44,23 +45,36 @@ namespace Silmoon.Intelligence.Hosting.Services
             await Task.CompletedTask;
         }
 
-        async Task<StateSet<bool, string>> ToolCallStartHandler(string functionName, JObject parameters, string toolCallId, StateSet<bool, string> toolMessageState)
+        async Task<List<ToolCallResult>> ToolCallStartHandler(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
         {
-            Console.WriteLine();
-            Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);
-            switch (functionName)
+            List<ToolCallResult> results = [];
+
+            foreach (var parameter in toolCallParameters)
             {
-                case "ToolCallTestTool":
-                    return true.ToStateSet<string>($"这是一个工具调用环境测试，正常！");
-                default:
-                    return null;
+                var functionName = parameter.FunctionName;
+                var parameters = parameter.Parameters;
+
+                Console.WriteLine();
+                Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);
+                switch (functionName)
+                {
+                    case "ToolCallTestTool":
+                        results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！")));
+                        break;
+                    default:
+                        break;
+                }
             }
+            return results;
         }
-        async Task<StateSet<bool, string>> ToolCallCompletedHandler(StateSet<bool, string> arg)
+        async Task<Dictionary<string, ToolCallResult>> ToolCallCompletedHandler(Dictionary<string, ToolCallResult> toolCallResults)
         {
-            if (arg.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {arg.State}, Message: {arg.Message ?? "#null"}", ConsoleColor.Cyan);
-            else Console.WriteLineWithColor($"[TOOL RESULT] State: {arg.State}, Message: {arg.Message ?? "#null"}", ConsoleColor.Red);
-            return await Task.FromResult(arg);
+            foreach (var toolCallResult in toolCallResults.Values)
+            {
+                if (toolCallResult.Result.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
+                else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
+            }
+            return await Task.FromResult(toolCallResults);
         }
         void StreamOutputAction(StateSet<bool, Chunk> chunk)
         {

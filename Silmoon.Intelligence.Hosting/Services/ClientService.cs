@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
-using Silmoon.AI.Client.OpenAI;
-using Silmoon.AI.Prompts;
+using Silmoon.AI.OpenAI;
+using Silmoon.AI.Models;
 using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.Prompts;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
-using Silmoon.Models;
 using System;
 
 namespace Silmoon.Intelligence.Hosting.Services;
@@ -32,23 +32,36 @@ public class ClientService : IHostedService
         //NativeChatClient.EnableThinking = true;
     }
 
-    private Task<StateSet<bool, string>> NativeChatClient_OnToolCallCompleted(StateSet<bool, string> toolCallResult)
+    private Task<Dictionary<string, ToolCallResult>> NativeChatClient_OnToolCallCompleted(Dictionary<string, ToolCallResult> toolCallResults)
     {
-        if (toolCallResult.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.State}, Message: {toolCallResult.Message ?? "#null"}", ConsoleColor.Cyan);
-        else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.State}, Message: {toolCallResult.Message ?? "#null"}", ConsoleColor.Red);
-        return Task.FromResult(toolCallResult);
-    }
-    private async Task<StateSet<bool, string>> NativeChatClient_OnToolCallStart(string functionName, JObject parameters, string toolCallId, StateSet<bool, string> toolMessageState)
-    {
-        Console.WriteLine();
-        Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);
-        switch (functionName)
+        foreach (var toolCallResult in toolCallResults.Values)
         {
-            case "ToolCallTestTool":
-                return true.ToStateSet<string>($"这是一个工具调用环境测试，正常！");
-            default:
-                return null;
+            if (toolCallResult.Result.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
+            else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
         }
+        return Task.FromResult(toolCallResults);
+    }
+    private async Task<List<ToolCallResult>> NativeChatClient_OnToolCallStart(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
+    {
+        List<ToolCallResult> results = [];
+
+        foreach (var parameter in toolCallParameters)
+        {
+            var functionName = parameter.FunctionName;
+            var parameters = parameter.Parameters;
+
+            Console.WriteLine();
+            Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);
+            switch (functionName)
+            {
+                case "ToolCallTestTool":
+                    results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！")));
+                    break;
+                default:
+                    break;
+            }
+        }
+        return results;
     }
 
     public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;

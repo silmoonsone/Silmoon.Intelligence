@@ -8,13 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />
     <PackageReference Include="Silmoon.Extensions.Hosting" Version="3.0.0-alpha.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI.Client\Silmoon.AI.Client.csproj" />
-    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI.Tools\Silmoon.AI.Tools.csproj" />
     <ProjectReference Include="..\Silmoon.Intelligence.Tools\Silmoon.Intelligence.Tools.csproj" />
     <ProjectReference Include="..\Silmoon.Intelligence\Silmoon.Intelligence.csproj" />
   </ItemGroup>

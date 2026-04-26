@@ -1,17 +1,16 @@
-﻿using Newtonsoft.Json.Linq;
-using Silmoon.AI.Models.OpenAI.Enums;
+﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+using Newtonsoft.Json.Linq;
+using Silmoon.AI.Models;
 using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.Tools;
 using Silmoon.Extensions;
-using Silmoon.Models;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using Silmoon.AI.Tools;
 
 namespace Silmoon.Intelligence.Tools
 {
@@ -102,20 +101,26 @@ namespace Silmoon.Intelligence.Tools
             ];
         }
 
-        public override Task<StateSet<bool, string>> OnToolCallInvoke(string functionName, JObject parameters, string toolCallId, StateSet<bool, string> toolMessageState)
+        public override async Task<List<ToolCallResult>> OnToolCallInvoke(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
         {
-            StateSet<bool, string> result = null;
-            switch (functionName)
+            List<ToolCallResult> results = [];
+
+            foreach (var parameter in toolCallParameters)
             {
-                case "RunCSharpCode":
-                    string code = parameters["code"]?.ToString() ?? string.Empty;
-                    string output = ExecuteCSharpCode(code);
-                    result = true.ToStateSet<string>(output);
-                    break;
-                default:
-                    break;
+                var functionName = parameter.FunctionName;
+                var parameters = parameter.Parameters;
+                switch (functionName)
+                {
+                    case "RunCSharpCode":
+                        string code = parameters["code"]?.ToString() ?? string.Empty;
+                        string output = ExecuteCSharpCode(code);
+                        results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>(output)));
+                        break;
+                    default:
+                        break;
+                }
             }
-            return Task.FromResult(result);
+            return results;
         }
 
         static string ExecuteCSharpCode(string code)

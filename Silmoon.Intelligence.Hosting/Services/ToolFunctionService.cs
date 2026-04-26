@@ -1,9 +1,7 @@
-﻿using Silmoon.AI.Client.OpenAI;
+﻿using Silmoon.AI.OpenAI;
 using Silmoon.AI.Interfaces;
 using Silmoon.AI.Tools;
-using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
-using Silmoon.Intelligence;
 using Silmoon.Intelligence.Tools;
 using System;
 using System.Collections.Generic;

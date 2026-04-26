@@ -7,12 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI.Client\Silmoon.AI.Client.csproj" />
-    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI.Tools\Silmoon.AI.Tools.csproj" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
+    <ProjectReference Include="..\..\Silmoon.AI\Silmoon.AI\Silmoon.AI.csproj" />
   </ItemGroup>
 
 

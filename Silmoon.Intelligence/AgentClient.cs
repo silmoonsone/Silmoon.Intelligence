@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
-using Silmoon.AI.Client.OpenAI;
+using Silmoon.AI.OpenAI;
 using Silmoon.AI.Handlers;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
 using Silmoon.AI.Prompts;
 using Silmoon.Extensions;
@@ -29,13 +28,13 @@ namespace Silmoon.Intelligence
 
         }
 
-        private async Task<StateSet<bool, string>> NativeChatClient_OnToolCallCompleted(StateSet<bool, string> toolCallResult)
+        private async Task<Dictionary<string, ToolCallResult>> NativeChatClient_OnToolCallCompleted(Dictionary<string, ToolCallResult> toolCallResults)
         {
-            return await (ToolCallCompletedHandler?.Invoke(toolCallResult) ?? Task.FromResult(toolCallResult));
+            return await (ToolCallCompletedHandler?.Invoke(toolCallResults) ?? Task.FromResult(toolCallResults));
         }
-        private async Task<StateSet<bool, string>> NativeChatClient_OnToolCallStart(string functionName, JObject parameters, string toolCallId, StateSet<bool, string> toolMessageState)
+        private async Task<List<ToolCallResult>> NativeChatClient_OnToolCallStart(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
         {
-            return await (ToolCallStartHandler?.Invoke(functionName, parameters, toolCallId, toolMessageState) ?? Task.FromResult<StateSet<bool, string>>(null));
+            return await (ToolCallStartHandler?.Invoke(toolCallParameters, toolCallResults) ?? Task.FromResult<List<ToolCallResult>>(null));
         }
 
         public async Task<Result> Chat(string input)

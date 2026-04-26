@@ -1,7 +1,5 @@
 <Solution>
   <Folder Name="/支撑框架/">
-    <Project Path="../Silmoon.AI/Silmoon.AI.Client/Silmoon.AI.Client.csproj" />
-    <Project Path="../Silmoon.AI/Silmoon.AI.Tools/Silmoon.AI.Tools.csproj" />
     <Project Path="../Silmoon.AI/Silmoon.AI/Silmoon.AI.csproj" />
     <Project Path="../Silmoon.Maui/Silmoon.Maui/Silmoon.Maui.csproj" />
     <Project Path="../Silmoon.Windows/Silmoon.Windows.WinUI3/Silmoon.Windows.WinUI3.csproj" />

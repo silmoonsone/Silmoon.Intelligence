@@ -1,7 +1,6 @@
-﻿using Silmoon.AI.Client.OpenAI;
+﻿using Silmoon.AI.OpenAI;
 using Silmoon.AI.Models;
 using Silmoon.AI.Models.OpenAI.Enums;
-using Silmoon.AI.Models.OpenAI.Interfaces;
 using Silmoon.AI.Models.OpenAI.Models;
 using Silmoon.Extensions;
 using Silmoon.Models;

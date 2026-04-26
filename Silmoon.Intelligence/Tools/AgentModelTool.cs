@@ -57,26 +57,31 @@ namespace Silmoon.Intelligence.Tools
             ];
         }
 
-        public override async Task<StateSet<bool, string>> OnToolCallInvoke(string functionName, JObject parameters, string toolCallId, StateSet<bool, string> toolMessageState)
+        public override async Task<List<ToolCallResult>> OnToolCallInvoke(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
         {
-            StateSet<bool, string> result = null;
-            switch (functionName)
+            List<ToolCallResult> results = [];
+            foreach (var parameter in toolCallParameters)
             {
-                case "GetAgentModelProvidersTool":
-                    result = true.ToStateSet<string>(AgentModelManager.GetAgentModelProviders().ToJsonString());
-                    break;
-                case "CallStaticAgentTool":
-                    var askResult = await AgentModelManager.CallStaticAgent(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>(), parameters["content"]?.Value<string>(), parameters["system"]?.Value<string>(), parameters["reasonContent"]?.Value<bool>() ?? false);
-                    result = askResult.State.ToStateSet(askResult.Data?.ToJsonString(), askResult.Message);
-                    break;
-                case "ResetStaticAgentHistoryTool":
-                    var resetResult = AgentModelManager.ResetStaticAgentHistory(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>());
-                    result = resetResult.State.ToStateSet<string>(null, resetResult.Message);
-                    break;
-                default:
-                    break;
+                var functionName = parameter.FunctionName;
+                var parameters = parameter.Parameters;
+                switch (functionName)
+                {
+                    case "GetAgentModelProvidersTool":
+                        results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>(AgentModelManager.GetAgentModelProviders().ToJsonString())));
+                        break;
+                    case "CallStaticAgentTool":
+                        var askResult = await AgentModelManager.CallStaticAgent(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>(), parameters["content"]?.Value<string>(), parameters["system"]?.Value<string>(), parameters["reasonContent"]?.Value<bool>() ?? false);
+                        results.Add(ToolCallResult.Create(parameter, askResult.State.ToStateSet(askResult.Data?.ToJsonString(), askResult.Message)));
+                        break;
+                    case "ResetStaticAgentHistoryTool":
+                        var resetResult = AgentModelManager.ResetStaticAgentHistory(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>());
+                        results.Add(ToolCallResult.Create(parameter, resetResult.State.ToStateSet<string>(null, resetResult.Message)));
+                        break;
+                    default:
+                        break;
+                }
             }
-            return await Task.FromResult(result);
+            return results;
         }
     }
 }
