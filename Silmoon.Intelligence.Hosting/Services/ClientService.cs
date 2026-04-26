@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
-using Silmoon.AI.OpenAI;
 using Silmoon.AI.Models;
 using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI;
 using Silmoon.AI.Prompts;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
 using System;
+using System.Collections.Concurrent;
 
 namespace Silmoon.Intelligence.Hosting.Services;
 
@@ -32,7 +33,7 @@ public class ClientService : IHostedService
         //NativeChatClient.EnableThinking = true;
     }
 
-    private Task<Dictionary<string, ToolCallResult>> NativeChatClient_OnToolCallCompleted(Dictionary<string, ToolCallResult> toolCallResults)
+    private Task<ConcurrentDictionary<string, ToolCallResult>> NativeChatClient_OnToolCallCompleted(ConcurrentDictionary<string, ToolCallResult> toolCallResults)
     {
         foreach (var toolCallResult in toolCallResults.Values)
         {
@@ -41,7 +42,7 @@ public class ClientService : IHostedService
         }
         return Task.FromResult(toolCallResults);
     }
-    private async Task<List<ToolCallResult>> NativeChatClient_OnToolCallStart(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
+    private async Task<List<ToolCallResult>> NativeChatClient_OnToolCallStart(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
     {
         List<ToolCallResult> results = [];
 

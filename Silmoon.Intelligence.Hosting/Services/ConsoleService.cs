@@ -1,14 +1,15 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
-using Silmoon.AI.OpenAI;
 using Silmoon.AI.Handlers;
 using Silmoon.AI.Models;
 using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
 using Silmoon.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -36,6 +37,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             AgentClient.ToolCallStartHandler = ToolCallStartHandler;
             AgentClient.ToolCallCompletedHandler = ToolCallCompletedHandler;
             AgentClient.StreamOutputAction = StreamOutputAction;
+            AgentClient.StreamOutputFinishedAction = StreamOutputFinishedAction;
 
             _ = StartConsole();
             await Task.CompletedTask;
@@ -45,7 +47,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             await Task.CompletedTask;
         }
 
-        async Task<List<ToolCallResult>> ToolCallStartHandler(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
+        async Task<List<ToolCallResult>> ToolCallStartHandler(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
         {
             List<ToolCallResult> results = [];
 
@@ -54,7 +56,6 @@ namespace Silmoon.Intelligence.Hosting.Services
                 var functionName = parameter.FunctionName;
                 var parameters = parameter.Parameters;
 
-                Console.WriteLine();
                 Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);
                 switch (functionName)
                 {
@@ -67,7 +68,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             }
             return results;
         }
-        async Task<Dictionary<string, ToolCallResult>> ToolCallCompletedHandler(Dictionary<string, ToolCallResult> toolCallResults)
+        async Task<ConcurrentDictionary<string, ToolCallResult>> ToolCallCompletedHandler(ConcurrentDictionary<string, ToolCallResult> toolCallResults)
         {
             foreach (var toolCallResult in toolCallResults.Values)
             {
@@ -93,7 +94,11 @@ namespace Silmoon.Intelligence.Hosting.Services
             else Console.WriteLineWithColor(chunk.Message, ConsoleColor.Red);
 
         }
-
+        void StreamOutputFinishedAction(Result result)
+        {
+            Console.WriteLine();
+            Console.WriteLine("stop reason: " + result.FinishReason);
+        }
         public async Task StartConsole()
         {
             await Task.Run(async () =>

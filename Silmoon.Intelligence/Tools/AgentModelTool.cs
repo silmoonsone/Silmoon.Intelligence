@@ -6,6 +6,7 @@ using Silmoon.AI.Tools;
 using Silmoon.Extensions;
 using Silmoon.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -57,7 +58,7 @@ namespace Silmoon.Intelligence.Tools
             ];
         }
 
-        public override async Task<List<ToolCallResult>> OnToolCallInvoke(ToolCallParameter[] toolCallParameters, Dictionary<string, ToolCallResult> toolCallResults)
+        public override async Task<List<ToolCallResult>> OnToolCallInvoke(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
         {
             List<ToolCallResult> results = [];
             foreach (var parameter in toolCallParameters)
