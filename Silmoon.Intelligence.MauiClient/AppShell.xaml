@@ -4,11 +4,25 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Silmoon.Intelligence.MauiClient"
+    xmlns:pages="clr-namespace:Silmoon.Intelligence.MauiClient.Pages"
+    xmlns:ic="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
     Title="Silmoon.Intelligence.MauiClient">
 
-    <ShellContent
+    <!--<ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Route="MainPage" />-->
+
+    <TabBar>
+        <Tab Title="MainPage" Icon="{ic:SymbolImageSource Symbol=Home}">
+            <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
+        </Tab>
+        <Tab Title="Chat" Icon="{ic:SymbolImageSource Symbol=Chat}">
+            <ShellContent ContentTemplate="{DataTemplate pages:Chat}" />
+        </Tab>
+        <!--<Tab Title="Tron" Icon="{ic:SymbolImageSource Symbol=Frame}">
+            <ShellContent ContentTemplate="{DataTemplate pages:TronPage}" />
+        </Tab>-->
+    </TabBar>
 
 </Shell>

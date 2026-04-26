@@ -1,40 +1,28 @@
 # Silmoon.Intelligence
 
-`Silmoon.Intelligence` 是一个基于 .NET 的智能体与工具调用实验项目，包含核心能力、宿主层以及多个客户端/测试端（Console、WinForm、WinUI、MAUI）。
+> **说明**：本 README 由 AI 辅助生成，具体行为、依赖与构建步骤请以仓库内实际代码、`*.csproj` 与 `Silmoon.Intelligence.slnx` 为准；如有出入以代码为准。
 
-项目当前以研发迭代为主，`WinUI` 与 `MAUI` 客户端仍在开发中，文档会优先保证你可以先把核心能力跑起来。
+基于 **.NET 10** 的智能体（Agent）与 **工具调用（Tool Calling）** 实验项目：在 `Silmoon.AI` 之上提供对话客户端、宿主与一组可扩展工具，并包含 **控制台、WinUI 3、.NET MAUI** 等运行入口。
 
-## 项目结构
+本仓库通过 **项目引用** 依赖同级目录下的 **`Silmoon.AI`**、**`Silmoon.Windows`**（WinUI）、**`Silmoon.Maui`**（MAUI）；完整编译前请按下文目录布局准备依赖仓库。
 
-- `Silmoon.Intelligence`：核心能力层
-- `Silmoon.Intelligence.Tools`：工具层（如 C# 脚本执行工具等）
-- `Silmoon.Intelligence.Hosting`：宿主层
-- `Silmoon.Intelligence.ConsoleTesting`：控制台测试入口
-- `Silmoon.Intelligence.WinFormTesting`：WinForms 测试入口
-- `Silmoon.Intelligence.WinUIClient`：WinUI 客户端（开发中）
-- `Silmoon.Intelligence.MauiClient`：MAUI 客户端（开发中）
+## 仓库结构
 
-## 依赖说明
+| 目录 / 项目 | 说明 |
+|-------------|------|
+| `Silmoon.Intelligence` | 核心：`AgentClient`、`AgentModelManager` 及对 `Silmoon.AI` 的封装 |
+| `Silmoon.Intelligence.Tools` | 工具实现：`CSharpTool`（Roslyn 脚本，含安全规则与超时）、`AgentModelTool`（多模型 / 静态 Agent 委派）等 |
+| `Silmoon.Intelligence.Hosting` | 宿主：`ToolFunctionService`（注入 File / Command / Wait / CSharp / Memory / AgentModel 等工具）、`ConsoleService`、`ClientService`、`SilmoonConfigureServiceImpl` |
+| `Silmoon.Intelligence.ConsoleTesting` | 控制台入口，引用 Hosting，适合命令行联调 |
+| `Silmoon.Intelligence.WinUIClient` | WinUI 3 客户端：应用内 `Host`，使用 `ClientService` 与 UI；依赖 `Silmoon.Windows.WinUI3` |
+| `Silmoon.Intelligence.MauiClient` | MAUI 客户端：`AppShell` 主窗口；`MauiProgram` 中注册 Hosting（含 `ConsoleService`）；依赖 `Silmoon.Maui` |
+| `Silmoon.Intelligence.WinFormTesting` | WinForms 占位项目（保留 `config*.json`，便于后续扩展；当前无 Hosting / 核心集成） |
 
-本仓库包含跨仓库项目引用。**若要完整编译解决方案，强烈建议同时克隆以下 3 个仓库到同级目录：**
+解决方案：**`Silmoon.Intelligence.slnx`**（Visual Studio 或 `dotnet build` 均可）。
 
-- `Silmoon.AI`（核心 AI 能力依赖）
-- `Silmoon.Windows`（`WinUI` 客户端依赖）
-- `Silmoon.Maui`（`MAUI` 客户端依赖）
+## 依赖仓库与目录布局
 
-如果缺少以上任一仓库，完整编译可能失败或需要手动移除对应项目引用。
-
-## 快速开始（建议路径）
-
-### 1) 克隆仓库
-
-```bash
-git clone https://github.com/silmoonsone/Silmoon.Intelligence.git
-```
-
-### 2) 准备外部依赖仓库（同级目录，推荐完整方式）
-
-建议目录结构：
+**强烈建议**将下列四个仓库克隆到**同一上级目录**，与 `*.csproj` / `*.slnx` 中的相对路径一致：
 
 ```text
 <workspace>/
@@ -44,23 +32,38 @@ git clone https://github.com/silmoonsone/Silmoon.Intelligence.git
   Silmoon.Maui/
 ```
 
-推荐直接执行以下克隆命令（与本仓库保持同级）：
-
 ```bash
+git clone https://github.com/silmoonsone/Silmoon.Intelligence.git
 git clone https://github.com/silmoonsone/Silmoon.AI.git
 git clone https://github.com/silmoonsone/Silmoon.Windows.git
 git clone https://github.com/silmoonsone/Silmoon.Maui.git
 ```
 
-### 3) 完整编译解决方案（推荐）
+- **`Silmoon.AI`**：本仓库内核心与工具项目引用 **`Silmoon.AI/Silmoon.AI.csproj`**。
+- **`Silmoon.Windows`**：`WinUIClient` 引用 **`Silmoon.Windows.WinUI3`**。
+- **`Silmoon.Maui`**：`MauiClient` 引用 **`Silmoon.Maui/Silmoon.Maui.csproj`**。
+
+缺少任一依赖时，完整解决方案可能无法编译；可自行从 `slnx` 中移除 WinUI / MAUI 等项目后再构建（见下文）。
+
+## 构建与运行
+
+在 `Silmoon.Intelligence` 目录下：
 
 ```bash
 dotnet build Silmoon.Intelligence.slnx
 ```
 
-### 4) 可选：仅编译核心（跳过 WinUI/MAUI）
+控制台联调示例：
 
-如果你暂时不准备 `WinUI`/`MAUI` 相关环境或外部依赖，可以先移除这两个项目后再构建（此方式仍需要 `Silmoon.AI`）：
+```bash
+dotnet run --project Silmoon.Intelligence.ConsoleTesting/Silmoon.Intelligence.ConsoleTesting.csproj
+```
+
+WinUI 与 MAUI 需本机安装 **Windows App SDK**、**.NET MAUI 工作负载** 及对应目标平台 SDK，以 Visual Studio 工作负载说明为准。
+
+### 可选：暂不构建 WinUI / MAUI
+
+若无对应环境，可从解决方案移除后再构建（**仍需已克隆 `Silmoon.AI`**）：
 
 ```bash
 dotnet sln Silmoon.Intelligence.slnx remove Silmoon.Intelligence.WinUIClient/Silmoon.Intelligence.WinUIClient.csproj
@@ -68,31 +71,16 @@ dotnet sln Silmoon.Intelligence.slnx remove Silmoon.Intelligence.MauiClient/Silm
 dotnet build Silmoon.Intelligence.slnx
 ```
 
-你也可以直接单独构建/运行测试项目：
+## 配置
 
-```bash
-dotnet build Silmoon.Intelligence.ConsoleTesting/Silmoon.Intelligence.ConsoleTesting.csproj
-dotnet run --project Silmoon.Intelligence.ConsoleTesting/Silmoon.Intelligence.ConsoleTesting.csproj
-```
+各入口目录中的 **`config.json`**、**`config.debug.json`** 为示例。  
+本机或敏感配置请使用 **`config.local.json`**、**`config.local.debug.json`**（已由 `.gitignore` 排除，不会提交）。
 
-## 配置说明
+## 环境与安全说明
 
-各测试/客户端项目内包含 `config.json` / `config.debug.json` 等配置文件作为示例入口。  
-推荐在本地使用 `config.local.json`、`config.local.debug.json` 覆盖配置（这些文件已在 `.gitignore` 中忽略，不会提交）。
-
-## 平台与要求
-
-- .NET SDK：`net10.0`（预览/较新版本）
-- Windows 客户端：
-  - WinForms：`net10.0-windows`
-  - WinUI：`net10.0-windows10.0.19041.0` + Windows App SDK
-- MAUI：需具备对应平台工作负载与开发环境
-
-## 当前状态
-
-- 核心、宿主与测试端持续可用并在迭代
-- WinUI/MAUI 客户端处于开发中，后续会补充完整编译与使用说明
+- 目标框架以各 `.csproj` 为准：核心多为 **`net10.0`**；WinUI 为 **`net10.0-windows10.0.19041.0`**；MAUI 为多目标（Android / iOS / Mac Catalyst / Windows 等）。
+- **`CSharpTool` 在宿主进程内执行脚本**，带时间与输出上限及静态安全规则，**并非隔离沙箱**；请勿对不可信来源开放无限制调用。
 
 ## 许可证
 
-本项目使用仓库中的 `LICENSE.txt`。
+见仓库根目录 **`LICENSE.txt`**。

@@ -25,12 +25,12 @@ namespace Silmoon.Intelligence
             NativeChatClient = new NativeChatClient(modelProvider, modelName, UtilPrompt.ContextPrompt);
             NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
             NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
-            NativeChatClient.OnNativeClientChatFinished += NativeChatClient_OnNativeClientChatFinished;
+            NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
             NativeChatClient.Tools.Add(Tool.Create("ToolCallTestTool", "This is a test tool_calling test tool.", []));
 
         }
 
-        private Task NativeChatClient_OnNativeClientChatFinished(Result result)
+        private Task NativeChatClient_OnStreamOutputCompleted(Result result)
         {
             StreamOutputFinishedAction?.Invoke(result);
             return Task.CompletedTask;
