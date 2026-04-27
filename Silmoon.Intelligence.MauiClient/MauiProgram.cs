@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Silmoon.Extensions.Hosting.Extensions;
-using Silmoon.Extensions.Hosting.Interfaces;
+using FluentIcons.Maui;
 using Silmoon.Intelligence.Hosting.Services;
 using Silmoon.Intelligence.MauiClient.Services;
+using Silmoon.Maui.Platforms.Services;
+using Silmoon.Maui.Services;
 
 namespace Silmoon.Intelligence.MauiClient
 {
@@ -14,8 +16,8 @@ namespace Silmoon.Intelligence.MauiClient
             builder.Services.AddSingleton<ToolFunctionService>();
             builder.Services.AddSingleton<IntelligenceService>();
             builder.Services.AddHostedService(provider => provider.GetRequiredService<IntelligenceService>());
-
-            builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
+            builder.Services.AddSingleton<IFileService, FileService>();
+            builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl, SilmoonConfigureFileReadServiceImpl>(o =>
             {
 #if DEBUG
                 o.DebugConfig();
@@ -26,6 +28,7 @@ namespace Silmoon.Intelligence.MauiClient
 
             builder
                 .UseMauiApp<App>()
+                .UseFluentIcons()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

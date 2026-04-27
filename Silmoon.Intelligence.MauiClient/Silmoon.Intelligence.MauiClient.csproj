@@ -6,6 +6,8 @@
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
     <ValidateXcodeVersion>false</ValidateXcodeVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseInterpreter>true</UseInterpreter>
+
     <!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
 		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
@@ -29,10 +31,10 @@
     <MauiXamlInflator>SourceGen</MauiXamlInflator>
 
     <!-- Display name -->
-    <ApplicationTitle>Silmoon.Intelligence.MauiClient</ApplicationTitle>
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>com.companyname.Silmoon.Intelligence.mauiclient</ApplicationId>
+    <ApplicationId>com.Silmoon.Intelligence.mauiclient</ApplicationId>
 
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -46,6 +48,58 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-android|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-ios|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-maccatalyst|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-windows10.0.19041.0|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-ios|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-maccatalyst|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-windows10.0.19041.0|AnyCPU'">
+    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Debug|net10.0-ios'">
+    <ProvisioningType>manual</ProvisioningType>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignProvision></CodesignProvision>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net10.0-ios'">
+    <ProvisioningType>manual</ProvisioningType>
+    <CodesignKey>iPhone Distribution</CodesignKey>
+    <CodesignProvision></CodesignProvision>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,10 +121,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <MauiAsset Remove="Resources\Raw\config.debug.json" />
-    <MauiAsset Remove="Resources\Raw\config.json" />
-    <MauiAsset Remove="Resources\Raw\config.local.debug.json" />
-    <MauiAsset Remove="Resources\Raw\config.local.json" />
+    <None Remove="Resources\Raw\config.debug.json" />
+    <None Remove="Resources\Raw\config.json" />
+    <None Remove="Resources\Raw\config.local.debug.json" />
+    <None Remove="Resources\Raw\config.local.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,7 +132,6 @@
     <PackageReference Include="FluentIcons.Maui" Version="2.1.325" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.51" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
-    <PackageReference Include="Silmoon.Extensions.Hosting" Version="3.0.0-alpha.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -88,30 +141,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="config.debug.json">
+    <MauiAsset Update="Resources\Raw\config.debug.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="config.json">
+    </MauiAsset>
+    <MauiAsset Update="Resources\Raw\config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="config.local.debug.json">
+    </MauiAsset>
+    <MauiAsset Update="Resources\Raw\config.local.debug.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="config.local.json">
+    </MauiAsset>
+    <MauiAsset Update="Resources\Raw\config.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Raw\config.debug.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Raw\config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Raw\config.local.debug.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Raw\config.local.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </MauiAsset>
   </ItemGroup>
 
   <ItemGroup>

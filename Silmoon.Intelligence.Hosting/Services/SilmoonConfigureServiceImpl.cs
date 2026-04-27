@@ -21,9 +21,10 @@ namespace Silmoon.Intelligence.Hosting.Services
         public string SystemPrompt { get; set; }
         ILogger<ISilmoonConfigureService> Logger { get; set; }
 
-        public SilmoonConfigureServiceImpl(IOptions<SilmoonConfigureServiceOption> options, ILogger<ISilmoonConfigureService> logger) : base(options)
+        public SilmoonConfigureServiceImpl(IOptions<SilmoonConfigureServiceOption> options, ILogger<ISilmoonConfigureService> logger, ISilmoonConfigureFileReadService fileReadService = null) : base(options, fileReadService)
         {
             Logger = logger;
+
             Logger.LogInformation($"当前配置文件{CurrentConfigFilePath}");
 
             SystemPrompt = ConfigJson.GetValue("systemPrompt")?.Value<string>();

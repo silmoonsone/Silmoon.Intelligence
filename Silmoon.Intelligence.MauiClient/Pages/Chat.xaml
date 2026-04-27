@@ -6,7 +6,7 @@
              x:DataType="page:ChatViewModel"
              Title="Chat">
     <StackLayout VerticalOptions="Fill">
-        <ScrollView HeightRequest="500">
+        <ScrollView HeightRequest="600">
             <Label Text="{Binding Output}"></Label>
         </ScrollView>
         <StackLayout Orientation="Horizontal">
