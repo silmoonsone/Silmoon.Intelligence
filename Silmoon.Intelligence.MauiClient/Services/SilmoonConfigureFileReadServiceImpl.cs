@@ -25,5 +25,9 @@ namespace Silmoon.Intelligence.MauiClient.Services
             var content = File.ReadAllText(Path.Combine(FileSystem.AppDataDirectory, filePath));
             return content;
         }
+        public bool FileExists(string filePath)
+        {
+            return File.Exists(Path.Combine(FileSystem.AppDataDirectory, filePath));
+        }
     }
 }

@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:Class="Silmoon.Intelligence.MauiClient.Pages.Chat"
              xmlns:page="clr-namespace:Silmoon.Intelligence.MauiClient.Pages"
+             xmlns:models="clr-namespace:Silmoon.Intelligence.MauiClient.Models"
              x:DataType="page:ChatViewModel"
+             HideSoftInputOnTapped="True"
              Title="Chat">
-    <StackLayout VerticalOptions="Fill">
-        <ScrollView HeightRequest="600">
-            <Label Text="{Binding Output}"></Label>
+    <Grid x:Name="RootLayout" RowDefinitions="*,Auto" RowSpacing="0">
+        <ScrollView x:Name="HistoryScrollView" Grid.Row="0" VerticalScrollBarVisibility="Always" Padding="8" Scrolled="HistoryScrollView_Scrolled">
+            <StackLayout BindableLayout.ItemsSource="{x:Binding Items}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:ChatItem">
+                        <Border Padding="5" Margin="0,0,0,10" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray100}}" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                            <StackLayout>
+                                <Label Text="{x:Binding Role}" FontAttributes="Bold" />
+                                <Label Text="{x:Binding Content}" LineBreakMode="WordWrap" />
+                            </StackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
         </ScrollView>
-        <StackLayout Orientation="Horizontal">
-            <Entry Text="{Binding Input}" HorizontalOptions="FillAndExpand"></Entry>
-            <Button Text="发送" Command="{Binding ChatCommand}"></Button>
-        </StackLayout>
-    </StackLayout>
+
+        <Grid x:Name="InputBar" Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8" Padding="8">
+            <Entry Grid.Column="0" Text="{x:Binding Input}" HorizontalOptions="Fill" />
+            <Button Grid.Column="1" Text="发送" Command="{x:Binding ChatCommand}" IsEnabled="{Binding Input, Converter={StaticResource IsNotNullOrEmptyConvert}}" />
+        </Grid>
+    </Grid>
 </ContentPage>

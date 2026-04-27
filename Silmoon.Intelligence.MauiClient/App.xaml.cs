@@ -16,11 +16,15 @@ namespace Silmoon.Intelligence.MauiClient
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            var window = new Window(new AppShell())
+            var window = new Window(new AppShell());
+
+            // Fixed desktop window size should not be applied on mobile,
+            // otherwise iOS keyboard insets/layout can be calculated incorrectly.
+            if (DeviceInfo.Platform == DevicePlatform.WinUI || DeviceInfo.Platform == DevicePlatform.MacCatalyst)
             {
-                Width = 1200,
-                Height = 800,
-            };
+                window.Width = 1200;
+                window.Height = 800;
+            }
             IntelligenceService.StartAsync(CancellationToken.None).Wait();
             return window;
         }

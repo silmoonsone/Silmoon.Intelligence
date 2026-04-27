@@ -99,9 +99,9 @@ namespace Silmoon.Intelligence.MauiClient.Services
             Console.WriteLine("stop reason: " + result.FinishReason);
         }
 
-        public async Task Input(string input)
+        public async Task<Result> Input(string input)
         {
-            await AgentClient.Chat(input);
+            return await AgentClient.Chat(input);
         }
     }
 }
