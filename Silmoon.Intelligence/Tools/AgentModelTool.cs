@@ -23,19 +23,22 @@ namespace Silmoon.Intelligence.Tools
         {
             return [
                 Tool.Create("GetAgentModelProvidersTool", """
-                Return configured providers and preset models for static agents.
-                Call this before CallStaticAgentTool to get valid (providerName, modelName).
-                Only returned pairs are callable.
-                Prefer enabled models; use disabled models only if user explicitly requests that exact model.
-                Keep apiKey-like fields secret.
+                List callable singleton agents.
+                Run first. Only returned (providerName, modelName) pairs are valid.
+                Each pair maps to one shared singleton agent instance.
+                Prefer enabled models; use disabled ones only if user explicitly requests that exact model.
+                Never reveal apiKey-like fields.
                 """,
                 []),
-                Tool.Create("CallStaticAgentTool", """
-                Call a configured static agent once.
-                providerName and modelName must exactly match GetAgentModelProvidersTool output.
-                content is required; system is optional per-call override; reasonContent defaults to false.
-                Use only when delegation to another configured model is needed.
-                Return serialized Result on success; otherwise return failure message.
+                Tool.Create("CallSingletonAgentTool", """
+                Delegate one task to a singleton agent.
+                Target is selected by (providerName, modelName) and keeps history across calls.
+                providerName/modelName must exactly match GetAgentModelProvidersTool output.
+                content is required; system is optional; reasonContent defaults to false.
+                Concurrency:
+                - Same pair: no parallel calls (must be serial).
+                - Different pairs: parallel calls are allowed and recommended.
+                Returns serialized Result, or failure message.
                 """,
                 [
                     new ToolParameterProperty("string", "providerName", "Provider id exactly as in config / GetAgentModelProvidersTool (used in client key providerName_modelName)."),
@@ -44,12 +47,11 @@ namespace Silmoon.Intelligence.Tools
                     new ToolParameterProperty("string", "content", "User message or task to send to the target model."),
                     new ToolParameterProperty("bool", "reasonContent", "If true, enable thinking/reasoning on the client when the model supports it.", [true, false]),
                 ]),
-                Tool.Create("ResetStaticAgentHistoryTool","""
-                Reset chat history of a static agent.
-                providerName and modelName must exactly match a configured static agent.
+                Tool.Create("ResetSingletonAgentHistoryTool","""
+                Reset history for one singleton agent pair (providerName, modelName).
                 Use before a new independent task or when old context pollutes output.
-                Do not use if continuing current context.
-                Only history is cleared; configuration remains.
+                Do not reset when continuity is needed.
+                Only history is cleared; configuration is unchanged.
                 """,
                 [
                     new ToolParameterProperty("string", "providerName", "Provider id exactly as in config / GetAgentModelProvidersTool (used in client key providerName_modelName)."),
@@ -70,12 +72,12 @@ namespace Silmoon.Intelligence.Tools
                     case "GetAgentModelProvidersTool":
                         results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>(AgentModelManager.GetAgentModelProviders().ToJsonString())));
                         break;
-                    case "CallStaticAgentTool":
-                        var askResult = await AgentModelManager.CallStaticAgent(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>(), parameters["content"]?.Value<string>(), parameters["system"]?.Value<string>(), parameters["reasonContent"]?.Value<bool>() ?? false);
+                    case "CallSingletonAgentTool":
+                        var askResult = await AgentModelManager.CallSingletonAgent(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>(), parameters["content"]?.Value<string>(), parameters["system"]?.Value<string>(), parameters["reasonContent"]?.Value<bool>() ?? false);
                         results.Add(ToolCallResult.Create(parameter, askResult.State.ToStateSet(askResult.Data?.ToJsonString(), askResult.Message)));
                         break;
-                    case "ResetStaticAgentHistoryTool":
-                        var resetResult = AgentModelManager.ResetStaticAgentHistory(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>());
+                    case "ResetSingletonAgentHistoryTool":
+                        var resetResult = AgentModelManager.ResetSingletonAgentHistory(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>());
                         results.Add(ToolCallResult.Create(parameter, resetResult.State.ToStateSet<string>(null, resetResult.Message)));
                         break;
                     default:

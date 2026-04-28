@@ -4,6 +4,7 @@ using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
 using Silmoon.Extensions;
 using Silmoon.Models;
+using System.Collections.Concurrent;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,6 +15,9 @@ namespace Silmoon.Intelligence
     {
         public Dictionary<string, ModelProvider> ModelProviders { get; private set; } = [];
         public Dictionary<string, NativeChatClient> NativeChatClients { get; private set; } = [];
+        public ConcurrentDictionary<string, NativeChatClient> AgentList { get; private set; } = [];
+
+
         public AgentModelManager(Dictionary<string, ModelProvider> models)
         {
             ModelProviders = models;
@@ -27,14 +31,14 @@ namespace Silmoon.Intelligence
         }
 
         public ModelProvider[] GetAgentModelProviders() => [.. ModelProviders.Values];
-        public async Task<StateSet<bool, Result>> CallStaticAgent(string providerName, string modelName, string content, string system = null, bool enableThinking = false)
+        public async Task<StateSet<bool, Result>> CallSingletonAgent(string providerName, string modelName, string content, string system = null, bool enableThinking = false)
         {
             var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
             if (nativeChatClient is not null)
                 return await CallAgentModel($"{providerName}:{modelName}", nativeChatClient, content, system, enableThinking);
             else return false.ToStateSet<Result>(null, $"specified model ({providerName},{modelName}) not found");
         }
-        public StateSet<bool> ResetStaticAgentHistory(string providerName, string modelName)
+        public StateSet<bool> ResetSingletonAgentHistory(string providerName, string modelName)
         {
             var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
             if (nativeChatClient is not null)
@@ -44,10 +48,6 @@ namespace Silmoon.Intelligence
             }
             else return false.ToStateSet($"specified model ({providerName},{modelName}) not found");
         }
-
-
-
-
         private static async Task<StateSet<bool, Result>> CallAgentModel(string agentName, NativeChatClient nativeChatClient, string content, string system, bool enableThinking)
         {
             nativeChatClient.EnableThinking = enableThinking;
