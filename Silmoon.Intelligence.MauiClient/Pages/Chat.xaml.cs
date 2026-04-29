@@ -33,8 +33,8 @@ public partial class Chat : ContentPage
     public Chat()
     {
         intelligenceService = App.ServiceProvider.GetRequiredService<IntelligenceService>();
-        BindingContext = viewModel = new ChatViewModel(this);
         InitializeComponent();
+        BindingContext = viewModel = new ChatViewModel(this);
     }
 
     public Task ScrollHistoryToBottomAsync(bool animated = true, bool force = false)
@@ -133,10 +133,11 @@ public partial class ChatViewModel : ObservableObject
     public ChatViewModel(Chat page)
     {
         this.page = page;
-        page.intelligenceService.NativeChatClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
-        page.intelligenceService.NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
-        page.intelligenceService.NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
-        page.intelligenceService.NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
+        page.Title = $"Chat ({page.intelligenceService.AgentClient.NativeChatClient.ModelName})";
+        page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
+        page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
+        page.intelligenceService.AgentClient.NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
+        page.intelligenceService.AgentClient.NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
 
         page.Loaded += (sender, e) =>
         {

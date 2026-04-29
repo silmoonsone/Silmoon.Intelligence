@@ -45,7 +45,7 @@ namespace Silmoon.Intelligence.Tools
                     new ToolParameterProperty("string", "modelName", "Preset model name exactly as in that provider's models[] (must match client registration). Do not use a disabled model unless the user explicitly asked for that model."),
                     new ToolParameterProperty("string", "system", "Optional. System prompt for this call only; omit to keep host default."),
                     new ToolParameterProperty("string", "content", "User message or task to send to the target model."),
-                    new ToolParameterProperty("bool", "reasonContent", "If true, enable thinking/reasoning on the client when the model supports it.", [true, false]),
+                    new ToolParameterProperty("boolean", "reasonContent", "If true, enable thinking/reasoning on the client when the model supports it.", [true, false]),
                 ]),
                 Tool.Create("ResetSingletonAgentHistoryTool","""
                 Reset history for one singleton agent pair (providerName, modelName).
