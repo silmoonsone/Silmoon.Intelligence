@@ -13,16 +13,24 @@ using System.Text;
 
 namespace Silmoon.Intelligence
 {
-    public class AgentClient
+    public class AgentClient : IDisposable
     {
-        public NativeChatClient NativeChatClient { get; set; }
+        public NativeChatClient NativeChatClient { get; private set; }
         public Action<StateSet<bool, Chunk>> StreamOutputAction { get; set; }
         public Action<Result> StreamOutputFinishedAction { get; set; }
         public ToolCallStartHandler ToolCallStartHandler { get; set; }
         public ToolCallCompletedHandler ToolCallCompletedHandler { get; set; }
-        public AgentClient(ModelProvider modelProvider, string modelName)
+
+        public string Name { get; set; } = string.Empty;
+        public string RoleMandate { get; set; } = string.Empty;
+        public List<MessageContent> History => NativeChatClient.MessageHistory;
+        public bool IsBusy { get; set; } = false;
+
+        public AgentClient(ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = "")
         {
-            NativeChatClient = new NativeChatClient(modelProvider, modelName, UtilPrompt.ContextPrompt);
+            Name = name;
+            RoleMandate = roleMandate ?? string.Empty;
+            NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}");
             NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
             NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
             NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
@@ -32,6 +40,7 @@ namespace Silmoon.Intelligence
 
         private Task NativeChatClient_OnStreamOutputCompleted(Result result)
         {
+            IsBusy = false;
             StreamOutputFinishedAction?.Invoke(result);
             return Task.CompletedTask;
         }
@@ -51,6 +60,7 @@ namespace Silmoon.Intelligence
             {
                 if (input.IsNullOrEmpty()) return null;
                 List<Chunk> chunks = [];
+                IsBusy = true;
                 await foreach (var chunk in NativeChatClient.CompletionsStreamAsync(input, chunks))
                 {
                     StreamOutputAction?.Invoke(chunk);
@@ -58,6 +68,16 @@ namespace Silmoon.Intelligence
                 var result = Result.Create([.. chunks]);
                 return result;
             });
+        }
+
+        public void Dispose()
+        {
+            StreamOutputAction = null;
+            StreamOutputFinishedAction = null;
+            ToolCallStartHandler = null;
+            ToolCallCompletedHandler = null;
+            NativeChatClient?.Dispose();
+            NativeChatClient = null;
         }
     }
 }

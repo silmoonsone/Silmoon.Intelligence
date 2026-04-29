@@ -15,7 +15,7 @@ namespace Silmoon.Intelligence
     {
         public Dictionary<string, ModelProvider> ModelProviders { get; private set; } = [];
         public Dictionary<string, NativeChatClient> NativeChatClients { get; private set; } = [];
-        public ConcurrentDictionary<string, NativeChatClient> AgentList { get; private set; } = [];
+        public ConcurrentDictionary<string, AgentClient> WorkerAgentClients { get; private set; } = [];
 
 
         public AgentModelManager(Dictionary<string, ModelProvider> models)
@@ -75,6 +75,63 @@ namespace Silmoon.Intelligence
             Console.WriteLineWithColor($"Agent({agentName}) response end:", ConsoleColor.Green, ConsoleColor.Blue);
 
             return true.ToStateSet(Result.Create([.. chunks], enableThinking));
+        }
+
+        public AgentClient[] GetWorkerAgentClients() => [.. WorkerAgentClients.Values];
+        public AgentClient GetWorkerAgentClient(string name)
+        {
+            if (name.IsNullOrEmpty()) return null;
+            return WorkerAgentClients.GetValueOrDefault(name);
+        }
+        public StateSet<bool, AgentClient> CreateWorkerAgent(string providerName, string modelName, string name, string roleMandate, string systemPrompt)
+        {
+            if (providerName.IsNullOrEmpty()) return false.ToStateSet<AgentClient>(null, "providerName is required");
+            if (modelName.IsNullOrEmpty()) return false.ToStateSet<AgentClient>(null, "modelName is required");
+            if (name.IsNullOrEmpty()) return false.ToStateSet<AgentClient>(null, "name is required");
+
+            var modelProvider = ModelProviders.GetValueOrDefault(providerName);
+            if (modelProvider is null) return false.ToStateSet<AgentClient>(null, $"specified model provider ({providerName}) not found");
+            var modelExists = modelProvider.Models.Any(x => x.Name == modelName);
+            if (!modelExists) return false.ToStateSet<AgentClient>(null, $"specified model ({modelName}) not found in provider ({providerName})");
+
+            var workerClient = new AgentClient(modelProvider, modelName, name, roleMandate, systemPrompt);
+            var result = WorkerAgentClients.TryAdd(name, workerClient);
+            if (result) return true.ToStateSet(workerClient);
+
+            var existing = WorkerAgentClients.GetValueOrDefault(name);
+            return false.ToStateSet(existing, $"worker agent with the same name ({name}) already exists");
+        }
+        public async Task<StateSet<bool, Result>> CallWorkerAgent(string name, string content)
+        {
+            if (name.IsNullOrEmpty()) return false.ToStateSet<Result>(null, "name is required");
+            if (content.IsNullOrEmpty()) return false.ToStateSet<Result>(null, "content is required");
+
+            var workerClient = WorkerAgentClients.GetValueOrDefault(name);
+            if (workerClient is not null)
+            {
+                return true.ToStateSet(await workerClient.Chat(content));
+            }
+            else return false.ToStateSet<Result>(null, $"specified worker agent ({name}) not found");
+        }
+        public StateSet<bool> ResetWorkerAgentHistory(string name)
+        {
+            if (name.IsNullOrEmpty()) return false.ToStateSet("name is required");
+
+            var workerClient = WorkerAgentClients.GetValueOrDefault(name);
+            if (workerClient is not null)
+            {
+                workerClient.NativeChatClient.ResetHistory();
+                return true.ToStateSet("success");
+            }
+            else return false.ToStateSet($"specified worker agent ({name}) not found");
+        }
+        public StateSet<bool> RemoveWorkerAgent(string name)
+        {
+            if (name.IsNullOrEmpty()) return false.ToStateSet("name is required");
+
+            var result = WorkerAgentClients.TryRemove(name, out var _);
+            if (result) return true.ToStateSet("success");
+            else return false.ToStateSet($"specified worker agent ({name}) not found");
         }
     }
 }

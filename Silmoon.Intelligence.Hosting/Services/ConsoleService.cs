@@ -28,7 +28,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             ApplicationLifetime = applicationLifetime;
             ToolFunctionService = toolFunctionService;
 
-            AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName);
+            AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "主管", "监管全局工作");
             ToolFunctionService.InjectTools(AgentClient.NativeChatClient);
         }
 

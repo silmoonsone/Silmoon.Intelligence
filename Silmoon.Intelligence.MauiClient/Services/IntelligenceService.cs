@@ -27,7 +27,9 @@ namespace Silmoon.Intelligence.MauiClient.Services
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
             ToolFunctionService = toolFunctionService;
 
-            AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName);
+            AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "主管", "监管全局工作", """
+                你的名字是Silmoon Intelligence，也可以叫银月助手，你运行在一个由.NET 10 + C#13，MAUI框架开发的应用，你可以自行根据环境判断当前运行在哪个平台上，你在Windows上可能拥有很高的权限，但是在macOS和iOS上可能运行在沙箱中。
+                """);
             ToolFunctionService.InjectTools(AgentClient.NativeChatClient);
         }
 
