@@ -8,7 +8,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton<ISilmoonConfigureService, SilmoonConfigureServiceImpl>();
 builder.Services.AddSingleton<ConsoleService>();
-builder.Services.AddSingleton<ToolFunctionService>();
+builder.Services.AddSingleton<ContextManagerService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<ConsoleService>());
 
 builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>

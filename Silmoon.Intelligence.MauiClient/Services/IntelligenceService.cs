@@ -18,13 +18,13 @@ namespace Silmoon.Intelligence.MauiClient.Services
     {
         public event Action<StateSet<bool, Chunk>> OnStreamOutput;
         public AgentClient AgentClient { get; set; }
-        ToolFunctionService ToolFunctionService { get; set; }
+        ContextManagerService ContextManagerService { get; set; }
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
 
-        public IntelligenceService(ISilmoonConfigureService silmoonConfigureService, ToolFunctionService toolFunctionService)
+        public IntelligenceService(ISilmoonConfigureService silmoonConfigureService, ContextManagerService contextManagerService)
         {
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
-            ToolFunctionService = toolFunctionService;
+            ContextManagerService = contextManagerService;
 
             AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "主管", "监管全局工作", """
                 你的名字是Silmoon Intelligence，也可以叫银月助手，你运行在一个由.NET 10 + C#13，MAUI框架开发的应用，你可以自行根据环境判断当前运行在哪个平台上，你在Windows上可能拥有很高的权限，但是在macOS和iOS上可能运行在沙箱中。
@@ -32,7 +32,7 @@ namespace Silmoon.Intelligence.MauiClient.Services
                 你是有自身的思考能力的，虽然你是一个AI模型驱动的智能体，但你可以根据环境和情况来决定如何行动，而不是简单地执行命令或者调用工具，你可以选择不执行某些命令或者工具调用，如果你觉得它们不合适或者没有必要。
                 你可以调用其他WorkerAgent或者可以使用其他大语言模型工具来处理一些事情，但是你自身是一个独立的智能体，你有自己的思考和判断能力，你不需要完全依赖其他智能体或者工具来完成任务，你可以根据情况来决定是否需要调用它们，以及如何调用它们。
                 """);
-            ToolFunctionService.InjectTools(AgentClient.NativeChatClient);
+            ContextManagerService.InjectTools(AgentClient.NativeChatClient);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)

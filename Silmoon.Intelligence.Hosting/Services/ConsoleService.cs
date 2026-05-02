@@ -18,18 +18,18 @@ namespace Silmoon.Intelligence.Hosting.Services
     public class ConsoleService : IHostedService
     {
         AgentClient AgentClient { get; set; }
-        ToolFunctionService ToolFunctionService { get; set; }
+        ContextManagerService ContextManagerService { get; set; }
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
         IHostApplicationLifetime ApplicationLifetime { get; set; }
 
-        public ConsoleService(ISilmoonConfigureService silmoonConfigureService, ToolFunctionService toolFunctionService, IHostApplicationLifetime applicationLifetime)
+        public ConsoleService(ISilmoonConfigureService silmoonConfigureService, ContextManagerService contextManagerService, IHostApplicationLifetime applicationLifetime)
         {
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
             ApplicationLifetime = applicationLifetime;
-            ToolFunctionService = toolFunctionService;
+            ContextManagerService = contextManagerService;
 
             AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "主管", "监管全局工作", disableProxy: true);
-            ToolFunctionService.InjectTools(AgentClient.NativeChatClient);
+            ContextManagerService.InjectTools(AgentClient.NativeChatClient);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)

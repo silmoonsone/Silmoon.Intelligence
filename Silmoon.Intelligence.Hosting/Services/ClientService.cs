@@ -17,18 +17,18 @@ public class ClientService : IHostedService
     NativeChatClient NativeChatClient { get; set; }
     SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
     IHostApplicationLifetime ApplicationLifetime { get; set; }
-    ToolFunctionService LocalMcpService { get; set; }
-    public ClientService(ISilmoonConfigureService silmoonConfigureService, ToolFunctionService localMcpService, IHostApplicationLifetime applicationLifetime)
+    ContextManagerService ContextManagerService { get; set; }
+    public ClientService(ISilmoonConfigureService silmoonConfigureService, ContextManagerService contextManagerService, IHostApplicationLifetime applicationLifetime)
     {
         ApplicationLifetime = applicationLifetime;
-        LocalMcpService = localMcpService;
+        ContextManagerService = contextManagerService;
         ApplicationLifetime.ApplicationStarted.Register(async () => await Start());
         SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
 
         NativeChatClient = new NativeChatClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, UtilPrompt.ContextPrompt);
         NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
         NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
-        LocalMcpService.InjectTools(NativeChatClient);
+        ContextManagerService.InjectTools(NativeChatClient);
         NativeChatClient.Tools.Add(Tool.Create("ToolCallTestTool", "This is a test tool_calling test tool.", []));
         //NativeChatClient.EnableThinking = true;
     }

@@ -48,7 +48,7 @@ namespace Silmoon.Intelligence.WinUIClient
 
             builder.Services.AddSingleton<ISilmoonConfigureService, SilmoonConfigureServiceImpl>();
             builder.Services.AddSingleton<ClientService>();
-            builder.Services.AddSingleton<ToolFunctionService>();
+            builder.Services.AddSingleton<ContextManagerService>();
             builder.Services.AddHostedService(provider => provider.GetRequiredService<ClientService>());
 
             builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
