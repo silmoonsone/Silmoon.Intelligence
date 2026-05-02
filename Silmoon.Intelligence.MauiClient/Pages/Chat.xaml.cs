@@ -153,39 +153,33 @@ public partial class ChatViewModel : ObservableObject
         };
     }
 
-    private async Task<ConcurrentDictionary<string, ToolCallResult>> NativeChatClient_OnToolCallCompleted(ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+    private async Task<ToolCallResult> NativeChatClient_OnToolCallCompleted(ToolCallResult toolCallResult)
     {
         var lastChatItem = Items.LastOrDefault();
 
-        foreach (var toolCallResult in toolCallResults.Values)
-        {
-            if (toolCallResult.Result.State) lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
-            else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
-        }
-        return await Task.FromResult(toolCallResults);
+        if (toolCallResult.Result.State) lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
+        else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
+        return await Task.FromResult(toolCallResult);
     }
-    private async Task<List<ToolCallResult>> NativeChatClient_OnToolCallStart(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+    private async Task<ToolCallResult> NativeChatClient_OnToolCallStart(ToolCallParameter toolCallParameter, ToolCallResult toolCallResults)
     {
         var lastChatItem = Items.LastOrDefault();
 
-        List<ToolCallResult> results = [];
+        ToolCallResult result = null;
 
-        foreach (var parameter in toolCallParameters)
+        var functionName = toolCallParameter.FunctionName;
+        var parameters = toolCallParameter.Parameters;
+
+        lastChatItem.Content += $"[TOOL CALL] {functionName}\r\n";
+        switch (functionName)
         {
-            var functionName = parameter.FunctionName;
-            var parameters = parameter.Parameters;
-
-            lastChatItem.Content += $"[TOOL CALL] {functionName}\r\n";
-            switch (functionName)
-            {
-                case "ToolCallTestTool":
-                    results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！")));
-                    break;
-                default:
-                    break;
-            }
+            case "ToolCallTestTool":
+                result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！"));
+                break;
+            default:
+                break;
         }
-        return results;
+        return result;
     }
     private Task NativeChatClient_OnStreamOutputCompleted(Result result)
     {

@@ -45,13 +45,13 @@ namespace Silmoon.Intelligence
             return Task.CompletedTask;
         }
 
-        private async Task<ConcurrentDictionary<string, ToolCallResult>> NativeChatClient_OnToolCallCompleted(ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+        private async Task<ToolCallResult> NativeChatClient_OnToolCallCompleted(ToolCallResult toolCallResult)
         {
-            return await (ToolCallCompletedHandler?.Invoke(toolCallResults) ?? Task.FromResult(toolCallResults));
+            return await (ToolCallCompletedHandler?.Invoke(toolCallResult) ?? Task.FromResult(toolCallResult));
         }
-        private async Task<List<ToolCallResult>> NativeChatClient_OnToolCallStart(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+        private async Task<ToolCallResult> NativeChatClient_OnToolCallStart(ToolCallParameter toolCallParameter, ToolCallResult toolCallResults)
         {
-            return await (ToolCallStartHandler?.Invoke(toolCallParameters, toolCallResults) ?? Task.FromResult<List<ToolCallResult>>(null));
+            return await (ToolCallStartHandler?.Invoke(toolCallParameter, toolCallResults) ?? Task.FromResult<ToolCallResult>(null));
         }
 
         public async Task<Result> Chat(string input)

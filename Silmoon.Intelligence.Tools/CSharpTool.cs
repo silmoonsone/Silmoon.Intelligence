@@ -102,26 +102,22 @@ namespace Silmoon.Intelligence.Tools
             ];
         }
 
-        public override async Task<List<ToolCallResult>> OnToolCallInvoke(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+        public override async Task<ToolCallResult> OnToolCallInvoke(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
         {
-            List<ToolCallResult> results = [];
-
-            foreach (var parameter in toolCallParameters)
+            ToolCallResult result = null;
+            var functionName = toolCallParameter.FunctionName;
+            var parameters = toolCallParameter.Parameters;
+            switch (functionName)
             {
-                var functionName = parameter.FunctionName;
-                var parameters = parameter.Parameters;
-                switch (functionName)
-                {
-                    case "RunCSharpCode":
-                        string code = parameters["code"]?.ToString() ?? string.Empty;
-                        string output = ExecuteCSharpCode(code);
-                        results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>(output)));
-                        break;
-                    default:
-                        break;
-                }
+                case "RunCSharpCode":
+                    string code = parameters["code"]?.ToString() ?? string.Empty;
+                    string output = ExecuteCSharpCode(code);
+                    result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>(output));
+                    break;
+                default:
+                    break;
             }
-            return results;
+            return result;
         }
 
         static string ExecuteCSharpCode(string code)

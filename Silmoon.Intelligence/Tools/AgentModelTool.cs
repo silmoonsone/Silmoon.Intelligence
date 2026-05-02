@@ -116,70 +116,62 @@ namespace Silmoon.Intelligence.Tools
             ];
         }
 
-        public override async Task<List<ToolCallResult>> OnToolCallInvoke(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+        public override async Task<ToolCallResult> OnToolCallInvoke(ToolCallParameter toolCallParameters, ToolCallResult toolCallResults)
         {
-            ConcurrentBag<ToolCallResult> results = [];
-            List<Task> tasks = [];
+            ToolCallResult result = null;
 
-            foreach (var parameter in toolCallParameters)
+            var functionName = toolCallParameters.FunctionName;
+            var parameters = toolCallParameters.Parameters;
+            switch (functionName)
             {
-                tasks.Add(Task.Run(async () =>
-                {
-                    var functionName = parameter.FunctionName;
-                    var parameters = parameter.Parameters;
-                    switch (functionName)
-                    {
-                        case "GetAgentModelProvidersTool":
-                            results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>(AgentModelManager.GetAgentModelProviders().ToJsonString())));
-                            break;
-                        case "CallSingletonAgentTool":
-                            var askResult = await AgentModelManager.CallSingletonAgent(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>(), parameters["content"]?.Value<string>(), parameters["system"]?.Value<string>(), parameters["reasonContent"]?.Value<bool>() ?? false);
-                            results.Add(ToolCallResult.Create(parameter, askResult.State.ToStateSet(askResult.Data?.ToJsonString(), askResult.Message)));
-                            break;
-                        case "ResetSingletonAgentHistoryTool":
-                            var resetResult = AgentModelManager.ResetSingletonAgentHistory(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>());
-                            results.Add(ToolCallResult.Create(parameter, resetResult.State.ToStateSet<string>(null, resetResult.Message)));
-                            break;
-                        case "GetWorkerAgentsTool":
-                            results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>(AgentModelManager.GetWorkerAgentClients().ToJsonString())));
-                            break;
-                        case "GetWorkerAgentTool":
-                            var workerClient = AgentModelManager.GetWorkerAgentClient(parameters["name"]?.Value<string>());
-                            if (workerClient is not null)
-                                results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>(workerClient.ToJsonString())));
-                            else
-                                results.Add(ToolCallResult.Create(parameter, false.ToStateSet<string>(null, $"specified worker agent ({parameters["name"]?.Value<string>()}) not found")));
-                            break;
-                        case "CreateWorkerAgentTool":
-                            var createResult = AgentModelManager.CreateWorkerAgent(
-                                parameters["providerName"]?.Value<string>(),
-                                parameters["modelName"]?.Value<string>(),
-                                parameters["name"]?.Value<string>(),
-                                parameters["roleMandate"]?.Value<string>(),
-                                parameters["systemPrompt"]?.Value<string>());
-                            results.Add(ToolCallResult.Create(parameter, createResult.State.ToStateSet(createResult.Data?.ToJsonString(), createResult.Message)));
-                            break;
-                        case "CallWorkerAgentTool":
-                            var callWorkerResult = await AgentModelManager.CallWorkerAgent(
-                                parameters["name"]?.Value<string>(),
-                                parameters["content"]?.Value<string>());
-                            results.Add(ToolCallResult.Create(parameter, callWorkerResult.State.ToStateSet(callWorkerResult.Data?.ToJsonString(), callWorkerResult.Message)));
-                            break;
-                        case "ResetWorkerAgentHistoryTool":
-                            var resetWorkerResult = AgentModelManager.ResetWorkerAgentHistory(parameters["name"]?.Value<string>());
-                            results.Add(ToolCallResult.Create(parameter, resetWorkerResult.State.ToStateSet<string>(null, resetWorkerResult.Message)));
-                            break;
-                        case "RemoveWorkerAgentTool":
-                            var removeWorkerResult = AgentModelManager.RemoveWorkerAgent(parameters["name"]?.Value<string>());
-                            results.Add(ToolCallResult.Create(parameter, removeWorkerResult.State.ToStateSet<string>(null, removeWorkerResult.Message)));
-                            break;
-                        default:
-                            break;
-                    }
-                }));
+                case "GetAgentModelProvidersTool":
+                    result = ToolCallResult.Create(toolCallParameters, true.ToStateSet<string>(AgentModelManager.GetAgentModelProviders().ToJsonString()));
+                    break;
+                case "CallSingletonAgentTool":
+                    var askResult = await AgentModelManager.CallSingletonAgent(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>(), parameters["content"]?.Value<string>(), parameters["system"]?.Value<string>(), parameters["reasonContent"]?.Value<bool>() ?? false);
+                    result = ToolCallResult.Create(toolCallParameters, askResult.State.ToStateSet(askResult.Data?.ToJsonString(), askResult.Message));
+                    break;
+                case "ResetSingletonAgentHistoryTool":
+                    var resetResult = AgentModelManager.ResetSingletonAgentHistory(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>());
+                    result = ToolCallResult.Create(toolCallParameters, resetResult.State.ToStateSet<string>(null, resetResult.Message));
+                    break;
+                case "GetWorkerAgentsTool":
+                    result = ToolCallResult.Create(toolCallParameters, true.ToStateSet<string>(AgentModelManager.GetWorkerAgentClients().ToJsonString()));
+                    break;
+                case "GetWorkerAgentTool":
+                    var workerClient = AgentModelManager.GetWorkerAgentClient(parameters["name"]?.Value<string>());
+                    if (workerClient is not null)
+                        result = ToolCallResult.Create(toolCallParameters, true.ToStateSet<string>(workerClient.ToJsonString()));
+                    else
+                        result = ToolCallResult.Create(toolCallParameters, false.ToStateSet<string>(null, $"specified worker agent ({parameters["name"]?.Value<string>()}) not found"));
+                    break;
+                case "CreateWorkerAgentTool":
+                    var createResult = AgentModelManager.CreateWorkerAgent(
+                        parameters["providerName"]?.Value<string>(),
+                        parameters["modelName"]?.Value<string>(),
+                        parameters["name"]?.Value<string>(),
+                        parameters["roleMandate"]?.Value<string>(),
+                        parameters["systemPrompt"]?.Value<string>());
+                    result = ToolCallResult.Create(toolCallParameters, createResult.State.ToStateSet(createResult.Data?.ToJsonString(), createResult.Message));
+                    break;
+                case "CallWorkerAgentTool":
+                    var callWorkerResult = await AgentModelManager.CallWorkerAgent(
+                        parameters["name"]?.Value<string>(),
+                        parameters["content"]?.Value<string>());
+                    result = ToolCallResult.Create(toolCallParameters, callWorkerResult.State.ToStateSet(callWorkerResult.Data?.ToJsonString(), callWorkerResult.Message));
+                    break;
+                case "ResetWorkerAgentHistoryTool":
+                    var resetWorkerResult = AgentModelManager.ResetWorkerAgentHistory(parameters["name"]?.Value<string>());
+                    result = ToolCallResult.Create(toolCallParameters, resetWorkerResult.State.ToStateSet<string>(null, resetWorkerResult.Message));
+                    break;
+                case "RemoveWorkerAgentTool":
+                    var removeWorkerResult = AgentModelManager.RemoveWorkerAgent(parameters["name"]?.Value<string>());
+                    result = ToolCallResult.Create(toolCallParameters, removeWorkerResult.State.ToStateSet<string>(null, removeWorkerResult.Message));
+                    break;
+                default:
+                    break;
             }
-            await Task.WhenAll(tasks);
-            return [.. results];
+            return result;
         }
     }
 }

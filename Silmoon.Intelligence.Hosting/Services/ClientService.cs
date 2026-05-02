@@ -33,36 +33,17 @@ public class ClientService : IHostedService
         //NativeChatClient.EnableThinking = true;
     }
 
-    private Task<ConcurrentDictionary<string, ToolCallResult>> NativeChatClient_OnToolCallCompleted(ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+    private Task<ToolCallResult> NativeChatClient_OnToolCallCompleted(ToolCallResult toolCallResult)
     {
-        foreach (var toolCallResult in toolCallResults.Values)
-        {
-            if (toolCallResult.Result.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
-            else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
-        }
-        return Task.FromResult(toolCallResults);
+        if (toolCallResult.Result.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
+        else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
+        return Task.FromResult(toolCallResult);
     }
-    private async Task<List<ToolCallResult>> NativeChatClient_OnToolCallStart(ToolCallParameter[] toolCallParameters, ConcurrentDictionary<string, ToolCallResult> toolCallResults)
+    private async Task<ToolCallResult> NativeChatClient_OnToolCallStart(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
     {
-        List<ToolCallResult> results = [];
-
-        foreach (var parameter in toolCallParameters)
-        {
-            var functionName = parameter.FunctionName;
-            var parameters = parameter.Parameters;
-
-            Console.WriteLine();
-            Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);
-            switch (functionName)
-            {
-                case "ToolCallTestTool":
-                    results.Add(ToolCallResult.Create(parameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！")));
-                    break;
-                default:
-                    break;
-            }
-        }
-        return results;
+        if (toolCallParameter.FunctionName == "ToolCallTestTool")
+            return await Task.FromResult(ToolCallResult.Create(toolCallParameter, false.ToStateSet<string>("这是一个工具调用环境测试，正常！")));
+        else return null;
     }
 
     public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
