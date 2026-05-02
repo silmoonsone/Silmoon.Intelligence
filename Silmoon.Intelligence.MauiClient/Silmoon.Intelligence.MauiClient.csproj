@@ -51,42 +51,42 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-android|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-ios|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-maccatalyst|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net10.0-windows10.0.19041.0|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-ios|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-maccatalyst|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-windows10.0.19041.0|AnyCPU'">
-    <ApplicationTitle>Silmoon Intelligence</ApplicationTitle>
+    <ApplicationTitle>人工智障</ApplicationTitle>
     <ApplicationId>com.silmoon.intelligence.mauiclient</ApplicationId>
   </PropertyGroup>
 

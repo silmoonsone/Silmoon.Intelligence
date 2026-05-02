@@ -39,8 +39,7 @@ public partial class Chat : ContentPage
 
     public Task ScrollHistoryToBottomAsync(bool animated = true, bool force = false)
     {
-        if (!force && !shouldAutoScroll)
-            return Task.CompletedTask;
+        if (!force && !shouldAutoScroll) return Task.CompletedTask;
 
         return MainThread.InvokeOnMainThreadAsync(async () =>
         {
@@ -97,10 +96,8 @@ public partial class Chat : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            if (Handler?.PlatformView is not UIView pageView || pageView.Window is null)
-                return;
-            if (InputBar.Handler?.PlatformView is not UIView inputBarView)
-                return;
+            if (Handler?.PlatformView is not UIView pageView || pageView.Window is null) return;
+            if (InputBar.Handler?.PlatformView is not UIView inputBarView) return;
 
             // Convert frames to page-view coordinates, then compute actual overlap with input bar.
             var keyboardFrameInPage = pageView.ConvertRectFromView(args.FrameEnd, null);
@@ -108,6 +105,7 @@ public partial class Chat : ContentPage
             var overlap = Math.Max(0, inputBarFrameInPage.Bottom - keyboardFrameInPage.Top);
             var requiredInset = Math.Max(0, overlap + 2); // keep a tiny visual gap
             RootLayout.Padding = new Thickness(0, 0, 0, requiredInset);
+            await ScrollHistoryToBottomAsync(true, true);
             await Task.CompletedTask;
         });
     }
@@ -141,17 +139,17 @@ public partial class ChatViewModel : ObservableObject
 
         page.Loaded += (sender, e) =>
         {
-            //page.intelligenceService.NativeChatClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
-            //page.intelligenceService.NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
-            //page.intelligenceService.NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
-            //page.intelligenceService.NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
         };
         page.Unloaded += (sender, e) =>
         {
-            //page.intelligenceService.NativeChatClient.OnStreamOutput -= NativeChatClient_OnStreamOutput;
-            //page.intelligenceService.NativeChatClient.OnStreamOutputCompleted -= NativeChatClient_OnStreamOutputCompleted;
-            //page.intelligenceService.NativeChatClient.OnToolCallStart -= NativeChatClient_OnToolCallStart;
-            //page.intelligenceService.NativeChatClient.OnToolCallCompleted -= NativeChatClient_OnToolCallCompleted;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutput -= NativeChatClient_OnStreamOutput;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutputCompleted -= NativeChatClient_OnStreamOutputCompleted;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallStart -= NativeChatClient_OnToolCallStart;
+            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallCompleted -= NativeChatClient_OnToolCallCompleted;
         };
     }
 

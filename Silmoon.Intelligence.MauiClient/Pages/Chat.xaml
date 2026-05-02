@@ -26,7 +26,7 @@
 
         <Grid x:Name="InputBar" Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8" Padding="8">
             <Entry Grid.Column="0" Text="{x:Binding Input}" HorizontalOptions="Fill" />
-            <Button Grid.Column="1" Text="发送" Command="{x:Binding ChatCommand}" IsEnabled="{Binding Input, Converter={StaticResource IsNotNullOrEmptyConvert}}" />
+            <Button Grid.Column="1" Text="发送" Command="{x:Binding ChatCommand}" IsEnabled="{x:Binding Input, Converter={StaticResource IsNotNullOrEmptyConvert}}" />
         </Grid>
     </Grid>
 </ContentPage>

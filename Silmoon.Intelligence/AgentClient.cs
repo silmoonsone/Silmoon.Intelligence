@@ -26,11 +26,11 @@ namespace Silmoon.Intelligence
         public List<MessageContent> History => NativeChatClient.MessageHistory;
         public bool IsBusy { get; set; } = false;
 
-        public AgentClient(ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = "")
+        public AgentClient(ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, bool disableProxy = false)
         {
             Name = name;
             RoleMandate = roleMandate ?? string.Empty;
-            NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}");
+            NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", disableProxy);
             NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
             NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
             NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
