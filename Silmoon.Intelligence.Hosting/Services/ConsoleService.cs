@@ -38,10 +38,25 @@ namespace Silmoon.Intelligence.Hosting.Services
             AgentClient.ToolCallCompletedHandler = ToolCallCompletedHandler;
             AgentClient.StreamOutputAction = StreamOutputAction;
             AgentClient.StreamOutputFinishedAction = StreamOutputFinishedAction;
+            AgentClient.NativeChatClient.ExecuteToolManager.OnToolCallExecuting += ExecuteToolManager_OnToolCallExecuting;
+            AgentClient.NativeChatClient.ExecuteToolManager.OnToolCallExecuted += ExecuteToolManager_OnToolCallExecuted;
 
             _ = StartConsole();
             await Task.CompletedTask;
         }
+
+        private Task ExecuteToolManager_OnToolCallExecuting(ToolCallParameter toolCallParameter)
+        {
+            //Console.WriteLineWithColor($"[EXECUTE EVENT] Tool {toolCallParameter.FunctionName} executing");
+            return Task.CompletedTask;
+        }
+
+        private Task ExecuteToolManager_OnToolCallExecuted(ToolCallResult toolCallResult)
+        {
+            //Console.WriteLineWithColor($"[EXECUTE EVENT] Tool {toolCallResult.Parameter.FunctionName} executed");
+            return Task.CompletedTask;
+        }
+
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             await Task.CompletedTask;

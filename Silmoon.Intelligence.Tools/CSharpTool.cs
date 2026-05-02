@@ -110,9 +110,11 @@ namespace Silmoon.Intelligence.Tools
             switch (functionName)
             {
                 case "RunCSharpCode":
+                    await NotifyToolExecuting(toolCallParameter);
                     string code = parameters["code"]?.ToString() ?? string.Empty;
                     string output = ExecuteCSharpCode(code);
                     result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>(output));
+                    await NotifyToolExecuted(toolCallResult);
                     break;
                 default:
                     break;

@@ -54,7 +54,7 @@ namespace Silmoon.Intelligence
             if (system is not null) nativeChatClient.SystemPrompt = system;
 
             List<Chunk> chunks = [];
-            Console.WriteLineWithColor($"Agent({agentName}) response start:", ConsoleColor.Green, ConsoleColor.Blue);
+            //Console.WriteLineWithColor($"Agent({agentName}) response start:", ConsoleColor.Green, ConsoleColor.Blue);
             await foreach (var chunk in nativeChatClient.CompletionsStreamAsync([MessageContent.Create(Role.User, content)], chunks))
             {
                 if (chunk.State)
@@ -64,15 +64,15 @@ namespace Silmoon.Intelligence
                         if (x.Delta?.ToolCalls is not null) Console.Write(".");
                         else
                         {
-                            Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
-                            Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.White);
+                            //Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
+                            //Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.White);
                         }
                     });
                 }
-                else Console.WriteLineWithColor(chunk.Message);
+                //else Console.WriteLineWithColor(chunk.Message);
             }
-            Console.WriteLine();
-            Console.WriteLineWithColor($"Agent({agentName}) response end:", ConsoleColor.Green, ConsoleColor.Blue);
+            //Console.WriteLine();
+            //Console.WriteLineWithColor($"Agent({agentName}) response end:", ConsoleColor.Green, ConsoleColor.Blue);
 
             return true.ToStateSet(Result.Create([.. chunks], enableThinking));
         }
