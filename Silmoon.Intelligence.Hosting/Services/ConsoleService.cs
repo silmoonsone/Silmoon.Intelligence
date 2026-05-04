@@ -67,7 +67,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             Console.WriteLineWithColor($"[TOOL CALL] {toolCallParameter.FunctionName}", ConsoleColor.Yellow);
 
             if (toolCallParameter.FunctionName == "ToolCallTestTool")
-                return await Task.FromResult(ToolCallResult.Create(toolCallParameter, false.ToStateSet<string>("这是一个工具调用环境测试，正常！")));
+                return await Task.FromResult(ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>("这是一个工具调用环境测试，正常！")));
             else return null;
         }
         async Task<ToolCallResult> ToolCallCompletedHandler(ToolCallResult toolCallResult)
