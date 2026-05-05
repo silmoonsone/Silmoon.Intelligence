@@ -27,6 +27,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 new CSharpTool(),
                 new MemoryTool(nativeChatClient),
                 new AgentModelTool(AgentModelManager),
+                new GithubTool(),
                 ]);
 
             string systemPrompt = SilmoonConfigureService.SystemPrompt;

@@ -26,24 +26,42 @@ public class ClientService : IHostedService
         SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
 
         NativeChatClient = new NativeChatClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, UtilPrompt.ContextPrompt);
-        NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
-        NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
+        NativeChatClient.OnToolCallsStart += NativeChatClient_OnToolCallsStart;
+        NativeChatClient.OnToolExecuting += NativeChatClient_OnToolExecuting;
+        NativeChatClient.OnToolExecuted += NativeChatClient_OnToolExecuted;
+        NativeChatClient.OnToolCallsFinish += NativeChatClient_OnToolCallsFinish;
+
         ContextManagerService.InjectTools(NativeChatClient);
         NativeChatClient.Tools.Add(Tool.Create("ToolCallTestTool", "This is a test tool_calling test tool.", []));
         //NativeChatClient.EnableThinking = true;
     }
 
-    private Task<ToolCallResult> NativeChatClient_OnToolCallCompleted(ToolCallResult toolCallResult)
+    private async Task NativeChatClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
     {
-        if (toolCallResult.Result.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
-        else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
-        return Task.FromResult(toolCallResult);
+        Console.WriteLineWithColor($"[TOOL CALLS] {string.Join(',', toolCallParameters.Select(x => x.FunctionName))}", ConsoleColor.Yellow);
     }
-    private async Task<ToolCallResult> NativeChatClient_OnToolCallStart(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
+    private Task NativeChatClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
     {
-        if (toolCallParameter.FunctionName == "ToolCallTestTool")
-            return await Task.FromResult(ToolCallResult.Create(toolCallParameter, false.ToStateSet<string>("这是一个工具调用环境测试，正常！")));
-        else return null;
+        Console.WriteLineWithColor($"[Tool Executing] ({functionName}) is executing.", ConsoleColor.Cyan);
+        return Task.CompletedTask;
+    }
+    private Task NativeChatClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
+    {
+        if (toolCallResult is not null)
+        {
+            if (toolCallResult.Result.State)
+                Console.WriteLineWithColor($"[Tool Executed] ({functionName}) executed with result: State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
+            else
+                Console.WriteLineWithColor($"[Tool Executed] ({functionName}) executed with result: State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
+        }
+        else
+            Console.WriteLineWithColor($"[Tool Executed] ({functionName}) executed with no any result", ConsoleColor.Red);
+        return Task.CompletedTask;
+    }
+    private Task<ToolCallResult[]> NativeChatClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
+    {
+        Console.WriteLineWithColor($"[TOOL CALLS RESULTS] {string.Join(", ", toolCallParameters.Select(x => $"{x.FunctionName}: {toolCallResults.FirstOrDefault(y => y.Parameter.FunctionName == x.FunctionName)?.Result.State}"))}", ConsoleColor.Yellow);
+        return Task.FromResult(toolCallResults);
     }
 
     public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;

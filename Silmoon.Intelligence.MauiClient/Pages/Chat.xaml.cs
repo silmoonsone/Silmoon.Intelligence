@@ -3,12 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using Silmoon.AI.Models;
 using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI;
 using Silmoon.Extensions;
+using Silmoon.Intelligence.MauiClient.Models;
 using Silmoon.Intelligence.MauiClient.Services;
 using Silmoon.Models;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
-using Silmoon.Intelligence.MauiClient.Models;
 
 
 #if IOS
@@ -132,42 +133,23 @@ public partial class ChatViewModel : ObservableObject
     {
         this.page = page;
         page.Title = $"Chat ({page.intelligenceService.AgentClient.NativeChatClient.ModelName})";
-        page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
-        page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
-        page.intelligenceService.AgentClient.NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
-        page.intelligenceService.AgentClient.NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
+        page.intelligenceService.AgentClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
+        page.intelligenceService.AgentClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
 
-        page.Loaded += (sender, e) =>
-        {
-            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
-            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
-            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallStart += NativeChatClient_OnToolCallStart;
-            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallCompleted += NativeChatClient_OnToolCallCompleted;
-        };
-        page.Unloaded += (sender, e) =>
-        {
-            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutput -= NativeChatClient_OnStreamOutput;
-            //page.intelligenceService.AgentClient.NativeChatClient.OnStreamOutputCompleted -= NativeChatClient_OnStreamOutputCompleted;
-            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallStart -= NativeChatClient_OnToolCallStart;
-            //page.intelligenceService.AgentClient.NativeChatClient.OnToolCallCompleted -= NativeChatClient_OnToolCallCompleted;
-        };
+        page.intelligenceService.AgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart; ;
+        page.intelligenceService.AgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
+        page.intelligenceService.AgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
+        page.intelligenceService.AgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
     }
 
-    private async Task<ToolCallResult> NativeChatClient_OnToolCallCompleted(ToolCallResult toolCallResult)
+    private Task AgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
     {
-        var lastChatItem = Items.LastOrDefault();
-
-        if (toolCallResult.Result.State) lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
-        else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
-        return await Task.FromResult(toolCallResult);
+        throw new NotImplementedException();
     }
-    private async Task<ToolCallResult> NativeChatClient_OnToolCallStart(ToolCallParameter toolCallParameter, ToolCallResult toolCallResults)
+    private Task AgentClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
     {
         var lastChatItem = Items.LastOrDefault();
-
         ToolCallResult result = null;
-
-        var functionName = toolCallParameter.FunctionName;
         var parameters = toolCallParameter.Parameters;
 
         lastChatItem.Content += $"[TOOL CALL] {functionName}\r\n";
@@ -179,21 +161,22 @@ public partial class ChatViewModel : ObservableObject
             default:
                 break;
         }
-        return result;
+        return Task.CompletedTask;
     }
-    private Task NativeChatClient_OnStreamOutputCompleted(Result result)
+    private Task AgentClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
     {
         var lastChatItem = Items.LastOrDefault();
 
-        lastChatItem.Content += $"\r\n[finish {result.FinishReason}]";
-        if (result.FinishReason != "stop")
-        {
-            lastChatItem.Content += "\r\n";
-        }
-        _ = page.ScrollHistoryToBottomAsync();
+        if (toolCallResult.Result.State) lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
+        else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
         return Task.CompletedTask;
     }
-    private void NativeChatClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
+    private Task<ToolCallResult[]> AgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
+    {
+        return Task.FromResult(toolCallResults);
+    }
+
+    private Task NativeChatClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
     {
         if (chunkState.State)
         {
@@ -215,6 +198,19 @@ public partial class ChatViewModel : ObservableObject
             });
             _ = page.ScrollHistoryToBottomAsync(false);
         }
+        return Task.CompletedTask;
+    }
+    private Task NativeChatClient_OnStreamOutputCompleted(Result result)
+    {
+        var lastChatItem = Items.LastOrDefault();
+
+        lastChatItem.Content += $"\r\n[finish {result.FinishReason}]";
+        if (result.FinishReason != "stop")
+        {
+            lastChatItem.Content += "\r\n";
+        }
+        _ = page.ScrollHistoryToBottomAsync();
+        return Task.CompletedTask;
     }
 
 

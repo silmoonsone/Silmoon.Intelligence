@@ -125,29 +125,29 @@ namespace Silmoon.Intelligence.Tools
             switch (functionName)
             {
                 case "GetAgentModelProvidersTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>(AgentModelManager.GetAgentModelProviders().ToJsonString()));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case "CallSingletonAgentTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     var askResult = await AgentModelManager.CallSingletonAgent(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>(), parameters["content"]?.Value<string>(), parameters["system"]?.Value<string>(), parameters["reasonContent"]?.Value<bool>() ?? false);
                     result = ToolCallResult.Create(toolCallParameter, askResult.State.ToStateSet(askResult.Data?.ToJsonString(), askResult.Message));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case "ResetSingletonAgentHistoryTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     var resetResult = AgentModelManager.ResetSingletonAgentHistory(parameters["providerName"]?.Value<string>(), parameters["modelName"]?.Value<string>());
                     result = ToolCallResult.Create(toolCallParameter, resetResult.State.ToStateSet<string>(null, resetResult.Message));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case "GetWorkerAgentsTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>(AgentModelManager.GetWorkerAgentClients().ToJsonString()));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case "GetWorkerAgentTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     var workerClient = AgentModelManager.GetWorkerAgentClient(parameters["name"]?.Value<string>());
                     if (workerClient is not null)
                         result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>(workerClient.ToJsonString()));
@@ -155,7 +155,7 @@ namespace Silmoon.Intelligence.Tools
                         result = ToolCallResult.Create(toolCallParameter, false.ToStateSet<string>(null, $"specified worker agent ({parameters["name"]?.Value<string>()}) not found"));
                     break;
                 case "CreateWorkerAgentTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     var createResult = AgentModelManager.CreateWorkerAgent(
                         parameters["providerName"]?.Value<string>(),
                         parameters["modelName"]?.Value<string>(),
@@ -163,27 +163,27 @@ namespace Silmoon.Intelligence.Tools
                         parameters["roleMandate"]?.Value<string>(),
                         parameters["systemPrompt"]?.Value<string>());
                     result = ToolCallResult.Create(toolCallParameter, createResult.State.ToStateSet(createResult.Data?.ToJsonString(), createResult.Message));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case "CallWorkerAgentTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     var callWorkerResult = await AgentModelManager.CallWorkerAgent(
                         parameters["name"]?.Value<string>(),
                         parameters["content"]?.Value<string>());
                     result = ToolCallResult.Create(toolCallParameter, callWorkerResult.State.ToStateSet(callWorkerResult.Data?.ToJsonString(), callWorkerResult.Message));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case "ResetWorkerAgentHistoryTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     var resetWorkerResult = AgentModelManager.ResetWorkerAgentHistory(parameters["name"]?.Value<string>());
                     result = ToolCallResult.Create(toolCallParameter, resetWorkerResult.State.ToStateSet<string>(null, resetWorkerResult.Message));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case "RemoveWorkerAgentTool":
-                    await NotifyToolExecuting(toolCallParameter);
+                    await NotifyToolExecuting(functionName, toolCallParameter);
                     var removeWorkerResult = AgentModelManager.RemoveWorkerAgent(parameters["name"]?.Value<string>());
                     result = ToolCallResult.Create(toolCallParameter, removeWorkerResult.State.ToStateSet<string>(null, removeWorkerResult.Message));
-                    await NotifyToolExecuted(result);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 default:
                     break;

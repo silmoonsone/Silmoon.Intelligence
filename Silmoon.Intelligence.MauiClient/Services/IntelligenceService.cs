@@ -16,7 +16,6 @@ namespace Silmoon.Intelligence.MauiClient.Services
 {
     public class IntelligenceService : IHostedService
     {
-        public event Action<StateSet<bool, Chunk>> OnStreamOutput;
         public AgentClient AgentClient { get; set; }
         ContextManagerService ContextManagerService { get; set; }
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
@@ -37,10 +36,11 @@ namespace Silmoon.Intelligence.MauiClient.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            AgentClient.ToolCallStartHandler = ToolCallStartHandler;
-            AgentClient.ToolCallCompletedHandler = ToolCallCompletedHandler;
-            AgentClient.StreamOutputAction = StreamOutputAction;
-            AgentClient.StreamOutputFinishedAction = StreamOutputFinishedAction;
+            AgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart;
+            AgentClient.OnToolCallInvoke += AgentClient_OnToolCallInvoke;
+            AgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
+            AgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
+            AgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
 
             await Task.CompletedTask;
         }
@@ -49,52 +49,35 @@ namespace Silmoon.Intelligence.MauiClient.Services
             await Task.CompletedTask;
         }
 
-        async Task<ToolCallResult> ToolCallStartHandler(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
+        private async Task<ToolCallResult> AgentClient_OnToolCallInvoke(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
         {
-            ToolCallResult result = null;
+            //Console.WriteLineWithColor($"[TOOL CALL] {toolCallParameter.FunctionName}", ConsoleColor.Cyan);
 
-            var functionName = toolCallParameter.FunctionName;
-            var parameters = toolCallParameter.Parameters;
-
-            Console.WriteLineWithColor($"[TOOL CALL] {functionName}", ConsoleColor.Yellow);
-            switch (functionName)
-            {
-                case "ToolCallTestTool":
-                    result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！"));
-                    break;
-                default:
-                    break;
-            }
-            return result;
+            if (toolCallParameter.FunctionName == "ToolCallTestTool")
+                return await Task.FromResult(ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>("这是一个工具调用环境测试，正常！")));
+            else return null;
         }
-        async Task<ToolCallResult> ToolCallCompletedHandler(ToolCallResult toolCallResult)
+        private async Task AgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
         {
-            if (toolCallResult.Result.State) Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
-            else Console.WriteLineWithColor($"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
-            return await Task.FromResult(toolCallResult);
+            Console.WriteLineWithColor($"[TOOL CALLS] {string.Join(',', toolCallParameters.Select(x => x.FunctionName))}", ConsoleColor.Yellow);
         }
-        void StreamOutputAction(StateSet<bool, Chunk> chunk)
+        private Task AgentClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
         {
-            OnStreamOutput?.Invoke(chunk);
-            if (chunk.State)
-            {
-                chunk.Data.Choices.Each(x =>
-                {
-                    if (x.Delta?.ToolCalls is not null) Console.Write(".");
-                    else
-                    {
-                        Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
-                        Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.White);
-                    }
-                });
-            }
-            else Console.WriteLineWithColor(chunk.Message, ConsoleColor.Red);
-
+            Console.WriteLineWithColor($"Tool[{functionName}] is executing.", ConsoleColor.Cyan);
+            return Task.CompletedTask;
         }
-        void StreamOutputFinishedAction(Result result)
+        private Task AgentClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
         {
-            Console.WriteLine();
-            Console.WriteLine("stop reason: " + result.FinishReason);
+            if (toolCallResult.Result.State)
+                Console.WriteLineWithColor($"Tool[{functionName}] executed with result: State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Cyan);
+            else
+                Console.WriteLineWithColor($"Tool[{functionName}] executed with result: State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}", ConsoleColor.Red);
+            return Task.CompletedTask;
+        }
+        private Task<ToolCallResult[]> AgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
+        {
+            Console.WriteLineWithColor($"[TOOL CALLS RESULTS] {string.Join(", ", toolCallResults.Select(x => $"{x.Parameter.FunctionName}: {x.Result.State}"))}", ConsoleColor.Yellow);
+            return Task.FromResult(toolCallResults);
         }
 
         public async Task<Result> Input(string input)
