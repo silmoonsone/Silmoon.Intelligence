@@ -21,6 +21,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         public void InjectTools(NativeChatClient nativeChatClient)
         {
             nativeChatClient.ExecuteToolManager.AddExecuteTools([
+                new WorldStateTool(),
                 new FileTool(),
                 new CommandTool(),
                 new WaitTool(),

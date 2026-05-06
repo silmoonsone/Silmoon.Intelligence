@@ -42,8 +42,7 @@ namespace Silmoon.Intelligence
             NativeChatClient.OnToolCallsFinish += async (toolCallParameters, toolCallResults) => await (OnToolCallsFinish is null ? Task.FromResult<ToolCallResult[]>(null) : OnToolCallsFinish.Invoke(toolCallParameters, toolCallResults));
             NativeChatClient.OnStreamOutput += async (chunk) => await (OnStreamOutput is null ? Task.CompletedTask : OnStreamOutput.Invoke(chunk));
             NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
-            NativeChatClient.Tools.Add(Tool.Create("ToolCallTestTool", "This is a test tool_calling test tool.", []));
-
+            NativeChatClient.Tools.Add(Tool.Create("Test_ToolCallTest", "This is a test tool_calling test tool.", []));
         }
 
         private Task NativeChatClient_OnStreamOutputCompleted(Result result)

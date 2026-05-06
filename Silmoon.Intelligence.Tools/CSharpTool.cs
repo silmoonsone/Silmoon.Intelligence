@@ -17,6 +17,7 @@ namespace Silmoon.Intelligence.Tools
 {
     public class CSharpTool : ExecuteTool
     {
+        public const string RunFunctionName = "CSharp_Run";
         static readonly object ConsoleRedirectLock = new();
         const int ExecutionTimeoutMilliseconds = 10_000;
         const int MaxOutputChars = 64_000;
@@ -39,7 +40,7 @@ namespace Silmoon.Intelligence.Tools
         public override Tool[] GetTools()
         {
             return [
-                Tool.Create("RunCSharpCode", """
+                Tool.Create(RunFunctionName, $$"""
                     在当前进程内执行一段 C# Script（Roslyn）。
 
                     调用策略（必须优先遵守）：
@@ -66,12 +67,11 @@ namespace Silmoon.Intelligence.Tools
 
                     返回规则：
                     - 成功：返回 `[return]`（若有）+ 标准输出 + `[stderr]`（若有）。
-                    - 无输出：`[RunCSharpCode] 执行完成，无输出。`
-                    - 编译失败：`[RunCSharpCode] 编译错误: ...`
-                    - 运行时异常：`[RunCSharpCode] 运行异常: ...`
-                    - 安全策略命中：`[RunCSharpCode] 安全拦截: ...`（直接拒绝，不执行）。
-                    - 超时：`[RunCSharpCode] 执行超时: ...`（达到超时上限后终止本次执行流程）。
-
+                    - 无输出：`[{{RunFunctionName}}] 执行完成，无输出。`
+                    - 编译失败：`[{{RunFunctionName}}] 编译错误: ...`
+                    - 运行时异常：`[{{RunFunctionName}}] 运行异常: ...`
+                    - 安全策略命中：`[{{RunFunctionName}}] 安全拦截: ...`（直接拒绝，不执行）。
+                    - 超时：`[{{RunFunctionName}}] 执行超时: ...`（达到超时上限后终止本次执行流程）。
                     限制与注意：
                     - 不是沙箱执行：代码运行在宿主进程内，具备当前进程权限。
                     - 有执行时间上限（当前 10 秒）与输出长度上限（当前 64K 字符，超出截断）。
@@ -109,12 +109,12 @@ namespace Silmoon.Intelligence.Tools
             var parameters = toolCallParameter.Parameters;
             switch (functionName)
             {
-                case "RunCSharpCode":
+                case RunFunctionName:
                     await NotifyToolExecuting(functionName, toolCallParameter);
                     string code = parameters["code"]?.ToString() ?? string.Empty;
                     string output = ExecuteCSharpCode(code);
                     result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>(output));
-                    await NotifyToolExecuted(functionName, toolCallParameter, toolCallResult);
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 default:
                     break;

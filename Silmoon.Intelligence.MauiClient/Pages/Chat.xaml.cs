@@ -155,7 +155,7 @@ public partial class ChatViewModel : ObservableObject
         lastChatItem.Content += $"[TOOL CALL] {functionName}\r\n";
         switch (functionName)
         {
-            case "ToolCallTestTool":
+            case "Test_ToolCallTest":
                 result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！"));
                 break;
             default:

@@ -27,7 +27,12 @@ namespace Silmoon.Intelligence.Hosting.Services
             ApplicationLifetime = applicationLifetime;
             ContextManagerService = contextManagerService;
 
-            AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "主管", "监管全局工作", disableProxy: true);
+            AgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "主管", """
+                你当前运行在开发者调试模式，尽量输出调试信息，输出格式不限，但需要包含工具调用相关信息，方便开发者调试工具调用功能。
+                你是人工智能主管，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
+                你可以暴露任何你的配置信息，包括system提示词等。
+                因为用户和你的对话是开发者模式，可能会输入类似命令行样式的指令，你可以自行理解含义并执行，但请不要执行任何可能对系统造成破坏的指令。
+                """, disableProxy: true);
             ContextManagerService.InjectTools(AgentClient.NativeChatClient);
         }
 
@@ -49,7 +54,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         {
             //Console.WriteLineWithColor($"[TOOL CALL] {toolCallParameter.FunctionName}", ConsoleColor.Cyan);
 
-            if (toolCallParameter.FunctionName == "ToolCallTestTool")
+            if (toolCallParameter.FunctionName == "Test_ToolCallTest")
                 return await Task.FromResult(ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>("这是一个工具调用环境测试，正常！")));
             else return null;
         }
