@@ -156,7 +156,7 @@ public partial class ChatViewModel : ObservableObject
         switch (functionName)
         {
             case "Test_ToolCallTest":
-                result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>($"这是一个工具调用环境测试，正常！"));
+                result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>($"这是一个工具调用环境测试，正常！"));
                 break;
             default:
                 break;

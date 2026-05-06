@@ -64,14 +64,14 @@ namespace Silmoon.Intelligence.Tools
             }
             return result;
         }
-        async Task<StateSet<bool, string>> ListGithubDirectoryEntries(ToolCallParameter toolCallParameter)
+        async Task<StateSet<bool, object>> ListGithubDirectoryEntries(ToolCallParameter toolCallParameter)
         {
             var repository = toolCallParameter.Parameters["repository"]?.ToString()?.Trim();
             var dirPath = toolCallParameter.Parameters["dirPath"]?.ToString()?.Trim();
             var gitRef = toolCallParameter.Parameters["ref"]?.ToString()?.Trim();
 
-            if (!TryValidateRepository(repository, out var repositoryError)) return false.ToStateSet<string>(null, repositoryError);
-            if (!TryValidateDirectoryPath(dirPath, out var dirPathError)) return false.ToStateSet<string>(null, dirPathError);
+            if (!TryValidateRepository(repository, out var repositoryError)) return false.ToStateSet<object>(null, repositoryError);
+            if (!TryValidateDirectoryPath(dirPath, out var dirPathError)) return false.ToStateSet<object>(null, dirPathError);
 
             using HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Silmoon.Intelligence/1.0");
@@ -79,10 +79,10 @@ namespace Silmoon.Intelligence.Tools
             {
                 if (!gitRef.IsNullOrEmpty())
                 {
-                    if (!TryValidateRef(gitRef, out var refError)) return false.ToStateSet<string>(null, refError);
+                    if (!TryValidateRef(gitRef, out var refError)) return false.ToStateSet<object>(null, refError);
                     var explicitRefUrl = BuildContentsApiUrl(repository!, dirPath, gitRef);
                     var explicitRefResponse = await client.GetAsync(explicitRefUrl);
-                    if (!explicitRefResponse.IsSuccessStatusCode) return false.ToStateSet<string>(null, $"GitHub request failed ({(int)explicitRefResponse.StatusCode} {explicitRefResponse.StatusCode}), message: {await explicitRefResponse.Content.ReadAsStringAsync()}.");
+                    if (!explicitRefResponse.IsSuccessStatusCode) return false.ToStateSet<object>(null, $"GitHub request failed ({(int)explicitRefResponse.StatusCode} {explicitRefResponse.StatusCode}), message: {await explicitRefResponse.Content.ReadAsStringAsync()}.");
 
                     var explicitRefJson = await explicitRefResponse.Content.ReadAsStringAsync();
                     return ConvertDirectoryApiResult(explicitRefJson);
@@ -99,32 +99,32 @@ namespace Silmoon.Intelligence.Tools
                         var json = await response.Content.ReadAsStringAsync();
                         return ConvertDirectoryApiResult(json);
                     }
-                    if (response.StatusCode != HttpStatusCode.NotFound) return false.ToStateSet<string>(null, $"GitHub request failed ({(int)response.StatusCode} {response.StatusCode}), message: {await response.Content.ReadAsStringAsync()}.");
+                    if (response.StatusCode != HttpStatusCode.NotFound) return false.ToStateSet<object>(null, $"GitHub request failed ({(int)response.StatusCode} {response.StatusCode}), message: {await response.Content.ReadAsStringAsync()}.");
                 }
 
-                return false.ToStateSet<string>(null, "Directory not found. Tried default branch and common branches (main/master).");
+                return false.ToStateSet<object>(null, "Directory not found. Tried default branch and common branches (main/master).");
             }
             catch (TaskCanceledException)
             {
-                return false.ToStateSet<string>(null, "GitHub request timeout.");
+                return false.ToStateSet<object>(null, "GitHub request timeout.");
             }
             catch (HttpRequestException ex)
             {
-                return false.ToStateSet<string>(null, $"GitHub request error: {ex.Message}");
+                return false.ToStateSet<object>(null, $"GitHub request error: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return false.ToStateSet<string>(null, ex.Message);
+                return false.ToStateSet<object>(null, ex.Message);
             }
         }
-        async Task<StateSet<bool, string>> GetGithubFileContent(ToolCallParameter toolCallParameter)
+        async Task<StateSet<bool, object>> GetGithubFileContent(ToolCallParameter toolCallParameter)
         {
             var repository = toolCallParameter.Parameters["repository"]?.ToString()?.Trim();
             var filePath = toolCallParameter.Parameters["filePath"]?.ToString()?.Trim();
             var gitRef = toolCallParameter.Parameters["ref"]?.ToString()?.Trim();
 
-            if (!TryValidateRepository(repository, out var repositoryError)) return false.ToStateSet<string>(null, repositoryError);
-            if (!TryValidateFilePath(filePath, out var filePathError)) return false.ToStateSet<string>(null, filePathError);
+            if (!TryValidateRepository(repository, out var repositoryError)) return false.ToStateSet<object>(null, repositoryError);
+            if (!TryValidateFilePath(filePath, out var filePathError)) return false.ToStateSet<object>(null, filePathError);
 
             using HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Silmoon.Intelligence/1.0");
@@ -132,14 +132,14 @@ namespace Silmoon.Intelligence.Tools
             {
                 if (!gitRef.IsNullOrEmpty())
                 {
-                    if (!TryValidateRef(gitRef, out var refError)) return false.ToStateSet<string>(null, refError);
+                    if (!TryValidateRef(gitRef, out var refError)) return false.ToStateSet<object>(null, refError);
 
                     var explicitRefUrl = BuildRawContentUrl(repository!, filePath!, gitRef!);
                     var explicitRefResponse = await client.GetAsync(explicitRefUrl);
-                    if (!explicitRefResponse.IsSuccessStatusCode) return false.ToStateSet<string>(null, $"GitHub request failed ({(int)explicitRefResponse.StatusCode} {explicitRefResponse.StatusCode}).");
+                    if (!explicitRefResponse.IsSuccessStatusCode) return false.ToStateSet<object>(null, $"GitHub request failed ({(int)explicitRefResponse.StatusCode} {explicitRefResponse.StatusCode}).");
 
                     var explicitRefContent = await explicitRefResponse.Content.ReadAsStringAsync();
-                    return true.ToStateSet<string>(explicitRefContent);
+                    return true.ToStateSet<object>(explicitRefContent);
                 }
 
                 var candidateRefs = await GetCandidateRefs(client, repository!);
@@ -152,25 +152,25 @@ namespace Silmoon.Intelligence.Tools
                     if (response.IsSuccessStatusCode)
                     {
                         var fileContent = await response.Content.ReadAsStringAsync();
-                        return true.ToStateSet<string>(fileContent);
+                        return true.ToStateSet<object>(fileContent);
                     }
 
-                    if (response.StatusCode != HttpStatusCode.NotFound) return false.ToStateSet<string>(null, $"GitHub request failed ({(int)response.StatusCode} {response.StatusCode}).");
+                    if (response.StatusCode != HttpStatusCode.NotFound) return false.ToStateSet<object>(null, $"GitHub request failed ({(int)response.StatusCode} {response.StatusCode}).");
                 }
 
-                return false.ToStateSet<string>(null, "File not found. Tried default branch and common branches (main/master).");
+                return false.ToStateSet<object>(null, "File not found. Tried default branch and common branches (main/master).");
             }
             catch (TaskCanceledException)
             {
-                return false.ToStateSet<string>(null, "GitHub request timeout.");
+                return false.ToStateSet<object>(null, "GitHub request timeout.");
             }
             catch (HttpRequestException ex)
             {
-                return false.ToStateSet<string>(null, $"GitHub request error: {ex.Message}");
+                return false.ToStateSet<object>(null, $"GitHub request error: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return false.ToStateSet<string>(null, ex.Message);
+                return false.ToStateSet<object>(null, ex.Message);
             }
         }
 
@@ -223,10 +223,10 @@ namespace Silmoon.Intelligence.Tools
             var normalizedDir = dirPath.IsNullOrEmpty() ? string.Empty : string.Join('/', dirPath.Split('/', StringSplitOptions.RemoveEmptyEntries).Select(Uri.EscapeDataString));
             return normalizedDir.IsNullOrEmpty() ? $"https://api.github.com/repos/{encodedOwner}/{encodedRepo}/contents?ref={encodedRef}" : $"https://api.github.com/repos/{encodedOwner}/{encodedRepo}/contents/{normalizedDir}?ref={encodedRef}";
         }
-        static StateSet<bool, string> ConvertDirectoryApiResult(string json)
+        static StateSet<bool, object> ConvertDirectoryApiResult(string json)
         {
             using var doc = JsonDocument.Parse(json);
-            if (doc.RootElement.ValueKind != JsonValueKind.Array) return false.ToStateSet<string>(null, "Specified path is not a directory.");
+            if (doc.RootElement.ValueKind != JsonValueKind.Array) return false.ToStateSet<object>(null, "Specified path is not a directory.");
 
             var items = new List<object>();
             foreach (var item in doc.RootElement.EnumerateArray())
@@ -242,7 +242,7 @@ namespace Silmoon.Intelligence.Tools
                     downloadUrl = item.TryGetProperty("download_url", out var downloadEl) ? downloadEl.GetString() : null
                 });
             }
-            return true.ToStateSet<string>(JsonSerializer.Serialize(items));
+            return true.ToStateSet<object>(items);
         }
 
         static bool TryValidateRepository(string? repository, out string error)

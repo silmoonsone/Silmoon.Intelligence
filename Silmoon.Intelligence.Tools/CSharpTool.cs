@@ -113,7 +113,7 @@ namespace Silmoon.Intelligence.Tools
                     await NotifyToolExecuting(functionName, toolCallParameter);
                     string code = parameters["code"]?.ToString() ?? string.Empty;
                     string output = ExecuteCSharpCode(code);
-                    result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<string>(output));
+                    result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>(output));
                     await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 default:
