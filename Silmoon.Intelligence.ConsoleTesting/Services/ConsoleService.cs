@@ -108,7 +108,7 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                         {
                             case "clear":
                                 IntelligenceService.AgentClient.NativeChatClient.ResetHistory();
-                                Console.WriteLine("Message history cleared.");
+                                Console.WriteLine("历史被清空.");
                                 break;
                             case "exit":
                                 ApplicationLifetime.StopApplication();
@@ -116,6 +116,18 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                             case "getsystemprompt":
                                 Console.WriteLine(IntelligenceService.AgentClient.NativeChatClient.SystemPrompt);
                                 break;
+                            case "back":
+                                Console.WriteLine($"当前消息历史数量：{IntelligenceService.AgentClient.NativeChatClient.MessageHistory.Count}");
+                                IntelligenceService.AgentClient.NativeChatClient.RollbackHistory();
+                                Console.WriteLine($"回退后消息历史数量：{IntelligenceService.AgentClient.NativeChatClient.MessageHistory.Count}");
+                                Console.WriteLine();
+                                break;
+                            case "stat":
+                                Console.WriteLine($"当前消息历史数量：{IntelligenceService.AgentClient.NativeChatClient.MessageHistory.Count}");
+                                break;
+                            //case "re":
+                            //    IntelligenceService.AgentClient.NativeChatClient.CompletionsStreamAsync(IntelligenceService.AgentClient.NativeChatClient.MessageHistory);
+                            //    break;
                             default:
                                 Console.WriteLine($"Unknown command: {command}");
                                 break;
