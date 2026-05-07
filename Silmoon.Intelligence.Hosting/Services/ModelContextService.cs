@@ -9,18 +9,18 @@ using System.Text;
 
 namespace Silmoon.Intelligence.Hosting.Services
 {
-    public class ContextManagerService
+    public class ModelContextService : ModelContextManager
     {
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
         AgentModelManager AgentModelManager { get; set; }
-        public ContextManagerService(ISilmoonConfigureService silmoonConfigureService)
+        public ModelContextService(ISilmoonConfigureService silmoonConfigureService)
         {
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
             AgentModelManager = new AgentModelManager(SilmoonConfigureService.ModelProviders);
         }
         public void InjectTools(NativeChatClient nativeChatClient)
         {
-            nativeChatClient.ExecuteToolManager.AddExecuteTools([
+            AddTools(nativeChatClient, [
                 new WorldStateTool(),
                 new FileTool(),
                 new CommandTool(),
@@ -32,7 +32,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 ]);
 
             string systemPrompt = SilmoonConfigureService.SystemPrompt;
-            if (systemPrompt is not null) nativeChatClient.SystemPrompt += "\r\n" + systemPrompt;
+            if (systemPrompt is not null) nativeChatClient.SystemPrompt = $"{systemPrompt}\r\n{nativeChatClient.SystemPrompt}";
         }
     }
 }

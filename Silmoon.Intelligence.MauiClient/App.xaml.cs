@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Silmoon.Intelligence.MauiClient.Services;
+using Silmoon.Intelligence.Hosting.Services;
 
 namespace Silmoon.Intelligence.MauiClient
 {

@@ -5,6 +5,7 @@ using Silmoon.Intelligence.Hosting.Services;
 using Silmoon.Intelligence.MauiClient.Services;
 using Silmoon.Maui.Platforms.Services;
 using Silmoon.Maui.Services;
+using Silmoon.Intelligence.Hosting.Extensions;
 
 namespace Silmoon.Intelligence.MauiClient
 {
@@ -13,9 +14,7 @@ namespace Silmoon.Intelligence.MauiClient
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
-            builder.Services.AddSingleton<ContextManagerService>();
-            builder.Services.AddSingleton<IntelligenceService>();
-            builder.Services.AddHostedService(provider => provider.GetRequiredService<IntelligenceService>());
+            builder.Services.AddSilmoonIntelligence();
             builder.Services.AddSingleton<IFileService, FileService>();
             builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl, SilmoonConfigureFileReadServiceImpl>(o =>
             {
