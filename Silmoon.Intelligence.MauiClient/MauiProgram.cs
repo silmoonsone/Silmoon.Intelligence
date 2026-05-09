@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Silmoon.Extensions.Hosting.Extensions;
 using FluentIcons.Maui;
+using Silmoon.Extensions.Hosting.Interfaces;
 using Silmoon.Intelligence.Hosting.Services;
 using Silmoon.Intelligence.MauiClient.Services;
 using Silmoon.Maui.Platforms.Services;
@@ -16,7 +17,8 @@ namespace Silmoon.Intelligence.MauiClient
             var builder = MauiApp.CreateBuilder();
             builder.Services.AddSilmoonIntelligence();
             builder.Services.AddSingleton<IFileService, FileService>();
-            builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl, SilmoonConfigureFileReadServiceImpl>(o =>
+            builder.Services.AddSingleton<ISilmoonPlatformDirectoryService, SilmoonPlatformDirectoryServiceImpl>();
+            builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
             {
 #if DEBUG
                 o.DebugConfig();

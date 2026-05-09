@@ -7,10 +7,17 @@ using System.Text;
 
 namespace Silmoon.Intelligence.MauiClient.Services
 {
-    public class SilmoonConfigureFileReadServiceImpl : ISilmoonConfigureFileReadService
+    public class SilmoonPlatformDirectoryServiceImpl : ISilmoonPlatformDirectoryService
     {
         IFileService FileService { get; set; }
-        public SilmoonConfigureFileReadServiceImpl(IFileService fileService)
+
+        public string AppConfigDirectory => FileSystem.AppDataDirectory;
+
+        public string AppDataDirectory => FileSystem.AppDataDirectory;
+
+        public string AppWorkingDirectory => FileSystem.AppDataDirectory;
+
+        public SilmoonPlatformDirectoryServiceImpl(IFileService fileService)
         {
             FileService = fileService;
             FileService.CopyResourceRawFilesToAppData([
@@ -19,15 +26,6 @@ namespace Silmoon.Intelligence.MauiClient.Services
                 ("config.debug.json", true),
                 ("config.local.debug.json", true),
             ]).Wait();
-        }
-        public string GetFileContent(string filePath)
-        {
-            var content = File.ReadAllText(Path.Combine(FileSystem.AppDataDirectory, filePath));
-            return content;
-        }
-        public bool FileExists(string filePath)
-        {
-            return File.Exists(Path.Combine(FileSystem.AppDataDirectory, filePath));
         }
     }
 }

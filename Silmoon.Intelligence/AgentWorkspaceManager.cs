@@ -16,12 +16,12 @@ namespace Silmoon.Intelligence
         public AgentWorkspaceManager(string workspaceDirectory = "workspace")
         {
             WorkspaceDirectory = Path.Combine(AppContext.BaseDirectory, workspaceDirectory);
-            FileSystemExtension.CreateDirectory(WorkspaceDirectory);
+            Directory.CreateDirectoryRecursive(WorkspaceDirectory);
 
             MainAgentMemoryDirectory = Path.Combine(WorkspaceDirectory, "MainAgentMemory");
-            FileSystemExtension.CreateDirectory(MainAgentMemoryDirectory);
+            Directory.CreateDirectoryRecursive(MainAgentMemoryDirectory);
 
-            MainAgentChatHistoryFile = Path.Combine(WorkspaceDirectory, "MainAgentChatHistory.json");
+            MainAgentChatHistoryFile = Path.Combine(MainAgentMemoryDirectory, "MainAgentChatHistory.json");
             if (File.Exists(MainAgentChatHistoryFile)) LoadMainAgentChatHistory();
         }
         public List<MessageContent> LoadMainAgentChatHistory()

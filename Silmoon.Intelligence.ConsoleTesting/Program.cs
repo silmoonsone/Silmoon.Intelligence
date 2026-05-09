@@ -10,8 +10,8 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSilmoonIntelligence();
 builder.Services.AddSingleton<ConsoleService>();
+builder.Services.AddSingleton<ISilmoonPlatformDirectoryService, SilmoonPlatformDirectoryServiceImpl>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<ConsoleService>());
-
 builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
 {
 #if DEBUG

@@ -129,7 +129,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="FluentIcons.Maui" Version="2.1.325" />
+    <PackageReference Include="FluentIcons.Maui" Version="2.1.326" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.60" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
   </ItemGroup>

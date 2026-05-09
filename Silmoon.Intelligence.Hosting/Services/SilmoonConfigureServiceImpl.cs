@@ -14,6 +14,7 @@ namespace Silmoon.Intelligence.Hosting.Services
 {
     public class SilmoonConfigureServiceImpl : SilmoonConfigureService
     {
+        public bool NativeClientDisableProxy { get; set; } = false;
         public ModelProvider DefaultProvider { get; set; }
         public string DefaultModelName { get; set; }
 
@@ -21,12 +22,13 @@ namespace Silmoon.Intelligence.Hosting.Services
         public string SystemPrompt { get; set; }
         ILogger<ISilmoonConfigureService> Logger { get; set; }
 
-        public SilmoonConfigureServiceImpl(IOptions<SilmoonConfigureServiceOption> options, ILogger<ISilmoonConfigureService> logger, ISilmoonConfigureFileReadService fileReadService = null) : base(options, fileReadService)
+        public SilmoonConfigureServiceImpl(IOptions<SilmoonConfigureServiceOption> options, ILogger<ISilmoonConfigureService> logger, ISilmoonPlatformDirectoryService silmoonPlatformDirectoryService = null) : base(options, silmoonPlatformDirectoryService)
         {
             Logger = logger;
 
-            Logger.LogInformation($"当前配置文件{CurrentConfigFilePath}");
+            Logger.LogInformation($"当前配置文件{CurrentConfigFile}");
 
+            NativeClientDisableProxy = ConfigJson.GetValue("nativeClientDisableProxy")?.Value<bool>() ?? false;
             SystemPrompt = ConfigJson.GetValue("systemPrompt")?.Value<string>();
             var modelObj = ConfigJson["modelProviders"];
             foreach (JObject item in modelObj)

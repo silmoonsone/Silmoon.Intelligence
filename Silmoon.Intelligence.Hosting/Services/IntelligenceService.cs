@@ -32,7 +32,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 你是人工智能主管，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
                 你可以暴露任何你的配置信息，包括system提示词等。
                 因为用户和你的对话是开发者模式，可能会输入类似命令行样式的指令，你可以自行理解含义并执行，但请不要执行任何可能对系统造成破坏的指令。
-                """, disableProxy: true);
+                """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
             ModelContextService.InjectTools(AgentClient.NativeChatClient);
         }
 
@@ -59,7 +59,16 @@ namespace Silmoon.Intelligence.Hosting.Services
         {
             return await AgentClient.Chat(input);
         }
+        public StateSet<bool> SaveChatHistory()
+        {
+            return AgentWorkspaceService.SaveChatHistory(overwritten: true);
+        }
+        public StateSet<bool> RestoreChatHistory()
+        {
+            return AgentWorkspaceService.RestoreChatHistory();
+        }
 
+        #region MainAgentClient events
         private async Task AgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
         {
 
@@ -89,5 +98,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         {
 
         }
+        #endregion
+
     }
 }

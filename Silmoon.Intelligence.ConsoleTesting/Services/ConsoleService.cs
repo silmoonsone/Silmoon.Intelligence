@@ -125,6 +125,15 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                             case "stat":
                                 Console.WriteLine($"当前消息历史数量：{IntelligenceService.AgentClient.NativeChatClient.MessageHistory.Count}");
                                 break;
+                            case "save":
+                                Console.WriteLine($"Save reuslt: {IntelligenceService.SaveChatHistory().ToJsonString()}");
+                                break;
+                            case "restore":
+                                Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatHistory().ToJsonString()}");
+                                Console.WriteLine($"Last message:");
+                                Console.WriteLine($"user: {IntelligenceService.AgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.Content}");
+                                Console.WriteLine($"assistant: {IntelligenceService.AgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.Content}");
+                                break;
                             //case "re":
                             //    IntelligenceService.AgentClient.NativeChatClient.CompletionsStreamAsync(IntelligenceService.AgentClient.NativeChatClient.MessageHistory);
                             //    break;
