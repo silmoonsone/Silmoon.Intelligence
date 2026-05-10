@@ -18,10 +18,10 @@ namespace Silmoon.Intelligence
             WorkspaceDirectory = Path.Combine(AppContext.BaseDirectory, workspaceDirectory);
             Directory.CreateDirectoryRecursive(WorkspaceDirectory);
 
-            MainAgentMemoryDirectory = Path.Combine(WorkspaceDirectory, "MainAgentMemory");
+            MainAgentMemoryDirectory = Path.Combine(WorkspaceDirectory, "main_agent_memories");
             Directory.CreateDirectoryRecursive(MainAgentMemoryDirectory);
 
-            MainAgentChatHistoryFile = Path.Combine(MainAgentMemoryDirectory, "MainAgentChatHistory.json");
+            MainAgentChatHistoryFile = Path.Combine(MainAgentMemoryDirectory, "main_agent_chat_history.json");
             if (File.Exists(MainAgentChatHistoryFile)) LoadMainAgentChatHistory();
         }
         public List<MessageContent> LoadMainAgentChatHistory()
@@ -36,7 +36,7 @@ namespace Silmoon.Intelligence
         }
         public List<MessageContent> LoadAgentChatHistory(string agentName)
         {
-            var chatHistoryPath = Path.Combine(MainAgentChatHistoryFile, $"{agentName}_chat_history.json");
+            var chatHistoryPath = Path.Combine(MainAgentMemoryDirectory, $"{agentName}_chat_history.json");
             if (File.Exists(chatHistoryPath))
             {
                 var jsons = JsonHelperV2.LoadJsonFromFile<JArray>(chatHistoryPath);

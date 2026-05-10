@@ -1,4 +1,8 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Newtonsoft.Json.Linq;
 using Silmoon.AI.Models;
@@ -32,9 +36,15 @@ namespace Silmoon.Intelligence.Tools
             (new Regex(@"\bUnmanagedCallersOnly\b", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止使用 UnmanagedCallersOnly。"),
             (new Regex(@"\bTcpListener\b|\bSocket\b\s*\.\s*(Bind|Listen|Accept)\b|\bHttpListener\b|\bKestrel\b", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止监听端口或创建服务化守护能力。"),
             (new Regex(@"\bwhile\s*\(\s*true\s*\)|\bfor\s*\(\s*;\s*;\s*\)", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止明显的无限循环。"),
-            (new Regex(@"\b(HttpClient|WebClient|HttpResponseMessage)\b[^\n\r;]*\b(GetByteArrayAsync|ReadAsByteArrayAsync)\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止直接整块下载二进制内容（无大小上限）。"),
+            (new Regex(@"(?s)\b(HttpClient|WebClient|HttpResponseMessage)\b.{0,480}?\b(GetByteArrayAsync|ReadAsByteArrayAsync)\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止直接整块下载二进制内容（无大小上限）。"),
+            (new Regex(@"\b(GetByteArrayAsync|ReadAsByteArrayAsync)\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止直接整块下载二进制内容（无大小上限）。"),
             (new Regex(@"\bWebClient\s*\.\s*Download(File|FileTaskAsync|Data|DataTaskAsync)\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止使用 WebClient.Download* 进行无上限下载。"),
             (new Regex(@"\bFile\s*\.\s*WriteAllBytes\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止直接写入未知大小二进制文件。"),
+            (new Regex(@"\bRegistry\s*\.\s*SetValue\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止通过 Registry.SetValue 写入注册表。"),
+            (new Regex(@"\bRegistry\s*\.\s*(CurrentUser|LocalMachine|Users|ClassesRoot|CurrentConfig)\s*\.\s*(CreateSubKey|DeleteSubKey|DeleteSubKeyTree|SetValue|DeleteValue)\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止通过注册表根键进行创建/写入/删除操作。"),
+            (new Regex(@"\bOpenSubKey\s*\([^)]*,\s*true\s*\)", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止以可写方式打开注册表项（持久化/篡改风险）。"),
+            (new Regex(@"\bAssembly\s*\.\s*LoadFrom\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止 Assembly.LoadFrom 加载磁盘上的任意程序集。"),
+            (new Regex(@"\bAssembly\s*\.\s*LoadFile\s*\(", RegexOptions.IgnoreCase | RegexOptions.Compiled), "禁止 Assembly.LoadFile 加载任意路径程序集。"),
         ];
 
         public override Tool[] GetTools()
@@ -56,8 +66,11 @@ namespace Silmoon.Intelligence.Tools
 
                     语法关键规则（高频踩坑）：
                     - `using` 指令（如 `using System.Net;`）必须放在脚本最顶部。
-                    - `using var ...` / `using (...) { ... }`（资源管理语句）可以放在代码块内部。
+                    - `using var ...`（C# 8+）与 `using (...) { ... }`（资源管理语句）可以放在代码块内部；脚本语言版本已对齐为较新的 C#，一般可直接使用 `using var`。
                     - 不要在执行语句中途再写 `using 命名空间;`，否则可能出现 `CS1002` 等编译错误。
+
+                    安全预检说明：
+                    - 危险 API 匹配在“去掉字符串与注释字面内容”后的代码上进行，避免仅在文案/示例字符串中出现敏感词时被误拦截。
 
                     默认可用命名空间：
                     - System
@@ -82,9 +95,10 @@ namespace Silmoon.Intelligence.Tools
                     - 严禁终止/破坏宿主进程或系统稳定性：禁止 `Environment.Exit(...)`、`FailFast(...)`、`Process.Kill(...)`、向当前/其他进程发送终止信号等。
                     - 严禁进程与命令执行能力：禁止使用 `System.Diagnostics.Process`（包括启动外部程序、shell 命令、脚本解释器、powershell/cmd/bash 等）。
                     - 严禁原生代码互操作与系统 API 直连：禁止 Win32/Native DLL 调用（P/Invoke），包括但不限于 `[DllImport]`、`LibraryImport`、`Marshal` 获取函数指针、`NativeLibrary.Load/GetExport`、`UnmanagedCallersOnly` 等。
-                    - 严禁反射绕过与动态加载攻击：禁止加载未知程序集、篡改运行时环境、注入或执行来源不明代码。
+                    - 严禁反射绕过与动态加载攻击：禁止加载未知程序集、篡改运行时环境、注入或执行来源不明代码；工具层额外拦截 `Assembly.LoadFrom` / `LoadFile` 等按路径加载程序集的方式。
                     - 严禁 `unsafe` 指针代码、内存读写越界、以及任何试图绕过托管运行时安全边界的行为。
                     - 严禁破坏性文件/系统操作：禁止批量删除、覆盖关键文件、修改系统配置、注册表/服务等高风险行为。
+                    - 注册表写入类能力默认拦截：`Registry.SetValue`、根键上的 `CreateSubKey`/`SetValue`/`Delete*`、以及 `OpenSubKey(..., true)` 可写打开等（读取未禁止的 API 仍可能受系统权限影响）。
                     - 严禁创建服务化/守护型能力：禁止监听 Socket/端口（如 `TcpListener`、`Socket.Bind/Listen`、WebServer/Kestrel 自建监听）、禁止常驻后台任务与无限循环保活。
                     - 代码必须是一次性任务：应从开始执行到结束并返回结果，不得设计为长期驻留、阻塞等待连接、或“永不退出”。
                     - 代码应关注内存与资源回收：避免超大对象、一次性加载超大数据、无界集合增长；使用后及时释放可释放资源（`using`/`Dispose`）。
@@ -141,6 +155,7 @@ namespace Silmoon.Intelligence.Tools
                     Console.SetError(errorWriter);
 
                     var options = ScriptOptions.Default
+                        .WithLanguageVersion(LanguageVersion.Latest)
                         .WithReferences(AppDomain.CurrentDomain.GetAssemblies()
                         .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location)))
                         .WithImports("System", "System.IO", "System.Linq", "System.Collections.Generic");
@@ -190,15 +205,101 @@ namespace Silmoon.Intelligence.Tools
 
         static bool TryRejectUnsafeCode(string code, out string message)
         {
+            var scanTarget = MaskLiteralsAndCommentsForSafetyScan(code);
             foreach (var (pattern, reason) in SafetyRules)
             {
-                if (!pattern.IsMatch(code)) continue;
+                if (!pattern.IsMatch(scanTarget)) continue;
                 message = $"[RunCSharpCode] 安全拦截: {reason}";
                 return true;
             }
 
             message = string.Empty;
             return false;
+        }
+
+        static string MaskLiteralsAndCommentsForSafetyScan(string code)
+        {
+            if (string.IsNullOrEmpty(code)) return code;
+
+            SyntaxTree tree;
+            try
+            {
+                tree = CSharpSyntaxTree.ParseText(
+                    code,
+                    new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.Parse, SourceCodeKind.Script));
+            }
+            catch
+            {
+                return code;
+            }
+
+            SyntaxNode root;
+            try
+            {
+                root = tree.GetRoot();
+            }
+            catch
+            {
+                return code;
+            }
+
+            var spans = new List<TextSpan>();
+
+            foreach (var trivia in root.DescendantTrivia(descendIntoTrivia: true))
+            {
+                if (trivia.IsKind(SyntaxKind.SingleLineCommentTrivia)
+                    || trivia.IsKind(SyntaxKind.MultiLineCommentTrivia)
+                    || trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia)
+                    || trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia))
+                {
+                    spans.Add(trivia.Span);
+                }
+            }
+
+            foreach (var node in root.DescendantNodes())
+            {
+                switch (node)
+                {
+                    case LiteralExpressionSyntax lit:
+                    {
+                        var k = lit.Kind();
+                        if (k is SyntaxKind.StringLiteralExpression or SyntaxKind.CharacterLiteralExpression or SyntaxKind.Utf8StringLiteralExpression)
+                            spans.Add(lit.Span);
+                        break;
+                    }
+                    case InterpolatedStringExpressionSyntax interp:
+                        spans.Add(interp.Span);
+                        break;
+                }
+            }
+
+            if (spans.Count == 0) return code;
+
+            var merged = MergeSpans(spans);
+            var builder = new StringBuilder(code);
+            foreach (var span in merged.OrderByDescending(s => s.Start))
+            {
+                if (span.Start < 0 || span.End > builder.Length) continue;
+                for (var i = span.Start; i < span.End; i++) builder[i] = ' ';
+            }
+
+            return builder.ToString();
+        }
+
+        static List<TextSpan> MergeSpans(List<TextSpan> spans)
+        {
+            var ordered = spans.OrderBy(s => s.Start).ToList();
+            var merged = new List<TextSpan> { ordered[0] };
+            foreach (var s in ordered.Skip(1))
+            {
+                var last = merged[^1];
+                if (s.Start <= last.End)
+                    merged[^1] = TextSpan.FromBounds(last.Start, Math.Max(last.End, s.End));
+                else
+                    merged.Add(s);
+            }
+
+            return merged;
         }
 
         static void RunPostExecutionGc()

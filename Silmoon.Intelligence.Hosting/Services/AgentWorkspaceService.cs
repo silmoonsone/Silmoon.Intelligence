@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
+using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
 using Silmoon.AI.OpenAI;
 using Silmoon.Extensions;
@@ -15,11 +16,7 @@ namespace Silmoon.Intelligence.Hosting.Services
     {
         public IntelligenceService IntelligenceService
         {
-            get
-            {
-                if (field is null) IntelligenceService = ServiceProvider.GetRequiredService<IntelligenceService>();
-                return field;
-            }
+            get => field ??= ServiceProvider.GetRequiredService<IntelligenceService>();
             private set;
         }
         IServiceProvider ServiceProvider { get; set; }
@@ -30,30 +27,33 @@ namespace Silmoon.Intelligence.Hosting.Services
             ServiceProvider = serviceProvider;
             SilmoonPlatformDirectoryService = silmoonPlatformDirectoryService;
         }
-        public StateSet<bool> SaveChatHistory(bool overwritten)
+        public StateSet<bool, JObject> SaveChatHistory(bool overwritten)
         {
-            var mainChatHistory = IntelligenceService.AgentClient.NativeChatClient.MessageHistory;
+            var mainChatHistory = IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory;
             var json = mainChatHistory.ToJsonString(SseHttpClient.SerializerSettings);
             bool fileExists = File.Exists(MainAgentChatHistoryFile);
             if (!fileExists || (fileExists && overwritten))
             {
                 File.WriteAllText(MainAgentChatHistoryFile, json);
-                return new StateSet<bool>(true);
+                return true.ToStateSet(JObject.FromObject(new { count = mainChatHistory.Count }), "Chat history saved successfully.");
             }
             else
             {
-                return false.ToStateSet("Chat history file already exists. Set overwritten to true to overwrite it.");
+                return false.ToStateSet<JObject>(null, "Chat history file already exists. Set overwritten to true to overwrite it.");
             }
         }
-        public StateSet<bool> RestoreChatHistory()
+        public StateSet<bool, JObject> RestoreChatHistory()
         {
             if (File.Exists(MainAgentChatHistoryFile))
             {
+                var systemMessage = IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
                 var chatHistory = JsonHelperV2.LoadJsonFromFile<MessageContent[]>(MainAgentChatHistoryFile);
-                IntelligenceService.AgentClient.NativeChatClient.MessageHistory = [.. chatHistory];
-                return true.ToStateSet($"restore {chatHistory.Length} chat histories ");
+                chatHistory = [.. chatHistory.Where(m => m.Role != Role.System)];
+                IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory = [.. chatHistory];
+                return true.ToStateSet(JObject.FromObject(new { count = chatHistory.Length }),
+                $"restore {chatHistory.Length} chat histories ");
             }
-            return false.ToStateSet("Chat history file does not exist.");
+            return false.ToStateSet<JObject>(null, "Chat history file does not exist.");
         }
     }
 }

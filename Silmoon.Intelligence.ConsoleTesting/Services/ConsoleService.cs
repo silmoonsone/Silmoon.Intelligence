@@ -19,14 +19,14 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
         {
             ApplicationLifetime = applicationLifetime;
             IntelligenceService = intelligenceService;
-            IntelligenceService.AgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart;
-            IntelligenceService.AgentClient.OnToolCallInvoke += AgentClient_OnToolCallInvoke;
-            IntelligenceService.AgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
-            IntelligenceService.AgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
-            IntelligenceService.AgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
+            IntelligenceService.MainChatAgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart;
+            IntelligenceService.MainChatAgentClient.OnToolCallInvoke += AgentClient_OnToolCallInvoke;
+            IntelligenceService.MainChatAgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
+            IntelligenceService.MainChatAgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
+            IntelligenceService.MainChatAgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
 
-            IntelligenceService.AgentClient.OnStreamOutput += AgentClient_OnStreamOutput;
-            IntelligenceService.AgentClient.OnStreamOutputCompleted += AgentClient_OnStreamOutputCompleted;
+            IntelligenceService.MainChatAgentClient.OnStreamOutput += AgentClient_OnStreamOutput;
+            IntelligenceService.MainChatAgentClient.OnStreamOutputCompleted += AgentClient_OnStreamOutputCompleted;
 
             ApplicationLifetime.ApplicationStarted.Register(async () => await StartConsoleInput());
         }
@@ -95,6 +95,7 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
         {
             return Task.Run(async () =>
             {
+                IntelligenceService.ReadyResetEvent.WaitOne();
                 await Task.Delay(500);
                 while (true)
                 {
@@ -107,23 +108,23 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                         switch (command)
                         {
                             case "clear":
-                                IntelligenceService.AgentClient.NativeChatClient.ResetHistory();
+                                IntelligenceService.MainChatAgentClient.NativeChatClient.ResetHistory();
                                 Console.WriteLine("历史被清空.");
                                 break;
                             case "exit":
                                 ApplicationLifetime.StopApplication();
                                 break;
                             case "getsystemprompt":
-                                Console.WriteLine(IntelligenceService.AgentClient.NativeChatClient.SystemPrompt);
+                                Console.WriteLine(IntelligenceService.MainChatAgentClient.NativeChatClient.SystemPrompt);
                                 break;
                             case "back":
-                                Console.WriteLine($"当前消息历史数量：{IntelligenceService.AgentClient.NativeChatClient.MessageHistory.Count}");
-                                IntelligenceService.AgentClient.NativeChatClient.RollbackHistory();
-                                Console.WriteLine($"回退后消息历史数量：{IntelligenceService.AgentClient.NativeChatClient.MessageHistory.Count}");
+                                Console.WriteLine($"当前消息历史数量：{IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.Count}");
+                                IntelligenceService.MainChatAgentClient.NativeChatClient.RollbackHistory();
+                                Console.WriteLine($"回退后消息历史数量：{IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.Count}");
                                 Console.WriteLine();
                                 break;
                             case "stat":
-                                Console.WriteLine($"当前消息历史数量：{IntelligenceService.AgentClient.NativeChatClient.MessageHistory.Count}");
+                                Console.WriteLine($"当前消息历史数量：{IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.Count}");
                                 break;
                             case "save":
                                 Console.WriteLine($"Save reuslt: {IntelligenceService.SaveChatHistory().ToJsonString()}");
@@ -131,8 +132,8 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                             case "restore":
                                 Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatHistory().ToJsonString()}");
                                 Console.WriteLine($"Last message:");
-                                Console.WriteLine($"user: {IntelligenceService.AgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.Content}");
-                                Console.WriteLine($"assistant: {IntelligenceService.AgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.Content}");
+                                Console.WriteLine($"user: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.Content}");
+                                Console.WriteLine($"assistant: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.Content}");
                                 break;
                             //case "re":
                             //    IntelligenceService.AgentClient.NativeChatClient.CompletionsStreamAsync(IntelligenceService.AgentClient.NativeChatClient.MessageHistory);

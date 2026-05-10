@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Silmoon.Intelligence\Silmoon.Intelligence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="workspace\system_prompts\*.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

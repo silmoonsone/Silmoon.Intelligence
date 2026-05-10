@@ -48,8 +48,7 @@ namespace Silmoon.Intelligence
         private Task NativeChatClient_OnStreamOutputCompleted(Result result)
         {
             IsBusy = false;
-            OnStreamOutputCompleted?.Invoke(result);
-            return Task.CompletedTask;
+            return OnStreamOutputCompleted?.Invoke(result) ?? Task.CompletedTask;
         }
         public async Task<Result> Chat(string input)
         {

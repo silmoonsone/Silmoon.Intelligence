@@ -132,14 +132,14 @@ public partial class ChatViewModel : ObservableObject
     public ChatViewModel(Chat page)
     {
         this.page = page;
-        page.Title = $"Chat ({page.intelligenceService.AgentClient.NativeChatClient.ModelName})";
-        page.intelligenceService.AgentClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
-        page.intelligenceService.AgentClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
+        page.Title = $"Chat ({page.intelligenceService.MainChatAgentClient.NativeChatClient.ModelName})";
+        page.intelligenceService.MainChatAgentClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
+        page.intelligenceService.MainChatAgentClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
 
-        page.intelligenceService.AgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart; ;
-        page.intelligenceService.AgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
-        page.intelligenceService.AgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
-        page.intelligenceService.AgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
+        page.intelligenceService.MainChatAgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart; ;
+        page.intelligenceService.MainChatAgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
+        page.intelligenceService.MainChatAgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
+        page.intelligenceService.MainChatAgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
     }
 
     private Task AgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
