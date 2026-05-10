@@ -96,7 +96,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         {
             Logger.LogInformation("初始化监管Agent...");
             var result = await SupervisorAgentClient.Chat("系统已经启动，请恢复主聊天交互Agent状态");
-            Logger.LogInformation($"{result.Content}");
+            //Logger.LogInformation($"{result.Content}");
             Logger.LogInformation("监管Agent...完成");
             ReadyResetEvent.Set();
         }

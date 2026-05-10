@@ -24,12 +24,17 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
             IntelligenceService.MainChatAgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
             IntelligenceService.MainChatAgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
             IntelligenceService.MainChatAgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
-
             IntelligenceService.MainChatAgentClient.OnStreamOutput += AgentClient_OnStreamOutput;
             IntelligenceService.MainChatAgentClient.OnStreamOutputCompleted += AgentClient_OnStreamOutputCompleted;
 
+            IntelligenceService.SupervisorAgentClient.OnToolCallsStart += SupervisorAgentClient_OnToolCallsStart;
+            IntelligenceService.SupervisorAgentClient.OnToolCallsFinish += SupervisorAgentClient_OnToolCallsFinish;
+            IntelligenceService.SupervisorAgentClient.OnStreamOutput += SupervisorAgentClient_OnStreamOutput;
+            IntelligenceService.SupervisorAgentClient.OnStreamOutputCompleted += SupervisorAgentClient_OnStreamOutputCompleted;
+
             ApplicationLifetime.ApplicationStarted.Register(async () => await StartConsoleInput());
         }
+
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
@@ -38,6 +43,39 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
         {
             await Task.CompletedTask;
         }
+
+
+        private async Task SupervisorAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
+        {
+            Console.WriteLineWithColor($"[TOOL CALLS] {string.Join(',', toolCallParameters.Select(x => x.FunctionName))}", ConsoleColor.Yellow);
+        }
+        private async Task<ToolCallResult[]> SupervisorAgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
+        {
+            Console.WriteLineWithColor($"[TOOL CALLS RESULTS] {string.Join(", ", toolCallParameters.Select(x => $"{x.FunctionName}: {toolCallResults.FirstOrDefault(y => y.Parameter.FunctionName == x.FunctionName)?.Result.State}"))}", ConsoleColor.Yellow);
+            return toolCallResults;
+        }
+        private async Task SupervisorAgentClient_OnStreamOutputCompleted(Result result)
+        {
+            Console.WriteLine();
+            Console.WriteLine("stop reason: " + result.FinishReason);
+        }
+        private async Task SupervisorAgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
+        {
+            if (chunkState.State)
+            {
+                chunkState.Data.Choices.Each(x =>
+                {
+                    if (x.Delta?.ToolCalls is not null) Console.Write(".");
+                    else
+                    {
+                        Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
+                        Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.DarkGray);
+                    }
+                });
+            }
+            else Console.WriteLineWithColor(chunkState.Message, ConsoleColor.Red);
+        }
+
 
         private async Task AgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
         {
