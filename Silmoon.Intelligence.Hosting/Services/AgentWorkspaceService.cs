@@ -48,7 +48,11 @@ namespace Silmoon.Intelligence.Hosting.Services
             {
                 var systemMessage = IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
                 var chatHistory = JsonHelperV2.LoadJsonFromFile<MessageContent[]>(MainAgentChatHistoryFile);
-                chatHistory = [.. chatHistory.Where(m => m.Role != Role.System)];
+
+                if (chatHistory.FirstOrDefault(m => m.Role == Role.System) == null && systemMessage != null)
+                    chatHistory = [.. (MessageContent[])[systemMessage], .. chatHistory];
+
+
                 IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory = [.. chatHistory];
                 return true.ToStateSet(JObject.FromObject(new { count = chatHistory.Length }),
                 $"restore {chatHistory.Length} chat histories ");

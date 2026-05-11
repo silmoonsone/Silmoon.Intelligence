@@ -22,7 +22,7 @@ namespace Silmoon.Intelligence.Hosting.Tools
                 Tool.Create("MainAgent_StateControl", "操作主聊天交互Agent生命周期。",
                 [
                     new ToolParameterProperty("string", "action", "一个操作，目前支持restore（恢复）、save（保存）。", ["restore", "save"], true),
-                    new ToolParameterProperty("object", "param", "附带的参数，目前是占位符，可以null即可。", null, false)
+                    new ToolParameterProperty("string", "param", "附带的参数，目前是占位符，可以null即可，或者留空注意JSON格式合格。", null, false)
                 ])
                 ];
         }

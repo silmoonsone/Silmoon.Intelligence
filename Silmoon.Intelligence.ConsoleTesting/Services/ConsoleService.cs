@@ -173,9 +173,9 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                                 Console.WriteLine($"user: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.Content}");
                                 Console.WriteLine($"assistant: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.Content}");
                                 break;
-                            //case "re":
-                            //    IntelligenceService.AgentClient.NativeChatClient.CompletionsStreamAsync(IntelligenceService.AgentClient.NativeChatClient.MessageHistory);
-                            //    break;
+                            case "getsystem":
+                                Console.WriteLine(IntelligenceService.MainChatAgentClient.NativeChatClient.SystemPrompt);
+                                break;
                             default:
                                 Console.WriteLine($"Unknown command: {command}");
                                 break;
