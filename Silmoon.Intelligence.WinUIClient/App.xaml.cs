@@ -22,6 +22,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Silmoon.Intelligence.Hosting.Extensions;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -47,9 +48,7 @@ namespace Silmoon.Intelligence.WinUIClient
             var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
 
             builder.Services.AddSingleton<ISilmoonConfigureService, SilmoonConfigureServiceImpl>();
-            builder.Services.AddSingleton<ClientService>();
-            builder.Services.AddSingleton<ContextManagerService>();
-            builder.Services.AddHostedService(provider => provider.GetRequiredService<ClientService>());
+            builder.Services.AddSilmoonIntelligence();
 
             builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
             {
