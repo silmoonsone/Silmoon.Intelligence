@@ -16,7 +16,7 @@ using System.Text;
 
 namespace Silmoon.Intelligence.Hosting.Services
 {
-    public class IntelligenceService : IHostedService
+    public class IntelligenceService : BackgroundService
     {
         public AgentClient SupervisorAgentClient { get; set; }
         public AgentClient MainChatAgentClient { get; set; }
@@ -48,7 +48,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async override Task StartAsync(CancellationToken cancellationToken)
         {
             ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeChatClient);
             ModelContextService.InjectMainChatTools(MainChatAgentClient.NativeChatClient);
@@ -68,16 +68,8 @@ namespace Silmoon.Intelligence.Hosting.Services
             MainChatAgentClient.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
             MainChatAgentClient.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
             MainChatAgentClient.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
-
-            await StartupSupervisorAgent();
-
-            //await Task.CompletedTask;
+            await base.StartAsync(cancellationToken);
         }
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-        }
-
 
         public async Task<Result> Input(string input)
         {
@@ -92,7 +84,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             return AgentWorkspaceService.RestoreChatHistory();
         }
 
-        public async Task StartupSupervisorAgent()
+        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Logger.LogInformation("初始化监管Agent...");
             var result = await SupervisorAgentClient.Chat("系统已经启动，请恢复主聊天交互Agent状态");
@@ -165,5 +157,10 @@ namespace Silmoon.Intelligence.Hosting.Services
         }
         #endregion
 
+        public override void Dispose()
+        {
+            MainChatAgentClient?.Dispose();
+            SupervisorAgentClient?.Dispose();
+        }
     }
 }
