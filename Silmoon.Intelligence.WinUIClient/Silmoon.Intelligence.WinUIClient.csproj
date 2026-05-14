@@ -76,6 +76,9 @@
     <Compile Remove="C:\Users\silmoon\.nuget\packages\microsoft.windowsappsdk.runtime\1.8.260101001\buildTransitive\..\include\WindowsAppSDK-VersionInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Pages\ChatPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="config.debug.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -88,8 +91,8 @@
     <None Update="config.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
+    <Page Update="Pages\ChatPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

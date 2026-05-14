@@ -31,6 +31,11 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             DataContext = ViewModel;
             InitializeComponent();
         }
+
+        private void nameStartChat_Click(object sender, RoutedEventArgs e)
+        {
+            App.MainWindow.nameNavigationView.SelectedItem = App.MainWindow.nameNavigationView.MenuItems[1];
+        }
     }
     public partial class MainPageViewModel : ObservableObject
     {
@@ -41,7 +46,6 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         {
             var MainWindow = new MainWindow();
             MainWindow.ExtendsContentIntoTitleBar = true;
-            MainWindow.ctlMainPageFrame.Navigate(typeof(MainPage));
             MainWindow.Activate();
         }
     }

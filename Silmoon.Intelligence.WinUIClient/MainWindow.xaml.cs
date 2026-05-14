@@ -1,3 +1,5 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -5,6 +7,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Silmoon.Intelligence.WinUIClient.Pages;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,9 +26,47 @@ namespace Silmoon.Intelligence.WinUIClient
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        MainWindowViewModel viewModel;
         public MainWindow()
         {
             InitializeComponent();
+            ctlMainWindowPage.DataContext = viewModel = new MainWindowViewModel(ctlMainWindowPage);
+            //ctlMainPageFrame.Navigate(typeof(MainPage));
+            nameNavigationView.SelectedItem = nameNavigationView.MenuItems[0];
+            AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1280, 720));
+        }
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            var selectedItem = args.SelectedItem as NavigationViewItem;
+            var tag = selectedItem.Tag as string;
+            switch (tag)
+            {
+                case "home":
+                    nameMainPageFrame.Navigate(typeof(MainPage));
+                    break;
+                case "chat":
+                    nameMainPageFrame.Navigate(typeof(ChatPage));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void nameBackButton_Click(object sender, RoutedEventArgs e)
+        {
+            nameMainPageFrame.GoBack();
+        }
+    }
+    public partial class MainWindowViewModel : ObservableObject
+    {
+        Page Page;
+        public MainWindowViewModel(Page page)
+        {
+            Page = page;
+        }
+        [RelayCommand]
+        void OnNavigateMenuClick()
+        {
         }
     }
 }

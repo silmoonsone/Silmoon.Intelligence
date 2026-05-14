@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Silmoon.Intelligence.WinUIClient.Pages.ChatPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Silmoon.Intelligence.WinUIClient.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:Silmoon.Intelligence.WinUIClient.Pages"
+    xmlns:models="using:Silmoon.Intelligence.WinUIClient.Models"
+    d:DataContext="{d:DesignInstance Type=local:ChatPageViewModel}"
+NavigationCacheMode="Required"
+    mc:Ignorable="d">
+
+    <Grid RowSpacing="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <!--最顶端布局-->
+        <Frame Grid.Row="0" Padding="5">
+            <TextBlock Text="{x:Bind viewModel.ModelName, Mode=OneWay}" HorizontalAlignment="Center" FontWeight="Bold"></TextBlock>
+        </Frame>
+        <!--中间内容布局-->
+        <Grid Grid.Row="1">
+            <Frame BorderThickness="1" BorderBrush="Gray" Padding="0,10,0,10" CornerRadius="10">
+                <ListView x:Name="nameChatList" ItemsSource="{x:Bind viewModel.Items, Mode=TwoWay}" SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ChatItem">
+                            <StackPanel Margin="5" BorderThickness="1" CornerRadius="10" Padding="5" BorderBrush="Gray">
+                                <TextBlock Text="{x:Bind Role, Converter={StaticResource EnumDisplayConverter}, Mode=OneWay}" Margin="0,0,0,5" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="{x:Bind Content, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Frame>
+        </Grid>
+        <!--聊天输入框布局-->
+        <StackPanel Grid.Row="2">
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    x:Name="nameUserInput"
+                    Grid.Column="0"
+                    PlaceholderText="和智能体对话（Enter 发送，Shift+Enter 换行）"
+                    Text="{x:Bind viewModel.UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextWrapping="Wrap"
+                    MaxHeight="200"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    KeyDown="nameUserInput_KeyDown" />
+                <Button Grid.Column="1" Content="发送" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind viewModel.SendMessageCommand}"></Button>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Page>

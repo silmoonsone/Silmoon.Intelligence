@@ -12,27 +12,27 @@
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
+    <Page x:Name="ctlMainWindowPage"
+          xmlns:mv="using:Silmoon.Intelligence.WinUIClient"
+          >
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Style="{StaticResource NavigationBackButtonNormalStyle}" ToolTipService.ToolTip="返回" VerticalAlignment="Top"/>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal" x:Name="ctlTitleBar">
-                <TextBlock Padding="10,10,0,0" FontWeight="Bold">迈达克本地跟单系统</TextBlock>
-            </StackPanel>
-
-            <MenuBar Grid.Column="2" Margin="10,-3,0,0">
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="nameBackButton" Click="nameBackButton_Click" Grid.Column="0" Style="{StaticResource NavigationBackButtonNormalStyle}" ToolTipService.ToolTip="返回" VerticalAlignment="Top"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" x:Name="nameTitleBar">
+                    <TextBlock Padding="10,10,0,0" FontWeight="Bold">Silmoon Intelligence</TextBlock>
+                </StackPanel>
+                <!--<MenuBar Grid.Column="2" Margin="10,-3,0,0">
                 <MenuBarItem Title="菜单一">
                     <MenuFlyoutItem Text="子菜单一"></MenuFlyoutItem>
                     <MenuFlyoutItem Text="子菜单二"></MenuFlyoutItem>
@@ -48,11 +48,17 @@
                     <MenuFlyoutItem Text="子菜单一"></MenuFlyoutItem>
                     <MenuFlyoutItem Text="子菜单二"></MenuFlyoutItem>
                 </MenuBarItem>
-            </MenuBar>
+            </MenuBar>-->
+                <Frame Grid.Column="3" x:Name="nameTitleBlank"></Frame>
+            </Grid>
 
-            <Frame Grid.Column="3" x:Name="ctlTitleBlank"></Frame>
-
+            <NavigationView Grid.Row="1" x:Name="nameNavigationView" x:FieldModifier="public" IsBackButtonVisible="Collapsed" OpenPaneLength="200" SelectionChanged="NavigationView_SelectionChanged">
+                <NavigationView.MenuItems>
+                    <NavigationViewItem Icon="Home" Content="主页" Tag="home" />
+                    <NavigationViewItem Icon="Message" Content="聊天" Tag="chat" />
+                </NavigationView.MenuItems>
+                <Frame Grid.Row="1" x:Name="nameMainPageFrame" x:FieldModifier="public" Padding="10"></Frame>
+            </NavigationView>
         </Grid>
-        <Frame Grid.Row="1" x:Name="ctlMainPageFrame" x:FieldModifier="public" Padding="10"></Frame>
-    </Grid>
+    </Page>
 </Window>

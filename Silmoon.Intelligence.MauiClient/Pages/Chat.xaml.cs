@@ -133,20 +133,20 @@ public partial class ChatViewModel : ObservableObject
     {
         this.page = page;
         page.Title = $"Chat ({page.intelligenceService.MainChatAgentClient.NativeChatClient.ModelName})";
-        page.intelligenceService.MainChatAgentClient.OnStreamOutput += NativeChatClient_OnStreamOutput;
-        page.intelligenceService.MainChatAgentClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
+        page.intelligenceService.MainChatAgentClient.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
+        page.intelligenceService.MainChatAgentClient.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
 
-        page.intelligenceService.MainChatAgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart; ;
-        page.intelligenceService.MainChatAgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
-        page.intelligenceService.MainChatAgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
-        page.intelligenceService.MainChatAgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
+        page.intelligenceService.MainChatAgentClient.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart; ;
+        page.intelligenceService.MainChatAgentClient.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
+        page.intelligenceService.MainChatAgentClient.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
+        page.intelligenceService.MainChatAgentClient.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
     }
 
-    private Task AgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
+    private async Task MainChatAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
     }
-    private Task AgentClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
+    private Task MainChatAgentClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
     {
         var lastChatItem = Items.LastOrDefault();
         ToolCallResult result = null;
@@ -163,7 +163,7 @@ public partial class ChatViewModel : ObservableObject
         }
         return Task.CompletedTask;
     }
-    private Task AgentClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
+    private Task MainChatAgentClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
     {
         var lastChatItem = Items.LastOrDefault();
 
@@ -171,12 +171,12 @@ public partial class ChatViewModel : ObservableObject
         else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
         return Task.CompletedTask;
     }
-    private Task<ToolCallResult[]> AgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
+    private Task<ToolCallResult[]> MainChatAgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
     {
         return Task.FromResult(toolCallResults);
     }
 
-    private Task NativeChatClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
+    private Task MainChatAgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
     {
         if (chunkState.State)
         {
@@ -200,7 +200,7 @@ public partial class ChatViewModel : ObservableObject
         }
         return Task.CompletedTask;
     }
-    private Task NativeChatClient_OnStreamOutputCompleted(Result result)
+    private Task MainChatAgentClient_OnStreamOutputCompleted(Result result)
     {
         var lastChatItem = Items.LastOrDefault();
 

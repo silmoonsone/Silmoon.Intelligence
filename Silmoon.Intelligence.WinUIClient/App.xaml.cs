@@ -23,6 +23,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Silmoon.Intelligence.Hosting.Extensions;
+using Silmoon.Intelligence.WinUIClient.Services;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -34,7 +35,7 @@ namespace Silmoon.Intelligence.WinUIClient
     /// </summary>
     public partial class App : Application
     {
-        public MainWindow MainWindow { get; set; }
+        public static MainWindow MainWindow { get; set; }
         static IHost Host { get; set; }
         static IServiceProvider ServiceProvider => Host.Services;
 
@@ -48,6 +49,7 @@ namespace Silmoon.Intelligence.WinUIClient
             var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
 
             builder.Services.AddSingleton<ISilmoonConfigureService, SilmoonConfigureServiceImpl>();
+            builder.Services.AddSingleton<ISilmoonPlatformDirectoryService, SilmoonPlatformDirectoryServiceImpl>();
             builder.Services.AddSilmoonIntelligence();
 
             builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
@@ -71,7 +73,7 @@ namespace Silmoon.Intelligence.WinUIClient
 
             MainWindow = new MainWindow();
             MainWindow.ExtendsContentIntoTitleBar = true;
-            MainWindow.ctlMainPageFrame.Navigate(typeof(MainPage));
+            //MainWindow.ctlMainPageFrame.Navigate(typeof(ChatPage));
             MainWindow.Activate();
 
 

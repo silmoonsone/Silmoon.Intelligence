@@ -15,6 +15,7 @@
             <!-- Other app resources here -->
             <scommand:UrlOpenCommand x:Key="UrlOpenCommand"></scommand:UrlOpenCommand>
             <sconvert:NullOrDefaultToBoolConverter x:Key="NullOrDefaultToBoolConverter"></sconvert:NullOrDefaultToBoolConverter>
+            <sconvert:EnumDisplayConverter x:Key="EnumDisplayConverter"></sconvert:EnumDisplayConverter>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
