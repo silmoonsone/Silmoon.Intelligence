@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Silmoon.AI.Models.OpenAI.Enums;
 using Silmoon.AI.Models.OpenAI.Models;
@@ -47,10 +48,11 @@ namespace Silmoon.Intelligence.Hosting.Services
             if (File.Exists(MainAgentChatHistoryFile))
             {
                 var systemMessage = IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
-                var chatHistory = JsonHelperV2.LoadJsonFromFile<MessageContent[]>(MainAgentChatHistoryFile);
+                var chatHistory = JsonConvert.DeserializeObject<IMessage[]>(File.ReadAllText(MainAgentChatHistoryFile), SseHttpClient.SerializerSettings);
+                //var chatHistory = JsonHelperV2.LoadJsonFromFile<IMessage[]>(MainAgentChatHistoryFile);
 
                 if (chatHistory.FirstOrDefault(m => m.Role == Role.System) == null && systemMessage != null)
-                    chatHistory = [.. (MessageContent[])[systemMessage], .. chatHistory];
+                    chatHistory = [.. (IMessage[])[systemMessage], .. chatHistory];
 
 
                 IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory = [.. chatHistory];

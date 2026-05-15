@@ -169,8 +169,8 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                         case "restore":
                             Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatHistory().ToJsonString()}");
                             Console.WriteLine($"Last message:");
-                            Console.WriteLine($"user: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.Content}");
-                            Console.WriteLine($"assistant: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.Content}");
+                            Console.WriteLine($"user: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.GetContent()}");
+                            Console.WriteLine($"assistant: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.GetContent()}");
                             break;
                         case "getsystem":
                             Console.WriteLine(IntelligenceService.MainChatAgentClient.NativeChatClient.SystemPrompt);

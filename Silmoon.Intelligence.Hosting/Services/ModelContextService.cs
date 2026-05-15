@@ -38,6 +38,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 new MemoryTool(nativeChatClient),
                 new AgentModelTool(AgentModelManager),
                 new GithubTool(),
+                new WebSearchTool(SilmoonConfigureService.AliyunOpenSearchKey),
                 ]);
 
             string systemPrompt = SilmoonConfigureService.SystemPrompt;
@@ -52,7 +53,8 @@ namespace Silmoon.Intelligence.Hosting.Services
                 new CSharpTool(),
                 new MemoryTool(nativeChatClient),
                 new AgentModelTool(AgentModelManager),
-                new AgentStateTool(IntelligenceService)
+                new AgentStateTool(IntelligenceService),
+                new WebSearchTool(SilmoonConfigureService.AliyunOpenSearchKey),
                 ]);
 
             string systemPrompt = SilmoonConfigureService.SystemPrompt;

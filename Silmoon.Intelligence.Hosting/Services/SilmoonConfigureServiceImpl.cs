@@ -18,6 +18,8 @@ namespace Silmoon.Intelligence.Hosting.Services
         public ModelProvider DefaultProvider { get; set; }
         public string DefaultModelName { get; set; }
 
+        public string AliyunOpenSearchKey { get; set; }
+
         public Dictionary<string, ModelProvider> ModelProviders { get; set; } = [];
         public string SystemPrompt { get; set; }
         ILogger<ISilmoonConfigureService> Logger { get; set; }
@@ -39,6 +41,7 @@ namespace Silmoon.Intelligence.Hosting.Services
 
             DefaultProvider = ModelProviders[ConfigJson["defaultModel"]["defaultProvider"].Value<string>()];
             DefaultModelName = ConfigJson["defaultModel"]["defaultModelName"].Value<string>();
+            AliyunOpenSearchKey = ConfigJson.GetValue("aliyunOpenSearchKey")?.Value<string>();
 
             logger.LogInformation($"Model: {DefaultModelName}, ApiUrl: {DefaultProvider.ApiUrl}");
         }

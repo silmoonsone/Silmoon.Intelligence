@@ -27,7 +27,7 @@ namespace Silmoon.Intelligence
 
         public string Name { get; set; } = string.Empty;
         public string RoleMandate { get; set; } = string.Empty;
-        public List<MessageContent> History => NativeChatClient.MessageHistory;
+        public List<IMessage> History => NativeChatClient.MessageHistory;
         public bool IsBusy { get; set; } = false;
 
         public AgentClient(ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, bool disableProxy = false)

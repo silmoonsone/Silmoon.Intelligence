@@ -14,21 +14,21 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence` | 核心：`AgentClient`、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
-| `Silmoon.Intelligence.Tools` | 本仓库内工具实现（如 `GithubTool`、`CSharpTool` 等） |
+| `Silmoon.Intelligence` | 核心：`AgentClient`（如 `History` 与底层一致，为 **`IMessage`** 序列）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
+| `Silmoon.Intelligence.Tools` | 可复用工具：`GithubTool`、`CSharpTool`、**`WebSearchTool`**（阿里云 OpenSearch 网页搜索，见配置）等 |
 
 ### 宿主（服务注入与通用主机）
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.Hosting` | **依赖注入**：`IntelligenceService`（`BackgroundService`，内部维护监管与主对话双 `AgentClient`）、`ModelContextService`、`AgentWorkspaceService` 等；**`AddSilmoonIntelligence` / `AddSilmoonIntelligence<T>`** 供各入口注册。`ModelContextService` 对监管与主对话分别 **`InjectSupervisorTools` / `InjectMainChatTools`**（工具列表以源码为准）。工作区资源含 **`workspace/system_prompts/*.md`**（构建时复制到 Hosting 输出目录），详见 `Hosting/Extensions/ServiceCollectionExtension.cs` |
+| `Silmoon.Intelligence.Hosting` | **依赖注入**：`IntelligenceService`（`BackgroundService`，监管 + 主对话双 `AgentClient`）、`ModelContextService`、`AgentWorkspaceService` 等；**`AddSilmoonIntelligence` / `AddSilmoonIntelligence<T>`** 注册宿主。`ModelContextService` 通过 **`InjectSupervisorTools` / `InjectMainChatTools`** 分别挂载工具集（含 **WebSearch**、Github、文件/命令等，以源码为准）。工作区含 **`workspace/system_prompts/*.md`**（构建时复制到 Hosting 输出），见 `Hosting/Extensions/ServiceCollectionExtension.cs` |
 
 ### 客户端应用
 
 | 项目 | 说明 |
 |------|------|
 | `Silmoon.Intelligence.MauiClient` | .NET MAUI，`AddSilmoonIntelligence()` + `SilmoonConfigure`；`ISilmoonPlatformDirectoryService` 基于 **`FileSystem.AppDataDirectory`**。**当前为「可用」级别**，侧重联调与收集测试，非成熟产品化客户端 |
-| `Silmoon.Intelligence.WinUIClient` | WinUI 3（`net10.0-windows10.0.19041.0`），泛型 **`Host`** + **`AddSilmoonIntelligence()`** + **`SilmoonConfigure`**，与 MAUI/控制台一致；**`NavigationView`** 含主页与 **`ChatPage`**（`IntelligenceService` / `MainChatAgentClient` 流式输出与工具事件）。平台目录为 **`AppContext.BaseDirectory`**（与控制台类似）。依赖 **Silmoon.Windows.WinUI3** 与 **Windows App SDK**。与 MAUI **同为演进中**，功能与细节可能不完全对齐 |
+| `Silmoon.Intelligence.WinUIClient` | WinUI 3（`net10.0-windows10.0.19041.0`），泛型 **`Host`** + **`AddSilmoonIntelligence()`** + **`SilmoonConfigure`**；**`NavigationView`** + **`ChatPage`**（`MainChatAgentClient` 流式与工具事件）。平台目录为 **`AppContext.BaseDirectory`**。依赖 **Silmoon.Windows.WinUI3** 与 **Windows App SDK**。与 MAUI **同为演进中**，细节可能不完全对齐 |
 
 ### 测试与联调入口
 
@@ -88,13 +88,21 @@ MAUI 仅构建某一目标时可用 `-f`，具体 TFM 以 `MauiClient.csproj` �
 
 敏感或本机项使用 **`config.local.json`** / **`config.local.debug.json`**（已 `.gitignore`）。
 
-配置字段与 JSON 结构以 **`SilmoonConfigureServiceImpl.cs`** 为准；示例 `config.json` 若结构过旧需先对齐再启动。
+解析逻辑与字段以 **`SilmoonConfigureServiceImpl.cs`** 为准。除既有 `modelProviders`、`defaultModel`、`systemPrompt`、`nativeClientDisableProxy` 等外，常见补充包括：
+
+| 字段（JSON） | 说明 |
+|--------------|------|
+| **`aliyunOpenSearchKey`**（可选） | 阿里云 OpenSearch 网页搜索 **Bearer** 密钥。未配置时 **`WebSearch` 工具**会提示未配置，其余功能不受影响 |
+
+示例 `config.json` 若结构与当前 `SilmoonConfigureServiceImpl` 不一致，需先对齐再启动。
 
 ### 工作区与 `system_prompts`
 
 运行时宿主从 **`{WorkspaceDirectory}/system_prompts/`** 读取 `unified_agent_system.md`、`supervisor_agent_system.md` 等（见 `IntelligenceService` 与 `AgentWorkspaceService`）。**`WorkspaceDirectory`** 由各入口的 **`ISilmoonPlatformDirectoryService.AppDataDirectory`** 与 `workspace` 子目录组合而成。
 
-若该目录下缺少上述文件，启动会失败。可从 **`Silmoon.Intelligence.Hosting/workspace/system_prompts`** 拷贝到当前应用的工作区路径，或先构建 Hosting 再从输出目录同步。
+若该目录下缺少上述文件，启动会失败。可从 **`Silmoon.Intelligence.Hosting/workspace/system_prompts`** 拷贝到当前应用工作区，或先构建 Hosting 再从输出目录同步。
+
+主聊天历史持久化格式与 **`Silmoon.AI` 消息模型**一致（如 **`IMessage`** 反序列化）；恢复时若文件不含 system 消息，会尝试与内存中的 system 对齐，详见 **`AgentWorkspaceService`**。
 
 ---
 
@@ -107,8 +115,9 @@ MAUI 仅构建某一目标时可用 `-f`，具体 TFM 以 `MauiClient.csproj` �
 ## 安全与网络
 
 - **GithubTool** 需访问 GitHub 公开 API。
+- **WebSearchTool** 需 **有效 `aliyunOpenSearchKey`**，并向**阿里云 OpenSearch** 开放搜索端点发起请求；密钥勿提交仓库，宜放 `config.local*.json`。
 - **CSharpTool** 在宿主进程内执行脚本，**非**隔离沙箱。
-- 已注册的命令类工具与宿主环境强耦合，勿对不可信来源开放无限制调用。
+- **CommandTool** 等与宿主环境强耦合，勿对不可信来源开放无限制调用。
 
 ---
 

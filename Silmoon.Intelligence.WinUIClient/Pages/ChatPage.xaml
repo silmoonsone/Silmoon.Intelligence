@@ -9,7 +9,7 @@
     xmlns:pages="using:Silmoon.Intelligence.WinUIClient.Pages"
     xmlns:models="using:Silmoon.Intelligence.WinUIClient.Models"
     d:DataContext="{d:DesignInstance Type=local:ChatPageViewModel}"
-NavigationCacheMode="Required"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Grid RowSpacing="10">
@@ -30,7 +30,7 @@ NavigationCacheMode="Required"
                         <DataTemplate x:DataType="models:ChatItem">
                             <StackPanel Margin="5" BorderThickness="1" CornerRadius="10" Padding="5" BorderBrush="Gray">
                                 <TextBlock Text="{x:Bind Role, Converter={StaticResource EnumDisplayConverter}, Mode=OneWay}" Margin="0,0,0,5" FontSize="18" FontWeight="Bold"/>
-                                <TextBlock Text="{x:Bind Content, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                                <TextBlock Text="{x:Bind Content, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
