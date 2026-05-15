@@ -119,7 +119,8 @@
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
     <MauiAsset Include="Resources\Raw\**" Exclude="Resources\Raw\workspace\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     <!-- Single source of truth: same files as Silmoon.Intelligence.Hosting\workspace (linked, not duplicated on disk) -->
-    <MauiAsset Include="..\Silmoon.Intelligence.Hosting\workspace\**\*" Link="Resources\Raw\workspace\%(RecursiveDir)%(Filename)%(Extension)" LogicalName="workspace\%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="..\Silmoon.Intelligence.Hosting\workspace\**\*" Link="Resources\Raw\workspace\%(RecursiveDir)%(Filename)%(Extension)" LogicalName="workspace\%(RecursiveDir)%(Filename)%(Extension)" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
+    <MauiAsset Include="..\Silmoon.Intelligence.Hosting\workspace\**\*" Link="Resources\Raw\workspace\%(RecursiveDir)%(Filename)%(Extension)" LogicalName="workspace\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
   </ItemGroup>
 
   <ItemGroup>
