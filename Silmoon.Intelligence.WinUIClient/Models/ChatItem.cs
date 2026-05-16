@@ -25,5 +25,13 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         {
 
         }
+        public ChatItem(Role role, string finishContent)
+        {
+            Role = role;
+            FinishContent = finishContent;
+            FinishContentVisual = true;
+        }
+        public override string ToString() => $"Role: {Role}, FinishContent: {FinishContent}, {Images?.Count ?? 0} images";
+
     }
 }

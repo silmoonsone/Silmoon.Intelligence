@@ -22,7 +22,24 @@
         </Grid.RowDefinitions>
         <!--最顶端布局-->
         <Frame Grid.Row="0" Padding="5">
-            <TextBlock Text="{x:Bind ViewModel.ModelName, Mode=OneWay}" HorizontalAlignment="Center" FontWeight="Bold"></TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.ModelName, Mode=OneWay}" HorizontalAlignment="Center" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"></TextBlock>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                    <Button Command="{x:Bind ViewModel.UndoHistoryCommand}">
+                        <FontIcon Glyph="&#xE7A7;" />
+                    </Button>
+                    <Button Command="{x:Bind ViewModel.ClearHistoryCommand}">
+                        <FontIcon Glyph="&#xE74D;" />
+                    </Button>
+                    <Button Command="{x:Bind ViewModel.SaveHistoryCommand}">
+                        <FontIcon Glyph="&#xE74E;" />
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Frame>
         <!--中间内容布局-->
         <Grid Grid.Row="1">
@@ -78,7 +95,7 @@
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                     KeyDown="nameUserInput_KeyDown" />
                 <Button Grid.Column="1" Command="{x:Bind ViewModel.SelectImagesCommand}">
-                    <FontIcon Glyph="&#xE8B9;"></FontIcon>
+                    <FontIcon Glyph="&#xE8B9;"  />
                 </Button>
                 <Button Grid.Column="2" Content="发送" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.SendMessageCommand}" IsEnabled="{x:Bind ViewModel.UserInputAvaliable, Mode=OneWay}"></Button>
             </Grid>

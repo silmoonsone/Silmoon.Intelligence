@@ -129,7 +129,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 var shift = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift);
                 if (shift.HasFlag(CoreVirtualKeyStates.Down))
                 {
-                    ViewModel.UserInput += Environment.NewLine;
+                    ViewModel.UserInput += "\r\n";
                     nameUserInput.SelectionStart = ViewModel.UserInput.Length;
                 }
                 else ViewModel.SendMessageCommand.Execute(null);
@@ -186,8 +186,45 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 {
                     UserInputAvaliable = true;
                     Items.Add(new ChatItem { Role = Role.System, FinishContent = $"已连接模型：{ModelName}", FinishContentVisual = true });
+                    _ = LoadHistory();
                 });
             });
+        }
+
+        async Task LoadHistory()
+        {
+            foreach (var item in IntelligenceService.MainChatAgentClient.History)
+            {
+                if (item is MessageContent message)
+                {
+                    if (item.Role == Role.Assistant || item.Role == Role.User)
+                    {
+                        //相同角色合并
+                        var lastChatItem = Items.LastOrDefault();
+                        if (lastChatItem is not null && (lastChatItem.Role == item.Role))
+                        {
+                            if (!message.Content.IsNullOrDefault()) lastChatItem.FinishContent += $"\r\n{message.Content}";
+                            message.ToolCalls?.Each(toolcall =>
+                            {
+                                if (lastChatItem.FinishContent.EndsWith("\r\n")) lastChatItem.FinishContent += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
+                                else lastChatItem.FinishContent += $"\r\n\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
+                            });
+                            lastChatItem.FinishContentVisual = true;
+                        }
+                        else
+                        {
+                            var content = message.Content;
+                            message.ToolCalls?.Each(toolcall =>
+                            {
+                                if (content.EndsWith("\r\n")) content += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
+                                else content += $"\r\n\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
+                            });
+                            Items.Add(new ChatItem(message.Role, content));
+                        }
+                    }
+                }
+            }
+            await Page.ScrollHistoryToBottomAsync(force: true);
         }
 
         private async Task MainChatAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
@@ -291,7 +328,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 ToolExecuteIndicators.Clear();
                 var lastChatItem = Items.LastOrDefault();
                 if (lastChatItem is null) return;
-                lastChatItem.StreamContent += $"\r\n\r\n[finish {result.FinishReason}]";
+                lastChatItem.StreamContent += $"\r\n\r\n*[finish {result.FinishReason}]*";
 
                 if (result.FinishReason == "stop")
                 {
@@ -320,8 +357,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             }
             else
             {
-                Items.Add(new ChatItem { Role = Role.User, FinishContent = UserInput, FinishContentVisual = true });
-                Items.Add(new ChatItem { Role = Role.Assistant, StreamContent = string.Empty, StreamContentVisual = true });
+                Items.Add(new ChatItem(Role.User, UserInput));
+                Items.Add(new ChatItem(Role.Assistant, string.Empty) { StreamContentVisual = true });
                 await Page.ScrollHistoryToBottomAsync(force: true);
                 string input = UserInput;
                 UserInput = string.Empty;
@@ -332,6 +369,29 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         public void SelectImages()
         {
 
+        }
+
+        [RelayCommand]
+        public void SaveHistory()
+        {
+            IntelligenceService.SaveChatHistory();
+        }
+        [RelayCommand]
+        public void ClearHistory()
+        {
+            IntelligenceService.MainChatAgentClient.NativeChatClient.ResetHistory();
+            IntelligenceService.SaveChatHistory();
+            Page.DispatcherQueue.TryEnqueue(Items.Clear);
+        }
+        [RelayCommand]
+        public async Task UndoHistory()
+        {
+            IntelligenceService.MainChatAgentClient.NativeChatClient.RollbackHistory();
+            Items.Clear();
+            await LoadHistory();
+
+            //IntelligenceService.SaveChatHistory();
+            //Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
     }
 }
