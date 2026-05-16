@@ -17,6 +17,7 @@
             <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
         <!--最顶端布局-->
         <Frame Grid.Row="0" Padding="5">
@@ -37,8 +38,28 @@
                 </ListView>
             </Frame>
         </Grid>
+        <!--工具执行状况布局-->
+        <Frame Grid.Row="2">
+            <StackPanel>
+                <ListView ItemsSource="{x:Bind viewModel.ToolExecuteIndicators, Mode=OneWay}" SelectionMode="None" ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsStackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ToolExecuteIndicatorModel">
+                            <StackPanel BorderThickness="1" Margin="-15,0,0,10" CornerRadius="10" Padding="5" BorderBrush="Gray">
+                                <TextBlock Text="{x:Bind FunctionName, Mode=OneWay}" FontWeight="ExtraBlack" FontSize="12"/>
+                                <TextBlock Text="{x:Bind Status, Mode=OneWay}" FontSize="10" Foreground="{x:Bind Color, Mode=OneWay}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </Frame>
         <!--聊天输入框布局-->
-        <StackPanel Grid.Row="2">
+        <StackPanel Grid.Row="3">
             <Grid ColumnSpacing="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>

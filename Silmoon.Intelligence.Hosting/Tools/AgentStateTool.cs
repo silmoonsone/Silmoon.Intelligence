@@ -27,7 +27,7 @@ namespace Silmoon.Intelligence.Hosting.Tools
                 ];
         }
 
-        public override Task<ToolCallResult> OnToolCallInvoke(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
+        public override async Task<ToolCallResult> OnToolCallInvoke(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
         {
             var functionName = toolCallParameter.FunctionName;
             var parameters = toolCallParameter.Parameters;
@@ -40,12 +40,16 @@ namespace Silmoon.Intelligence.Hosting.Tools
                     switch (action)
                     {
                         case "save":
+                            await NotifyToolExecuting(functionName, toolCallParameter);
                             var saveResult = IntelligenceService.SaveChatHistory();
                             result = ToolCallResult.Create(toolCallParameter, saveResult.State.ToStateSet<object>(saveResult.Data, saveResult.Message));
+                            await NotifyToolExecuted(functionName, toolCallParameter, result);
                             break;
                         case "restore":
+                            await NotifyToolExecuting(functionName, toolCallParameter);
                             var restoreResult = IntelligenceService.RestoreChatHistory();
                             result = ToolCallResult.Create(toolCallParameter, restoreResult.State.ToStateSet<object>(restoreResult.Data, restoreResult.Message));
+                            await NotifyToolExecuted(functionName, toolCallParameter, result);
                             break;
                         default:
                             break;
@@ -54,7 +58,7 @@ namespace Silmoon.Intelligence.Hosting.Tools
                 default:
                     break;
             }
-            return Task.FromResult(result);
+            return result;
         }
     }
 }

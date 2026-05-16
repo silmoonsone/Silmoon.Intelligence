@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -160,6 +161,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [ObservableProperty]
         public partial ObservableCollection<ChatItem> Items { get; set; } = [];
         [ObservableProperty]
+        public partial ObservableCollection<ToolExecuteIndicatorModel> ToolExecuteIndicators { get; set; } = [];
+        [ObservableProperty]
         public partial string UserInput { get; set; }
         public ChatPageViewModel(ChatPage page)
         {
@@ -183,12 +186,13 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         {
             Page.DispatcherQueue.TryEnqueue(() =>
             {
+                ToolExecuteIndicators.Add(new ToolExecuteIndicatorModel { FunctionName = functionName, Color = new SolidColorBrush(Colors.Orange), Status = "执行中", ToolCallId = toolCallParameter.ToolCallId });
                 var lastChatItem = Items.LastOrDefault();
                 if (lastChatItem is null) return;
                 ToolCallResult result = null;
                 var parameters = toolCallParameter.Parameters;
 
-                lastChatItem.Content += $"[TOOL CALL] {functionName}\r\n";
+                //lastChatItem.Content += $"[TOOL CALL] {functionName}\r\n";
                 switch (functionName)
                 {
                     case "Test_ToolCallTest":
@@ -205,12 +209,28 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         {
             Page.DispatcherQueue.TryEnqueue(() =>
             {
+                var indicator = ToolExecuteIndicators.FirstOrDefault(x => x.ToolCallId == toolCallParameter.ToolCallId);
+                if (indicator is not null)
+                {
+                    if (toolCallResult.Result.State)
+                    {
+                        indicator.Color = new SolidColorBrush(Colors.Green);
+                        indicator.Status = "完成";
+                    }
+                    else
+                    {
+                        indicator.Color = new SolidColorBrush(Colors.Red);
+                        indicator.Status = "错误";
+                    }
+                }
                 var lastChatItem = Items.LastOrDefault();
-                if (lastChatItem is null) return;
 
-                if (toolCallResult.Result.State) lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
-                else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
-                _ = Page.ScrollHistoryToBottomAsync(animated: false, force: false);
+                if (lastChatItem is not null)
+                {
+                    //if (toolCallResult.Result.State) lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
+                    //else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
+                    _ = Page.ScrollHistoryToBottomAsync(animated: false, force: false);
+                }
             });
             return Task.CompletedTask;
         }
@@ -231,10 +251,15 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                         if (lastChatItem is null) return;
                         if (x.Delta?.ToolCalls is not null)
                         {
-                            lastChatItem.Content += ".";
+                            var indicator = ToolExecuteIndicators.FirstOrDefault(x => x.ToolCallId == string.Empty);
+                            if (indicator is null) ToolExecuteIndicators.Add(new ToolExecuteIndicatorModel { FunctionName = "工具调用", Status = "等待...", Color = new SolidColorBrush(Colors.YellowGreen), ToolCallId = string.Empty });
+                            //lastChatItem.Content += ".";
                         }
                         else
                         {
+                            var indicator = ToolExecuteIndicators.FirstOrDefault(x => x.ToolCallId == string.Empty);
+                            indicator?.Status = "完成";
+
                             Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
                             Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.White);
 
@@ -251,6 +276,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         {
             Page.DispatcherQueue.TryEnqueue(() =>
             {
+                ToolExecuteIndicators.Clear();
                 var lastChatItem = Items.LastOrDefault();
                 if (lastChatItem is null) return;
                 lastChatItem.Content += $"\r\n[finish {result.FinishReason}]";
