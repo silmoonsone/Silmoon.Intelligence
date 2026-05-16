@@ -25,10 +25,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        MainPageViewModel ViewModel { get; } = new MainPageViewModel();
         public MainPage()
         {
-            DataContext = ViewModel;
             InitializeComponent();
         }
 
@@ -37,17 +35,4 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             App.MainWindow.nameNavigationView.SelectedItem = App.MainWindow.nameNavigationView.MenuItems[1];
         }
     }
-    public partial class MainPageViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        public partial string Url { get; set; } = "https://www.silmoon.com/";
-        [RelayCommand]
-        public void NewWindow()
-        {
-            var MainWindow = new MainWindow();
-            MainWindow.ExtendsContentIntoTitleBar = true;
-            MainWindow.Activate();
-        }
-    }
-
 }

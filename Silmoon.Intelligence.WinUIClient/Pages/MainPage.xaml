@@ -11,10 +11,6 @@
 
     <Grid>
         <StackPanel Spacing="10" VerticalAlignment="Center">
-            <!--<TextBox Text="{x:Bind ViewModel.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="网址"></TextBox>
-            <Button Content="Open Url in browser" Command="{StaticResource UrlOpenCommand}" CommandParameter="{x:Bind ViewModel.Url, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.Url, Converter={StaticResource NullOrDefaultToBoolConverter}}"></Button>
-            <Button Content="New Window" Command="{x:Bind ViewModel.NewWindowCommand}"></Button>-->
-            <!--<Button Content="New Window" Command="{Binding NewWindowCommand}"></Button>-->
             <Button x:Name="nameStartChat" Click="nameStartChat_Click" Content="开始聊天" VerticalAlignment="Center" HorizontalAlignment="Center"></Button>
         </StackPanel>
     </Grid>

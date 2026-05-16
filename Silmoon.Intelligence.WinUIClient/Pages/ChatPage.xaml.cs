@@ -41,7 +41,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
     {
         const double AutoScrollBottomThreshold = 24;
 
-        ChatPageViewModel viewModel;
+        ChatPageViewModel ViewModel;
         ScrollViewer? chatScrollViewer;
         bool shouldAutoScroll = true;
 
@@ -49,7 +49,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         public ChatPage()
         {
             IntelligenceService = App.GetService<IntelligenceService>();
-            DataContext = viewModel = new ChatPageViewModel(this);
+            ViewModel = new ChatPageViewModel(this);
             InitializeComponent();
             Loaded += ChatPage_Loaded;
             Unloaded += ChatPage_Unloaded;
@@ -129,10 +129,10 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 var shift = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift);
                 if (shift.HasFlag(CoreVirtualKeyStates.Down))
                 {
-                    viewModel.UserInput += Environment.NewLine;
-                    nameUserInput.SelectionStart = viewModel.UserInput.Length;
+                    ViewModel.UserInput += Environment.NewLine;
+                    nameUserInput.SelectionStart = ViewModel.UserInput.Length;
                 }
-                else viewModel.SendMessageCommand.Execute(null);
+                else ViewModel.SendMessageCommand.Execute(null);
                 e.Handled = true;
             }
         }
@@ -164,6 +164,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         public partial ObservableCollection<ToolExecuteIndicatorModel> ToolExecuteIndicators { get; set; } = [];
         [ObservableProperty]
         public partial string UserInput { get; set; }
+        [ObservableProperty]
+        public partial bool UserInputAvaliable { get; set; } = false;
         public ChatPageViewModel(ChatPage page)
         {
             Page = page;
@@ -176,6 +178,16 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             page.IntelligenceService.MainChatAgentClient.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
             page.IntelligenceService.MainChatAgentClient.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
             page.IntelligenceService.MainChatAgentClient.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
+
+            Task.Run(async () =>
+            {
+                IntelligenceService.ReadyResetEvent.WaitOne();
+                Page.DispatcherQueue.TryEnqueue(() =>
+                {
+                    UserInputAvaliable = true;
+                    Items.Add(new ChatItem { Role = Role.System, FinishContent = $"已连接模型：{ModelName}", FinishContentVisual = true });
+                });
+            });
         }
 
         private async Task MainChatAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
@@ -263,8 +275,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                             Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
                             Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.White);
 
-                            lastChatItem.Content += x?.Delta?.GetThinking();
-                            lastChatItem.Content += x?.Delta?.Content;
+                            lastChatItem.StreamContent += x?.Delta?.GetThinking();
+                            lastChatItem.StreamContent += x?.Delta?.Content;
                         }
                     });
                 });
@@ -279,10 +291,18 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 ToolExecuteIndicators.Clear();
                 var lastChatItem = Items.LastOrDefault();
                 if (lastChatItem is null) return;
-                lastChatItem.Content += $"\r\n[finish {result.FinishReason}]";
-                if (result.FinishReason != "stop")
+                lastChatItem.StreamContent += $"\r\n\r\n[finish {result.FinishReason}]";
+
+                if (result.FinishReason == "stop")
                 {
-                    lastChatItem.Content += "\r\n";
+                    lastChatItem.FinishContent = lastChatItem.StreamContent;
+                    lastChatItem.StreamContent = result.ReasoningContent;
+                    lastChatItem.StreamContentVisual = !lastChatItem.StreamContent.IsNullOrEmpty();
+                    lastChatItem.FinishContentVisual = !lastChatItem.FinishContent.IsNullOrEmpty();
+                }
+                else if (result.FinishReason != "stop")
+                {
+                    lastChatItem.StreamContent += "\r\n\r\n";
                 }
                 _ = Page.ScrollHistoryToBottomAsync();
             });
@@ -300,13 +320,18 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             }
             else
             {
-                Items.Add(new ChatItem { Role = Role.User, Content = UserInput });
-                Items.Add(new ChatItem { Role = Role.Assistant, Content = string.Empty });
+                Items.Add(new ChatItem { Role = Role.User, FinishContent = UserInput, FinishContentVisual = true });
+                Items.Add(new ChatItem { Role = Role.Assistant, StreamContent = string.Empty, StreamContentVisual = true });
                 await Page.ScrollHistoryToBottomAsync(force: true);
                 string input = UserInput;
                 UserInput = string.Empty;
                 var result = await IntelligenceService.Input(input);
             }
+        }
+        [RelayCommand]
+        public void SelectImages()
+        {
+
         }
     }
 }

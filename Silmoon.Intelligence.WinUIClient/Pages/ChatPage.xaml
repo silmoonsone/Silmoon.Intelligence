@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="using:Silmoon.Intelligence.WinUIClient.Pages"
     xmlns:models="using:Silmoon.Intelligence.WinUIClient.Models"
+    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     d:DataContext="{d:DesignInstance Type=local:ChatPageViewModel}"
     NavigationCacheMode="Required"
     mc:Ignorable="d">
@@ -21,17 +22,18 @@
         </Grid.RowDefinitions>
         <!--最顶端布局-->
         <Frame Grid.Row="0" Padding="5">
-            <TextBlock Text="{x:Bind viewModel.ModelName, Mode=OneWay}" HorizontalAlignment="Center" FontWeight="Bold"></TextBlock>
+            <TextBlock Text="{x:Bind ViewModel.ModelName, Mode=OneWay}" HorizontalAlignment="Center" FontWeight="Bold"></TextBlock>
         </Frame>
         <!--中间内容布局-->
         <Grid Grid.Row="1">
             <Frame BorderThickness="1" BorderBrush="Gray" Padding="0,10,0,10" CornerRadius="10">
-                <ListView x:Name="nameChatList" ItemsSource="{x:Bind viewModel.Items, Mode=TwoWay}" SelectionMode="None">
+                <ListView x:Name="nameChatList" ItemsSource="{x:Bind ViewModel.Items, Mode=TwoWay}" SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:ChatItem">
                             <StackPanel Margin="5" BorderThickness="1" CornerRadius="10" Padding="5" BorderBrush="Gray">
                                 <TextBlock Text="{x:Bind Role, Converter={StaticResource EnumDisplayConverter}, Mode=OneWay}" Margin="0,0,0,5" FontSize="18" FontWeight="Bold"/>
-                                <TextBlock Text="{x:Bind Content, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind StreamContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind StreamContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
+                                <ctk:MarkdownTextBlock Text="{x:Bind FinishContent, Mode=OneWay}" IsTextSelectionEnabled="True" Background="Transparent" TextWrapping="Wrap" Visibility="{x:Bind FinishContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -41,7 +43,7 @@
         <!--工具执行状况布局-->
         <Frame Grid.Row="2">
             <StackPanel>
-                <ListView ItemsSource="{x:Bind viewModel.ToolExecuteIndicators, Mode=OneWay}" SelectionMode="None" ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <ListView ItemsSource="{x:Bind ViewModel.ToolExecuteIndicators, Mode=OneWay}" SelectionMode="None" ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <ItemsStackPanel Orientation="Horizontal"/>
@@ -64,17 +66,21 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>
                     <ColumnDefinition Width="auto"></ColumnDefinition>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <TextBox
                     x:Name="nameUserInput"
                     Grid.Column="0"
                     PlaceholderText="和智能体对话（Enter 发送，Shift+Enter 换行）"
-                    Text="{x:Bind viewModel.UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Text="{x:Bind ViewModel.UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap"
                     MaxHeight="200"
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                     KeyDown="nameUserInput_KeyDown" />
-                <Button Grid.Column="1" Content="发送" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind viewModel.SendMessageCommand}"></Button>
+                <Button Grid.Column="1" Command="{x:Bind ViewModel.SelectImagesCommand}">
+                    <FontIcon Glyph="&#xE8B9;"></FontIcon>
+                </Button>
+                <Button Grid.Column="2" Content="发送" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.SendMessageCommand}" IsEnabled="{x:Bind ViewModel.UserInputAvaliable, Mode=OneWay}"></Button>
             </Grid>
         </StackPanel>
     </Grid>
