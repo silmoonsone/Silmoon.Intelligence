@@ -203,7 +203,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                         var lastChatItem = Items.LastOrDefault();
                         if (lastChatItem is not null && (lastChatItem.Role == item.Role))
                         {
-                            if (!message.Content.IsNullOrDefault()) lastChatItem.FinishContent += $"\r\n{message.Content}";
+                            if (!message.Content.IsNullOrDefault()) lastChatItem.FinishContent += $"\r\n{IntelligenceService.GetUserRealInput(message.Content)}";
                             message.ToolCalls?.Each(toolcall =>
                             {
                                 if (lastChatItem.FinishContent.EndsWith("\r\n")) lastChatItem.FinishContent += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
@@ -213,7 +213,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                         }
                         else
                         {
-                            var content = message.Content;
+                            var content = IntelligenceService.GetUserRealInput(message.Content);
                             message.ToolCalls?.Each(toolcall =>
                             {
                                 if (content.EndsWith("\r\n")) content += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";

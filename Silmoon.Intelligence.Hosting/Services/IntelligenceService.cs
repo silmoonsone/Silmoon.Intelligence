@@ -73,7 +73,25 @@ namespace Silmoon.Intelligence.Hosting.Services
 
         public async Task<Result> Input(string input)
         {
-            return await MainChatAgentClient.Chat($"<time>{DateTime.Now: yyyy-MM-dd HH:mm:ss}</time>{input}");
+            return await MainChatAgentClient.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
+        }
+        public static string GetUserRealInput(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            var s = input;
+            while (TryStripLeadingTag(ref s, "time") || TryStripLeadingTag(ref s, "system")) { }
+            return s;
+
+            static bool TryStripLeadingTag(ref string text, string tag)
+            {
+                var open = $"<{tag}>";
+                var close = $"</{tag}>";
+                if (!text.StartsWith(open, StringComparison.Ordinal)) return false;
+                var end = text.IndexOf(close, open.Length, StringComparison.Ordinal);
+                if (end < 0) return false;
+                text = text[(end + close.Length)..];
+                return true;
+            }
         }
         public StateSet<bool, JObject> SaveChatHistory()
         {
