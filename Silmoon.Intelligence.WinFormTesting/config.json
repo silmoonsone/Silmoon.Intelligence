@@ -1,15 +1,18 @@
 ﻿{
   "defaultModel": {
-    "defaultProvider": "aliyun",
-    "defaultModelName": "qwen3.6-plus"
+    "defaultProvider": "deepseek",
+    "defaultModelName": "deepseek-v4-flash"
   },
   "systemPrompt": "你是一个通用的助手，尽量帮助用户解决各种问题。",
   "tools": [],
+  "aliyunOpenSearchKey": "",
+  "nativeClientDisableProxy": false,
   "modelProviders": [
     {
       "providerName": "aliyun",
       "apiUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
       "apiKey": "",
+      "providerDescription": "Aliyun as know as Qwen models AI platform.",
       "models": [
         {
           "name": "qwen3.6-plus",
@@ -25,6 +28,7 @@
       "providerName": "tencent",
       "apiUrl": "https://api.hunyuan.cloud.tencent.com/v1",
       "apiKey": "",
+      "providerDescription": "Tenecent as know as HUNYUAN models AI platform.",
       "models": [
         {
           "name": "hunyuan-2.0-instruct-20251111",
@@ -36,6 +40,7 @@
       "providerName": "deepseek",
       "apiUrl": "https://api.deepseek.com",
       "apiKey": "",
+      "providerDescription": "DeepSeek AI models platform.",
       "models": [
         {
           "name": "deepseek-v4-flash",
@@ -43,14 +48,6 @@
         },
         {
           "name": "deepseek-v4-pro",
-          "enable": true
-        },
-        {
-          "name": "deepseek-chat",
-          "enable": true
-        },
-        {
-          "name": "deepseek-reasoner",
           "enable": true
         }
       ]

@@ -69,6 +69,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                     agentClient.Id = agentHistory.Id;
                     agentClient.NativeChatClient.ModelProvider = SilmoonConfigureService.ModelProviders[agentHistory.ProviderName];
                     agentClient.NativeChatClient.ModelName = agentHistory.ModelName;
+                    agentClient.NativeChatClient.RebuildHttpClient();
 
                     return true.ToStateSet(agentHistory, $"restore {chatHistory.Length} chat histories ");
                 }

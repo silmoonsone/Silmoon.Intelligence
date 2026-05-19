@@ -6,6 +6,7 @@
   "systemPrompt": "你是一个通用的助手，尽量帮助用户解决各种问题。",
   "tools": [],
   "aliyunOpenSearchKey": "",
+  "nativeClientDisableProxy": false,
   "modelProviders": [
     {
       "providerName": "aliyun",

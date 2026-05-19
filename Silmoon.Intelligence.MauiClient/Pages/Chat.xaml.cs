@@ -132,14 +132,14 @@ public partial class ChatViewModel : ObservableObject
     public ChatViewModel(Chat page)
     {
         this.page = page;
-        page.Title = $"Chat ({page.intelligenceService.MainChatAgentClient.NativeChatClient.ModelName})";
-        page.intelligenceService.MainChatAgentClient.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
-        page.intelligenceService.MainChatAgentClient.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
+        page.Title = $"Chat ({page.intelligenceService.DefaultChatAgentClient.NativeChatClient.ModelName})";
+        page.intelligenceService.DefaultChatAgentClient.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
+        page.intelligenceService.DefaultChatAgentClient.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
 
-        page.intelligenceService.MainChatAgentClient.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart; ;
-        page.intelligenceService.MainChatAgentClient.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
-        page.intelligenceService.MainChatAgentClient.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
-        page.intelligenceService.MainChatAgentClient.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
+        page.intelligenceService.DefaultChatAgentClient.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart; ;
+        page.intelligenceService.DefaultChatAgentClient.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
+        page.intelligenceService.DefaultChatAgentClient.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
+        page.intelligenceService.DefaultChatAgentClient.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
     }
 
     private async Task MainChatAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
@@ -230,7 +230,7 @@ public partial class ChatViewModel : ObservableObject
             _ = page.ScrollHistoryToBottomAsync(force: true);
             string input = Input;
             Input = string.Empty;
-            var result = await page.intelligenceService.Input(input);
+            var result = await page.intelligenceService.Chat(input);
         }
     }
 }

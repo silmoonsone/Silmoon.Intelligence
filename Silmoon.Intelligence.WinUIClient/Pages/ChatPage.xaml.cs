@@ -249,7 +249,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                             var content = IntelligenceService.GetUserRealInput(message.Content);
                             message.ToolCalls?.Each(toolcall =>
                             {
-                                if (content.EndsWith("\r\n")) content += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
+                                if (content?.EndsWith("\r\n") ?? false) content += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
                                 else content += $"\r\n\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
                             });
                             Items.Add(new ChatItem(message.Role, content));
