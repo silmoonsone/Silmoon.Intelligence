@@ -23,20 +23,20 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`Dictionary<Guid, AgentClient> AgentClients`** 与 **`DefaultChatAgentClient`**（默认指向当前字典中的默认会话）；**`NewAgent` / `DeleteAgent` / `Chat(input, agentId, autoSave)`**。启动时在 **`ExecuteAsync`** 中加载 `system_prompts`、创建监管 Agent、扫描 **`workspace/main_agent_memories/agent_{guid}_chat_history.json`** 并 **`RestoreAgentHistory`**，完成后 **`ReadyResetEvent.Set()`**。**`ModelContextService`** 通过 **`InjectSupervisorTools` / `InjectMainChatTools`** 分别挂载工具（含 WebSearch 等，以源码为准）。**`AgentWorkspaceService`** 负责按 Agent 保存/恢复 **`AgentHistory`**（含 Provider、Model、聊天记录）。扩展注册见 **`Hosting/Extensions/ServiceCollectionExtension.cs`**；**`workspace/system_prompts/*.md`**、**`workspace/markdowns/`** 在构建时随 Hosting 复制到输出目录 |
+| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；多会话 **`AgentClients`**（按 **`Guid`**）；**`DefaultChatAgentClient`** 为启动后默认会话，供**未做多会话 UI** 的入口使用（**`Chat(input)`** 无参重载等）。**`NewAgent` / `DeleteAgent` / `Chat(input, agentId, autoSave)`**；启动扫盘恢复 **`workspace/main_agent_memories/`**，**`ReadyResetEvent`**。工具注入、**`AgentHistory`** 持久化等见 **`ModelContextService`**、**`AgentWorkspaceService`** 与 **`ServiceCollectionExtension.cs`** |
 
 ### 客户端应用
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.MauiClient` | .NET MAUI，`AddSilmoonIntelligence()` + `SilmoonConfigure`；平台目录为 **`FileSystem.AppDataDirectory`**。**可用**，侧重联调与收集测试，功能与 WinUI 未必对齐 |
-| `Silmoon.Intelligence.WinUIClient` | WinUI 3（`net10.0-windows10.0.19041.0`），泛型 **`Host`** + **`AddSilmoonIntelligence()`** + **`SilmoonConfigure`**；**`NavigationView`** + **`ChatPage`**：**左侧会话列表**（新建/切换/删除/复制等）、**右侧聊天区**（流式输出、**Markdown** 完成内容、**工具执行指示器**）；等待 **`ReadyResetEvent`** 后绑定 **`DefaultChatAgentClient` / 当前选中 Agent** 的事件。平台目录为 **`AppContext.BaseDirectory`**。依赖 **Silmoon.Windows.WinUI3** 与 **Windows App SDK** |
+| `Silmoon.Intelligence.MauiClient` | .NET MAUI，单会话联调；走 **`DefaultChatAgentClient`**（与控制台同类）。平台目录 **`FileSystem.AppDataDirectory`**。功能与 WinUI 未必对齐 |
+| `Silmoon.Intelligence.WinUIClient` | WinUI 3 桌面客户端：**多会话**（列表新建/切换/删除/复制，**`ChatPage`** 按当前选中 **`AgentClient`** 操作，**不依赖** **`DefaultChatAgentClient`**）。**Markdown**、流式输出、工具指示器。平台目录 **`AppContext.BaseDirectory`**；依赖 **Silmoon.Windows.WinUI3**、**Windows App SDK** |
 
 ### 测试与联调入口
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.ConsoleTesting` | 控制台：`ConsoleService` 在就绪后绑定 **`DefaultChatAgentClient`** 与监管 Agent 事件；`@save` / `@restore` 等针对默认会话 **Id**；普通输入走 **`Chat(input)`** |
+| `Silmoon.Intelligence.ConsoleTesting` | 控制台联调：单会话，使用 **`DefaultChatAgentClient`** 与 **`Chat(input)`**；`@save` / `@restore` 等见 **`ConsoleService`** |
 | `Silmoon.Intelligence.WinFormTesting` | WinForms 壳与示例配置；**未接入** Hosting / 核心逻辑 |
 
 `slnx` 中「支撑框架」引用 **`../Silmoon.AI`**、**`../Silmoon.Maui`**、**`../Silmoon.Windows`**；完整构建需与主仓库位于同一上级目录。

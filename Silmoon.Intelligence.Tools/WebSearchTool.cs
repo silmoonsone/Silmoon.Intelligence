@@ -25,7 +25,11 @@ namespace Silmoon.Intelligence.Tools
             return [
                 Tool.Create(
                     "WebSearch",
-                    "Search the web for information.",
+                    """
+                    Search the web for information.
+                    Concurrency: at most 3 WebSearch calls in parallel per tool-calls block.
+                    If more searches are needed, run additional tool-calling rounds after results return instead of exceeding the limit.
+                    """,
                     [
                         ToolParameterProperty.Create("string", "query", "The search query.", null, true)
                     ]

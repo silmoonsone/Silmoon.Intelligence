@@ -259,6 +259,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             }
             await Task.Delay(100);
             await Page.ScrollHistoryToBottomAsync(force: true);
+            await Task.Delay(500);
+            await Page.ScrollHistoryToBottomAsync(force: true);
         }
 
         private async Task MainChatAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
@@ -376,9 +378,13 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 Page.nameChatList.SelectedIndex = 0;
         }
         [RelayCommand]
-        public void CopyChat(ChatListItem chatListItem)
+        public async Task CopyChat(ChatListItem chatListItem)
         {
-            //TO DO
+            var newChat = IntelligenceService.NewAgent();
+            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LatestAt = DateTime.Now, DisplayName = $"{newChat.Data.Key}", This = this });
+            var history = new List<IMessage>(IntelligenceService.AgentClients[chatListItem.Id].History);
+            newChat.Data.Value.NativeChatClient.MessageHistory = history;
+            Page.nameChatList.SelectedIndex = 0;
         }
 
         [RelayCommand]
@@ -429,11 +435,12 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             //Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
         [RelayCommand]
-        public async Task NewChat()
+        public async Task<StateSet<bool, KeyValuePair<Guid, AgentClient>>> NewChat()
         {
             var newChat = IntelligenceService.NewAgent();
             ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LatestAt = DateTime.Now, DisplayName = $"{newChat.Data.Key}", This = this });
             Page.nameChatList.SelectedIndex = 0;
+            return newChat;
         }
         [RelayCommand]
         public async Task SwitchChat(Guid chatId)
