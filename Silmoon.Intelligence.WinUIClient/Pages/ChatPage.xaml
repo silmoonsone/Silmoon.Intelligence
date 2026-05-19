@@ -13,79 +13,125 @@
     NavigationCacheMode="Required"
     mc:Ignorable="d">
 
-    <Grid RowSpacing="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="auto"></RowDefinition>
-            <RowDefinition Height="auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        <!--最顶端布局-->
-        <Frame Grid.Row="0" Padding="5">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="auto"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.ModelName, Mode=OneWay}" HorizontalAlignment="Center" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"></TextBlock>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
-                    <Button Command="{x:Bind ViewModel.UndoHistoryCommand}">
-                        <FontIcon Glyph="&#xE7A7;" />
-                    </Button>
-                    <Button Command="{x:Bind ViewModel.ClearHistoryCommand}">
-                        <FontIcon Glyph="&#xE74D;" />
-                    </Button>
-                    <Button Command="{x:Bind ViewModel.SaveHistoryCommand}">
-                        <FontIcon Glyph="&#xE74E;" />
-                    </Button>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <!--左侧聊天列表布局-->
+        <Grid Grid.Column="0">
+            <Grid BorderBrush="Gray" BorderThickness="1" CornerRadius="10" Margin="0,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Margin="5">
                 </StackPanel>
+                <ListView x:Name="nameChatList" x:FieldModifier="public" Grid.Row="1" ItemsSource="{x:Bind ViewModel.ChatList, Mode=TwoWay}" Padding="3" SelectionChanged="nameChatList_SelectionChanged">
+                    <ListView.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Text="新会话" Command="{x:Bind ViewModel.NewChatCommand}" />
+                        </MenuFlyout>
+                    </ListView.ContextFlyout>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ChatListItem">
+                            <StackPanel Margin="5">
+                                <StackPanel.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="复制" Command="{x:Bind This.CopyChatCommand}" CommandParameter="{x:Bind}" />
+                                        <MenuFlyoutItem Text="删除" Command="{x:Bind This.DeleteChatCommand}" CommandParameter="{x:Bind}" />
+                                        <!--<MenuFlyoutSeparator />
+                                        <MenuFlyoutItem Text="属性" />-->
+                                    </MenuFlyout>
+                                </StackPanel.ContextFlyout>
+                                <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" TextTrimming="CharacterEllipsis"></TextBlock>
+                                <TextBlock Foreground="Gray">
+                                    <Run Text="{x:Bind ChatCounting, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='({0})'}" FontSize="10"></Run>
+                                    <Run Text="{x:Bind LatestAt, Mode=OneWay}" FontSize="10"></Run>
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
-        </Frame>
-        <!--中间内容布局-->
-        <Grid Grid.Row="1">
-            <Frame BorderThickness="1" BorderBrush="Gray" Padding="0,10,0,10" CornerRadius="10">
-                <ListView x:Name="nameChatList" ItemsSource="{x:Bind ViewModel.Items, Mode=TwoWay}" SelectionMode="None">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ChatItem">
-                            <StackPanel Margin="5" BorderThickness="1" CornerRadius="10" Padding="5" BorderBrush="Gray">
-                                <TextBlock Text="{x:Bind Role, Converter={StaticResource EnumDisplayConverter}, Mode=OneWay}" Margin="0,0,0,5" FontSize="18" FontWeight="Bold"/>
-                                <TextBlock Text="{x:Bind StreamContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind StreamContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
-                                <ctk:MarkdownTextBlock Text="{x:Bind FinishContent, Mode=OneWay}" IsTextSelectionEnabled="True" Background="Transparent" TextWrapping="Wrap" Visibility="{x:Bind FinishContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Frame>
         </Grid>
-        <!--工具执行状况布局-->
-        <Frame Grid.Row="2">
-            <StackPanel>
-                <ListView ItemsSource="{x:Bind ViewModel.ToolExecuteIndicators, Mode=OneWay}" SelectionMode="None" ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsStackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ToolExecuteIndicatorModel">
-                            <StackPanel BorderThickness="1" Margin="-15,0,0,10" CornerRadius="10" Padding="5" BorderBrush="Gray">
-                                <TextBlock Text="{x:Bind FunctionName, Mode=OneWay}" FontWeight="ExtraBlack" FontSize="12"/>
-                                <TextBlock Text="{x:Bind Status, Mode=OneWay}" FontSize="10" Foreground="{x:Bind Color, Mode=OneWay}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </StackPanel>
-        </Frame>
-        <!--聊天输入框布局-->
-        <StackPanel Grid.Row="3">
-            <Grid ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="auto"></ColumnDefinition>
-                    <ColumnDefinition Width="auto"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <TextBox
+        <!--右侧聊天详情布局-->
+        <Grid Grid.Column="1" RowSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <!--最顶端布局-->
+            <Frame Grid.Row="0" Padding="5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.ModelName, Mode=OneWay}" HorizontalAlignment="Center" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"></TextBlock>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                        <Button Command="{x:Bind ViewModel.UndoHistoryCommand}">
+                            <FontIcon Glyph="&#xE7A7;" />
+                        </Button>
+                        <Button Command="{x:Bind ViewModel.ClearHistoryCommand}">
+                            <FontIcon Glyph="&#xE74D;" />
+                        </Button>
+                        <Button Command="{x:Bind ViewModel.SaveHistoryCommand}">
+                            <FontIcon Glyph="&#xE74E;" />
+                        </Button>
+                        <Button Command="{x:Bind ViewModel.NewChatCommand}">
+                            <FontIcon Glyph="&#xE710;" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Frame>
+            <!--中间内容布局-->
+            <Grid Grid.Row="1">
+                <Frame BorderThickness="1" BorderBrush="Gray" Padding="0,10,0,10" CornerRadius="10">
+                    <ListView x:Name="nameChat" ItemsSource="{x:Bind ViewModel.Items, Mode=TwoWay}" SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ChatItem">
+                                <StackPanel Margin="5" BorderThickness="1" CornerRadius="10" Padding="5" BorderBrush="Gray">
+                                    <TextBlock Text="{x:Bind Role, Converter={StaticResource EnumDisplayConverter}, Mode=OneWay}" Margin="0,0,0,5" FontSize="18" FontWeight="Bold"/>
+                                    <TextBlock Text="{x:Bind StreamContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind StreamContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
+                                    <ctk:MarkdownTextBlock Text="{x:Bind FinishContent, Mode=OneWay}" IsTextSelectionEnabled="True" Background="Transparent" TextWrapping="Wrap" Visibility="{x:Bind FinishContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Frame>
+            </Grid>
+            <!--工具执行状况布局-->
+            <Frame Grid.Row="2">
+                <StackPanel>
+                    <ListView ItemsSource="{x:Bind ViewModel.ToolExecuteIndicators, Mode=OneWay}" SelectionMode="None" ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ToolExecuteIndicatorModel">
+                                <StackPanel BorderThickness="1" Margin="-15,0,0,10" CornerRadius="10" Padding="5" BorderBrush="Gray">
+                                    <TextBlock Text="{x:Bind FunctionName, Mode=OneWay}" FontWeight="ExtraBlack" FontSize="12"/>
+                                    <TextBlock Text="{x:Bind Status, Mode=OneWay}" FontSize="10" Foreground="{x:Bind Color, Mode=OneWay}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Frame>
+            <!--聊天输入框布局-->
+            <StackPanel Grid.Row="3">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBox
                     x:Name="nameUserInput"
                     Grid.Column="0"
                     PlaceholderText="和智能体对话（Enter 发送，Shift+Enter 换行）"
@@ -94,11 +140,12 @@
                     MaxHeight="200"
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                     KeyDown="nameUserInput_KeyDown" />
-                <Button Grid.Column="1" Command="{x:Bind ViewModel.SelectImagesCommand}">
-                    <FontIcon Glyph="&#xE8B9;"  />
-                </Button>
-                <Button Grid.Column="2" Content="发送" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.SendMessageCommand}" IsEnabled="{x:Bind ViewModel.UserInputAvaliable, Mode=OneWay}"></Button>
-            </Grid>
-        </StackPanel>
+                    <Button Grid.Column="1" Command="{x:Bind ViewModel.SelectImagesCommand}">
+                        <FontIcon Glyph="&#xE8B9;"  />
+                    </Button>
+                    <Button Grid.Column="2" Content="发送" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.SendChatCommand}" IsEnabled="{x:Bind ViewModel.UserInputAvaliable, Mode=OneWay}"></Button>
+                </Grid>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

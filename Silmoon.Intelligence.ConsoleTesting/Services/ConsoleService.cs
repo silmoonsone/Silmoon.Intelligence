@@ -22,18 +22,6 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
             ApplicationLifetime = applicationLifetime;
             IntelligenceService = intelligenceService;
             Logger = logger;
-            IntelligenceService.MainChatAgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart;
-            IntelligenceService.MainChatAgentClient.OnToolCallInvoke += AgentClient_OnToolCallInvoke;
-            IntelligenceService.MainChatAgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
-            IntelligenceService.MainChatAgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
-            IntelligenceService.MainChatAgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
-            IntelligenceService.MainChatAgentClient.OnStreamOutput += AgentClient_OnStreamOutput;
-            IntelligenceService.MainChatAgentClient.OnStreamOutputCompleted += AgentClient_OnStreamOutputCompleted;
-
-            IntelligenceService.SupervisorAgentClient.OnToolCallsStart += SupervisorAgentClient_OnToolCallsStart;
-            IntelligenceService.SupervisorAgentClient.OnToolCallsFinish += SupervisorAgentClient_OnToolCallsFinish;
-            IntelligenceService.SupervisorAgentClient.OnStreamOutput += SupervisorAgentClient_OnStreamOutput;
-            IntelligenceService.SupervisorAgentClient.OnStreamOutputCompleted += SupervisorAgentClient_OnStreamOutputCompleted;
         }
 
 
@@ -123,7 +111,21 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             IntelligenceService.ReadyResetEvent.WaitOne();
-            Logger.LogInformation("已就绪");
+
+            IntelligenceService.DefaultChatAgentClient.OnToolCallsStart += AgentClient_OnToolCallsStart;
+            IntelligenceService.DefaultChatAgentClient.OnToolCallInvoke += AgentClient_OnToolCallInvoke;
+            IntelligenceService.DefaultChatAgentClient.OnToolExecuting += AgentClient_OnToolExecuting;
+            IntelligenceService.DefaultChatAgentClient.OnToolExecuted += AgentClient_OnToolExecuted;
+            IntelligenceService.DefaultChatAgentClient.OnToolCallsFinish += AgentClient_OnToolCallsFinish;
+            IntelligenceService.DefaultChatAgentClient.OnStreamOutput += AgentClient_OnStreamOutput;
+            IntelligenceService.DefaultChatAgentClient.OnStreamOutputCompleted += AgentClient_OnStreamOutputCompleted;
+
+            IntelligenceService.SupervisorAgentClient.OnToolCallsStart += SupervisorAgentClient_OnToolCallsStart;
+            IntelligenceService.SupervisorAgentClient.OnToolCallsFinish += SupervisorAgentClient_OnToolCallsFinish;
+            IntelligenceService.SupervisorAgentClient.OnStreamOutput += SupervisorAgentClient_OnStreamOutput;
+            IntelligenceService.SupervisorAgentClient.OnStreamOutputCompleted += SupervisorAgentClient_OnStreamOutputCompleted;
+
+            Logger.LogInformation($"恢复{IntelligenceService.DefaultChatAgentClient.History.Count}条聊天信息，已就绪。");
             Logger.LogInformation("@clear 清理聊天历史，@exit 退出应用，@getsystemprompt 获取系统提示，@back 回退消息历史，@stat 查看消息历史数量，@save 保存聊天历史，@restore 恢复聊天历史");
             await Task.Delay(100, stoppingToken);
             while (!stoppingToken.IsCancellationRequested)
@@ -145,35 +147,35 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                     switch (command)
                     {
                         case "clear":
-                            IntelligenceService.MainChatAgentClient.NativeChatClient.ResetHistory();
+                            IntelligenceService.DefaultChatAgentClient.NativeChatClient.ResetHistory();
                             Console.WriteLine("历史被清空.");
                             break;
                         case "exit":
                             ApplicationLifetime.StopApplication();
                             break;
                         case "getsystemprompt":
-                            Console.WriteLine(IntelligenceService.MainChatAgentClient.NativeChatClient.SystemPrompt);
+                            Console.WriteLine(IntelligenceService.DefaultChatAgentClient.NativeChatClient.SystemPrompt);
                             break;
                         case "back":
-                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.Count}");
-                            IntelligenceService.MainChatAgentClient.NativeChatClient.RollbackHistory();
-                            Console.WriteLine($"回退后消息历史数量：{IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.Count}");
+                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
+                            IntelligenceService.DefaultChatAgentClient.NativeChatClient.RollbackHistory();
+                            Console.WriteLine($"回退后消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
                             Console.WriteLine();
                             break;
                         case "stat":
-                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.Count}");
+                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
                             break;
                         case "save":
-                            Console.WriteLine($"Save reuslt: {IntelligenceService.SaveChatHistory().ToJsonString()}");
+                            Console.WriteLine($"Save reuslt: {IntelligenceService.SaveChatHistory(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
                             break;
                         case "restore":
-                            Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatHistory().ToJsonString()}");
+                            Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatHistory(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
                             Console.WriteLine($"Last message:");
-                            Console.WriteLine($"user: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.GetContent()}");
-                            Console.WriteLine($"assistant: {IntelligenceService.MainChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.GetContent()}");
+                            Console.WriteLine($"user: {IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.GetContent()}");
+                            Console.WriteLine($"assistant: {IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.GetContent()}");
                             break;
                         case "getsystem":
-                            Console.WriteLine(IntelligenceService.MainChatAgentClient.NativeChatClient.SystemPrompt);
+                            Console.WriteLine(IntelligenceService.DefaultChatAgentClient.NativeChatClient.SystemPrompt);
                             break;
                         default:
                             Console.WriteLine($"Unknown command: {command}");
@@ -183,7 +185,7 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                 else
                 {
                     Console.Write(Role.Assistant + ": ");
-                    await IntelligenceService.Input(input);
+                    await IntelligenceService.Chat(input);
                     Console.WriteLine();
                 }
             }

@@ -33,7 +33,7 @@ namespace Silmoon.Intelligence.WinUIClient
             ctlMainWindowPage.DataContext = viewModel = new MainWindowViewModel(ctlMainWindowPage);
             //ctlMainPageFrame.Navigate(typeof(MainPage));
             nameNavigationView.SelectedItem = nameNavigationView.MenuItems[0];
-            AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1280, 720));
+            AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1440, 900));
         }
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {

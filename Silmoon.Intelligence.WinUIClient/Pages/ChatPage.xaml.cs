@@ -49,16 +49,16 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         public ChatPage()
         {
             IntelligenceService = App.GetService<IntelligenceService>();
-            ViewModel = new ChatPageViewModel(this);
             InitializeComponent();
             Loaded += ChatPage_Loaded;
             Unloaded += ChatPage_Unloaded;
+            ViewModel = new ChatPageViewModel(this);
         }
 
         void ChatPage_Loaded(object sender, RoutedEventArgs e)
         {
             if (chatScrollViewer is not null) return;
-            chatScrollViewer = FindDescendantScrollViewer(nameChatList);
+            chatScrollViewer = FindDescendantScrollViewer(nameChat);
             if (chatScrollViewer is not null)
                 chatScrollViewer.ViewChanged += ChatScrollViewer_ViewChanged;
         }
@@ -132,7 +132,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                     ViewModel.UserInput += "\r\n";
                     nameUserInput.SelectionStart = ViewModel.UserInput.Length;
                 }
-                else ViewModel.SendMessageCommand.Execute(null);
+                else ViewModel.SendChatCommand.Execute(null);
                 e.Handled = true;
             }
         }
@@ -150,6 +150,14 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             }
             return null;
         }
+
+        private async void nameChatList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is ChatListItem newChat)
+            {
+                await ViewModel.SwitchChat(newChat.Id);
+            }
+        }
     }
     public partial class ChatPageViewModel : ObservableObject
     {
@@ -161,39 +169,64 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [ObservableProperty]
         public partial ObservableCollection<ChatItem> Items { get; set; } = [];
         [ObservableProperty]
+        public partial ObservableCollection<ChatListItem> ChatList { get; set; } = [];
+        [ObservableProperty]
         public partial ObservableCollection<ToolExecuteIndicatorModel> ToolExecuteIndicators { get; set; } = [];
         [ObservableProperty]
         public partial string UserInput { get; set; }
         [ObservableProperty]
         public partial bool UserInputAvaliable { get; set; } = false;
+        [ObservableProperty]
+        public partial KeyValuePair<Guid, AgentClient> CurrentAgentClient { get; set; }
         public ChatPageViewModel(ChatPage page)
         {
             Page = page;
-            ModelName = page.IntelligenceService.MainChatAgentClient.NativeChatClient.ModelName;
+            IntelligenceService.ReadyResetEvent.WaitOne();
 
-            page.IntelligenceService.MainChatAgentClient.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
-            page.IntelligenceService.MainChatAgentClient.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
-
-            page.IntelligenceService.MainChatAgentClient.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart; ;
-            page.IntelligenceService.MainChatAgentClient.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
-            page.IntelligenceService.MainChatAgentClient.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
-            page.IntelligenceService.MainChatAgentClient.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
-
-            Task.Run(async () =>
+            if (!IntelligenceService.AgentClients.IsNullOrEmpty())
             {
-                IntelligenceService.ReadyResetEvent.WaitOne();
-                Page.DispatcherQueue.TryEnqueue(() =>
-                {
-                    UserInputAvaliable = true;
-                    Items.Add(new ChatItem { Role = Role.System, FinishContent = $"已连接模型：{ModelName}", FinishContentVisual = true });
-                    _ = LoadHistory();
-                });
-            });
+                LoadChatList();
+                var pkvClient = IntelligenceService.AgentClients.LastOrDefault();
+                if (pkvClient.Value is not null)
+                    page.nameChatList.SelectedIndex = 0;
+            }
+            UserInputAvaliable = true;
         }
 
-        async Task LoadHistory()
+        public void BindEvents()
         {
-            foreach (var item in IntelligenceService.MainChatAgentClient.History)
+            CurrentAgentClient.Value?.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
+            CurrentAgentClient.Value?.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
+            CurrentAgentClient.Value?.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart; ;
+            CurrentAgentClient.Value?.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
+            CurrentAgentClient.Value?.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
+            CurrentAgentClient.Value?.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
+        }
+        public void UnbindEvents()
+        {
+            CurrentAgentClient.Value?.OnStreamOutput -= MainChatAgentClient_OnStreamOutput;
+            CurrentAgentClient.Value?.OnStreamOutputCompleted -= MainChatAgentClient_OnStreamOutputCompleted;
+            CurrentAgentClient.Value?.OnToolCallsStart -= MainChatAgentClient_OnToolCallsStart; ;
+            CurrentAgentClient.Value?.OnToolExecuting -= MainChatAgentClient_OnToolExecuting;
+            CurrentAgentClient.Value?.OnToolExecuted -= MainChatAgentClient_OnToolExecuted;
+            CurrentAgentClient.Value?.OnToolCallsFinish -= MainChatAgentClient_OnToolCallsFinish;
+        }
+        public ObservableCollection<ChatListItem> LoadChatList()
+        {
+            ChatList.Clear();
+            foreach (var kvp in IntelligenceService.AgentClients)
+            {
+                var agent = kvp.Value;
+                var id = kvp.Key;
+                ChatList.Insert(0, new ChatListItem() { Id = id, ChatCounting = agent.History.Count, CreatedAt = DateTime.Now, LatestAt = DateTime.Now, DisplayName = $"{id}", This = this });
+            }
+            return ChatList;
+        }
+        public async Task LoadChat()
+        {
+            Items.Clear();
+            if (CurrentAgentClient.Value is null) return;
+            foreach (var item in CurrentAgentClient.Value.History)
             {
                 if (item is MessageContent message)
                 {
@@ -224,6 +257,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                     }
                 }
             }
+            await Task.Delay(100);
             await Page.ScrollHistoryToBottomAsync(force: true);
         }
 
@@ -236,20 +270,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             Page.DispatcherQueue.TryEnqueue(() =>
             {
                 ToolExecuteIndicators.Add(new ToolExecuteIndicatorModel { FunctionName = functionName, Color = new SolidColorBrush(Colors.Orange), Status = "执行中", ToolCallId = toolCallParameter.ToolCallId });
-                var lastChatItem = Items.LastOrDefault();
-                if (lastChatItem is null) return;
-                ToolCallResult result = null;
-                var parameters = toolCallParameter.Parameters;
-
-                //lastChatItem.Content += $"[TOOL CALL] {functionName}\r\n";
-                switch (functionName)
-                {
-                    case "Test_ToolCallTest":
-                        result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>($"这是一个工具调用环境测试，正常！"));
-                        break;
-                    default:
-                        break;
-                }
+                if (Items.LastOrDefault() is null) return;
                 _ = Page.ScrollHistoryToBottomAsync(animated: false, force: false);
             });
             return Task.CompletedTask;
@@ -346,9 +367,22 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             return Task.CompletedTask;
         }
 
+        [RelayCommand]
+        public void DeleteChat(ChatListItem chatListItem)
+        {
+            IntelligenceService.DeleteAgent(chatListItem.Id);
+            ChatList.Remove(chatListItem);
+            if (chatListItem.Id == CurrentAgentClient.Key)
+                Page.nameChatList.SelectedIndex = 0;
+        }
+        [RelayCommand]
+        public void CopyChat(ChatListItem chatListItem)
+        {
+            //TO DO
+        }
 
         [RelayCommand]
-        public async Task SendMessage()
+        public async Task SendChat()
         {
             if (string.IsNullOrWhiteSpace(UserInput))
             {
@@ -362,7 +396,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 await Page.ScrollHistoryToBottomAsync(force: true);
                 string input = UserInput;
                 UserInput = string.Empty;
-                var result = await IntelligenceService.Input(input);
+                var result = await IntelligenceService.Chat(input, CurrentAgentClient.Key, true);
             }
         }
         [RelayCommand]
@@ -371,27 +405,48 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
 
         }
 
+
         [RelayCommand]
         public void SaveHistory()
         {
-            IntelligenceService.SaveChatHistory();
+            IntelligenceService.SaveChatHistory(CurrentAgentClient.Key);
         }
         [RelayCommand]
         public void ClearHistory()
         {
-            IntelligenceService.MainChatAgentClient.NativeChatClient.ResetHistory();
-            IntelligenceService.SaveChatHistory();
+            CurrentAgentClient.Value.NativeChatClient.ResetHistory();
+            IntelligenceService.SaveChatHistory(CurrentAgentClient.Key);
             Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
         [RelayCommand]
         public async Task UndoHistory()
         {
-            IntelligenceService.MainChatAgentClient.NativeChatClient.RollbackHistory();
+            CurrentAgentClient.Value.NativeChatClient.RollbackHistory();
             Items.Clear();
-            await LoadHistory();
+            await LoadChat();
 
             //IntelligenceService.SaveChatHistory();
             //Page.DispatcherQueue.TryEnqueue(Items.Clear);
+        }
+        [RelayCommand]
+        public async Task NewChat()
+        {
+            var newChat = IntelligenceService.NewAgent();
+            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LatestAt = DateTime.Now, DisplayName = $"{newChat.Data.Key}", This = this });
+            Page.nameChatList.SelectedIndex = 0;
+        }
+        [RelayCommand]
+        public async Task SwitchChat(Guid chatId)
+        {
+            UnbindEvents();
+            var isFind = IntelligenceService.AgentClients.TryGetValue(chatId, out var agentClient);
+            if (isFind)
+            {
+                CurrentAgentClient = new KeyValuePair<Guid, AgentClient>(chatId, agentClient);
+                ModelName = agentClient.NativeChatClient.ModelName;
+                BindEvents();
+                await LoadChat();
+            }
         }
     }
 }

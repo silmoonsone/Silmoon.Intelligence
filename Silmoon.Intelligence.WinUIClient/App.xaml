@@ -17,6 +17,7 @@
             <sconvert:NullOrDefaultToBoolConverter x:Key="NullOrDefaultToBoolConverter"></sconvert:NullOrDefaultToBoolConverter>
             <sconvert:EnumDisplayConverter x:Key="EnumDisplayConverter"></sconvert:EnumDisplayConverter>
             <sconvert:VisibilityToBoolConverter x:Key="VisibilityToBoolConverter"></sconvert:VisibilityToBoolConverter>
+            <sconvert:StringFormatConverter x:Key="StringFormatConverter"></sconvert:StringFormatConverter>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

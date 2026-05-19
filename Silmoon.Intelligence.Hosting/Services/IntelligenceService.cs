@@ -19,62 +19,95 @@ namespace Silmoon.Intelligence.Hosting.Services
     public class IntelligenceService : BackgroundService
     {
         public AgentClient SupervisorAgentClient { get; set; }
-        public AgentClient MainChatAgentClient { get; set; }
+        public AgentClient DefaultChatAgentClient { get; set; }
+        public Dictionary<Guid, AgentClient> AgentClients { get; set; } = [];
         ModelContextService ModelContextService { get; set; }
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
         AgentWorkspaceService AgentWorkspaceService { get; set; }
-        ILogger<IntelligenceService> Logger { get; set; }
         public ManualResetEvent ReadyResetEvent { get; set; } = new ManualResetEvent(false);
 
-        public IntelligenceService(ISilmoonConfigureService silmoonConfigureService, ModelContextService modelContextService, AgentWorkspaceService agentWorkspaceService, ILogger<IntelligenceService> logger)
+        public IntelligenceService(ISilmoonConfigureService silmoonConfigureService, ModelContextService modelContextService, AgentWorkspaceService agentWorkspaceService)
         {
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
             ModelContextService = modelContextService;
             AgentWorkspaceService = agentWorkspaceService;
-            Logger = logger;
+        }
 
-            var supervisorAdditionSystemPrompt = File.ReadAllText(Path.Combine(agentWorkspaceService.WorkspaceDirectory, "system_prompts", "supervisor_agent_system.md"));
-            var unifiedSystemPrompt = File.ReadAllText(Path.Combine(agentWorkspaceService.WorkspaceDirectory, "system_prompts", "unified_agent_system.md"));
+        public StateSet<bool, KeyValuePair<Guid, AgentClient>> NewAgent() => NewAgent(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName);
+        public StateSet<bool, KeyValuePair<Guid, AgentClient>> NewAgent(ModelProvider modelProvider, string modelName)
+        {
+            var unifiedSystemPrompt = File.ReadAllText(Path.Combine(AgentWorkspaceService.WorkspaceDirectory, "system_prompts", "unified_agent_system.md"));
 
+            var id = Guid.NewGuid();
+            var agentClient = new AgentClient(id, modelProvider, modelName, $"MainAgent-{id}", $"MainAgent-{id}", $"""
+                你是人工智能执行人，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
+                {unifiedSystemPrompt}
+                """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
+            AgentClients[id] = agentClient;
+            ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
+            return true.ToStateSet(new KeyValuePair<Guid, AgentClient>(id, agentClient));
+        }
+        public StateSet<bool> DeleteAgent(Guid id)
+        {
+            var find = AgentClients.TryGetValue(id, out var agent);
+            if (find)
+            {
+                agent.Dispose();
+                AgentWorkspaceService.DeleteAgentHistory(id);
+                AgentClients.Remove(id);
+                return true.ToStateSet();
+            }
+            else
+                return false.ToStateSet("Agent not found");
+        }
 
-            SupervisorAgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "Agent监管助手", "Agent监管员", $"""
+        public async Task<Result> Chat(string input, bool autoSave = false) => await Chat(input, DefaultChatAgentClient.Id, autoSave);
+        public async Task<Result> Chat(string input, Guid agentId, bool autoSave = false)
+        {
+            if (AgentClients.TryGetValue(agentId, out var agent))
+            {
+                var result = await agent.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
+                if (autoSave) SaveChatHistory(agentId);
+                return result;
+            }
+            return null;
+        }
+
+        public StateSet<bool, JObject> SaveChatHistory(Guid agentId) => AgentWorkspaceService.SaveAgentHistory(agentId, overwritten: true);
+        public StateSet<bool, AgentHistory> RestoreChatHistory(Guid agentId) => AgentWorkspaceService.RestoreAgentHistory(agentId);
+
+        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            var supervisorAdditionSystemPrompt = File.ReadAllText(Path.Combine(AgentWorkspaceService.WorkspaceDirectory, "system_prompts", "supervisor_agent_system.md"));
+            var unifiedSystemPrompt = File.ReadAllText(Path.Combine(AgentWorkspaceService.WorkspaceDirectory, "system_prompts", "unified_agent_system.md"));
+
+            SupervisorAgentClient = new AgentClient(Guid.NewGuid(), SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "Agent监管助手", "Agent监管员", $"""
                 {supervisorAdditionSystemPrompt}
                 {unifiedSystemPrompt}
                 """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
 
-            MainChatAgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "主执行人", "主执行人", $"""
+            ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeChatClient);
+
+            var historyFileNames = AgentWorkspaceService.GetHistoryFileNames();
+            foreach (var item in historyFileNames)
+            {
+                var client = new AgentClient(item.Key, SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, $"Agent-{item.Key}", $"Agent-{item.Key}", $"""
                 你是人工智能执行人，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
                 {unifiedSystemPrompt}
                 """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
+
+                AgentClients[item.Key] = client;
+
+                ModelContextService.InjectMainChatTools(client.NativeChatClient);
+                AgentWorkspaceService.RestoreAgentHistory(item.Key);
+            }
+
+            if (AgentClients.Count == 0) NewAgent();
+            DefaultChatAgentClient = AgentClients.LastOrDefault().Value;
+            ReadyResetEvent.Set();
         }
 
-        public async override Task StartAsync(CancellationToken cancellationToken)
-        {
-            ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeChatClient);
-            ModelContextService.InjectMainChatTools(MainChatAgentClient.NativeChatClient);
 
-            SupervisorAgentClient.OnToolCallsStart += SupervisorAgentClient_OnToolCallsStart;
-            SupervisorAgentClient.OnToolCallInvoke += SupervisorAgentClient_OnToolCallInvoke;
-            SupervisorAgentClient.OnToolExecuting += SupervisorAgentClient_OnToolExecuting;
-            SupervisorAgentClient.OnToolExecuted += SupervisorAgentClient_OnToolExecuted;
-            SupervisorAgentClient.OnToolCallsFinish += SupervisorAgentClient_OnToolCallsFinish;
-            SupervisorAgentClient.OnStreamOutput += SupervisorAgentClient_OnStreamOutput;
-            SupervisorAgentClient.OnStreamOutputCompleted += SupervisorAgentClient_OnStreamOutputCompleted;
-
-            MainChatAgentClient.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart;
-            MainChatAgentClient.OnToolCallInvoke += MainChatAgentClient_OnToolCallInvoke;
-            MainChatAgentClient.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
-            MainChatAgentClient.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
-            MainChatAgentClient.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
-            MainChatAgentClient.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
-            MainChatAgentClient.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
-            await base.StartAsync(cancellationToken);
-        }
-
-        public async Task<Result> Input(string input)
-        {
-            return await MainChatAgentClient.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
-        }
         public static string GetUserRealInput(string input)
         {
             if (string.IsNullOrEmpty(input)) return input;
@@ -93,91 +126,12 @@ namespace Silmoon.Intelligence.Hosting.Services
                 return true;
             }
         }
-        public StateSet<bool, JObject> SaveChatHistory()
-        {
-            return AgentWorkspaceService.SaveChatHistory(overwritten: true);
-        }
-        public StateSet<bool, JObject> RestoreChatHistory()
-        {
-            return AgentWorkspaceService.RestoreChatHistory();
-        }
-
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            Logger.LogInformation("初始化监管Agent...");
-            var result = await SupervisorAgentClient.Chat("系统已经启动，请恢复主聊天交互Agent状态");
-            //Logger.LogInformation($"{result.Content}");
-            Logger.LogInformation("监管Agent...完成");
-            ReadyResetEvent.Set();
-        }
-
-        #region SupervisorAgentClient events
-        private async Task SupervisorAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
-        {
-
-        }
-        private async Task<ToolCallResult> SupervisorAgentClient_OnToolCallInvoke(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
-        {
-            if (toolCallParameter.FunctionName == "Test_ToolCallTest") return ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>("这是一个工具调用环境测试，正常！"));
-            else return null;
-        }
-        private async Task SupervisorAgentClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
-        {
-
-        }
-        private async Task SupervisorAgentClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
-        {
-
-        }
-        private async Task<ToolCallResult[]> SupervisorAgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
-        {
-            return toolCallResults;
-        }
-        private async Task SupervisorAgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
-        {
-
-        }
-        private async Task SupervisorAgentClient_OnStreamOutputCompleted(Result result)
-        {
-
-        }
-        #endregion
-
-        #region MainChatAgentClient events
-        private async Task MainChatAgentClient_OnToolCallsStart(ToolCallParameter[] toolCallParameters)
-        {
-
-        }
-        private async Task<ToolCallResult> MainChatAgentClient_OnToolCallInvoke(ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
-        {
-            if (toolCallParameter.FunctionName == "Test_ToolCallTest") return ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>("这是一个工具调用环境测试，正常！"));
-            else return null;
-        }
-        private async Task MainChatAgentClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
-        {
-
-        }
-        private async Task MainChatAgentClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
-        {
-
-        }
-        private async Task<ToolCallResult[]> MainChatAgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
-        {
-            return toolCallResults;
-        }
-        private async Task MainChatAgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
-        {
-
-        }
-        private async Task MainChatAgentClient_OnStreamOutputCompleted(Result result)
-        {
-
-        }
-        #endregion
-
         public override void Dispose()
         {
-            MainChatAgentClient?.Dispose();
+            foreach (var kvpAgent in AgentClients)
+            {
+                kvpAgent.Value?.Dispose();
+            }
             SupervisorAgentClient?.Dispose();
         }
     }

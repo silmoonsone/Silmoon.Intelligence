@@ -25,13 +25,15 @@ namespace Silmoon.Intelligence
         public event StreamOutputHandler OnStreamOutput;
         public event StreamOutputCompletedHandler OnStreamOutputCompleted;
 
+        public Guid Id { get; set; } = Guid.Empty;
         public string Name { get; set; } = string.Empty;
         public string RoleMandate { get; set; } = string.Empty;
         public List<IMessage> History => NativeChatClient.MessageHistory;
         public bool IsBusy { get; set; } = false;
 
-        public AgentClient(ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, bool disableProxy = false)
+        public AgentClient(Guid id, ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, bool disableProxy = false)
         {
+            Id = id;
             Name = name;
             RoleMandate = roleMandate ?? string.Empty;
             NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", disableProxy);
@@ -42,7 +44,6 @@ namespace Silmoon.Intelligence
             NativeChatClient.OnToolCallsFinish += async (toolCallParameters, toolCallResults) => await (OnToolCallsFinish is null ? Task.FromResult<ToolCallResult[]>(null) : OnToolCallsFinish.Invoke(toolCallParameters, toolCallResults));
             NativeChatClient.OnStreamOutput += async (chunk) => await (OnStreamOutput is null ? Task.CompletedTask : OnStreamOutput.Invoke(chunk));
             NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
-            NativeChatClient.Tools.Add(Tool.Create("Test_ToolCallTest", "This is a test tool_calling test tool.", []));
         }
 
         private Task NativeChatClient_OnStreamOutputCompleted(Result result)
