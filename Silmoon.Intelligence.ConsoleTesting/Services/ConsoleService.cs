@@ -166,10 +166,10 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                             Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
                             break;
                         case "save":
-                            Console.WriteLine($"Save reuslt: {IntelligenceService.SaveChatHistory(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
+                            Console.WriteLine($"Save reuslt: {IntelligenceService.SaveChatState(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
                             break;
                         case "restore":
-                            Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatHistory(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
+                            Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatState(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
                             Console.WriteLine($"Last message:");
                             Console.WriteLine($"user: {IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.GetContent()}");
                             Console.WriteLine($"assistant: {IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.GetContent()}");

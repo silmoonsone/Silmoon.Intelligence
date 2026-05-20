@@ -8,6 +8,7 @@ using Silmoon.AI.OpenAI;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
 using Silmoon.Intelligence.Hosting.Tools;
+using Silmoon.Intelligence.Models;
 using Silmoon.Models;
 using System;
 using System.Collections.Concurrent;
@@ -42,7 +43,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             var agentClient = new AgentClient(id, modelProvider, modelName, $"MainAgent-{id}", $"MainAgent-{id}", $"""
                 你是人工智能执行人，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
                 {unifiedSystemPrompt}
-                """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
+                """, null, SilmoonConfigureService.NativeClientDisableProxy);
             AgentClients[id] = agentClient;
             ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
             return true.ToStateSet(new KeyValuePair<Guid, AgentClient>(id, agentClient));
@@ -53,7 +54,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             if (find)
             {
                 agent.Dispose();
-                AgentWorkspaceService.DeleteAgentHistory(id);
+                AgentWorkspaceService.DeleteAgentStateFile(id);
                 AgentClients.Remove(id);
                 return true.ToStateSet();
             }
@@ -67,14 +68,14 @@ namespace Silmoon.Intelligence.Hosting.Services
             if (AgentClients.TryGetValue(agentId, out var agent))
             {
                 var result = await agent.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
-                if (autoSave) SaveChatHistory(agentId);
+                if (autoSave) SaveChatState(agentId);
                 return result;
             }
             return null;
         }
 
-        public StateSet<bool, JObject> SaveChatHistory(Guid agentId) => AgentWorkspaceService.SaveAgentHistory(agentId, overwritten: true);
-        public StateSet<bool, AgentHistory> RestoreChatHistory(Guid agentId) => AgentWorkspaceService.RestoreAgentHistory(agentId);
+        public StateSet<bool, JObject> SaveChatState(Guid agentId) => AgentWorkspaceService.SaveAgentState(agentId, overwritten: true);
+        public StateSet<bool, AgentState> RestoreChatState(Guid agentId) => AgentWorkspaceService.RestoreAgentState(agentId);
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -84,25 +85,25 @@ namespace Silmoon.Intelligence.Hosting.Services
             SupervisorAgentClient = new AgentClient(Guid.NewGuid(), SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "Agent监管助手", "Agent监管员", $"""
                 {supervisorAdditionSystemPrompt}
                 {unifiedSystemPrompt}
-                """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
+                """, null, SilmoonConfigureService.NativeClientDisableProxy);
 
             ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeChatClient);
 
-            var historyFileNames = AgentWorkspaceService.GetHistoryFileNames();
-            foreach (var item in historyFileNames)
+            var agentStates = AgentWorkspaceService.GetAgentStates();
+            if (agentStates.IsNullOrEmpty()) NewAgent();
+            else
             {
-                var client = new AgentClient(item.Key, SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, $"Agent-{item.Key}", $"Agent-{item.Key}", $"""
-                你是人工智能执行人，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
-                {unifiedSystemPrompt}
-                """, disableProxy: SilmoonConfigureService.NativeClientDisableProxy);
-
-                AgentClients[item.Key] = client;
-
-                ModelContextService.InjectMainChatTools(client.NativeChatClient);
-                AgentWorkspaceService.RestoreAgentHistory(item.Key);
+                foreach (var agentState in agentStates)
+                {
+                    var agentClient = new AgentClient(agentState.Id, SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, $"Agent-{agentState.Id}", $"Agent-{agentState.Id}", $"""
+                        {unifiedSystemPrompt}
+                        """, agentState, SilmoonConfigureService.NativeClientDisableProxy);
+                    ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
+                    agentClient.NativeChatClient.MessageHistory = [.. agentState.ChatHistory];
+                    AgentClients[agentState.Id] = agentClient;
+                }
             }
 
-            if (AgentClients.Count == 0) NewAgent();
             DefaultChatAgentClient = AgentClients.LastOrDefault().Value;
             ReadyResetEvent.Set();
         }

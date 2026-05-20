@@ -5,6 +5,7 @@ using Silmoon.AI.Models.OpenAI.Models;
 using Silmoon.AI.OpenAI;
 using Silmoon.AI.Prompts;
 using Silmoon.Extensions;
+using Silmoon.Intelligence.Models;
 using Silmoon.Models;
 using System;
 using System.Collections.Concurrent;
@@ -30,12 +31,15 @@ namespace Silmoon.Intelligence
         public string RoleMandate { get; set; } = string.Empty;
         public List<IMessage> History => NativeChatClient.MessageHistory;
         public bool IsBusy { get; set; } = false;
+        public AgentState State { get; set; }
 
-        public AgentClient(Guid id, ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, bool disableProxy = false)
+        public AgentClient(Guid id, ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, AgentState state = null, bool disableProxy = false)
         {
             Id = id;
             Name = name;
             RoleMandate = roleMandate ?? string.Empty;
+            State = state is null ? new AgentState(id, modelProvider.ProviderName, modelName) : state;
+
             NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", disableProxy);
             NativeChatClient.OnToolCallsStart += async (toolCallParameters) => await (OnToolCallsStart is null ? Task.CompletedTask : OnToolCallsStart.Invoke(toolCallParameters));
             NativeChatClient.OnToolCallInvoke += async (toolCallParameter, toolCallResult) => await (OnToolCallInvoke is null ? Task.FromResult(toolCallResult) : OnToolCallInvoke.Invoke(toolCallParameter, toolCallResult));
@@ -63,6 +67,8 @@ namespace Silmoon.Intelligence
 
                 }
                 var result = Result.Create([.. chunks]);
+                State.ChatHistory = [.. NativeChatClient.MessageHistory];
+                State.LastAt = DateTime.Now;
                 return result;
             });
         }

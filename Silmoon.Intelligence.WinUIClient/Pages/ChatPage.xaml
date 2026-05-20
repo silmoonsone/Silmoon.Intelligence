@@ -47,7 +47,7 @@
                                 <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" TextTrimming="CharacterEllipsis"></TextBlock>
                                 <TextBlock Foreground="Gray">
                                     <Run Text="{x:Bind ChatCounting, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='({0})'}" FontSize="10"></Run>
-                                    <Run Text="{x:Bind LatestAt, Mode=OneWay}" FontSize="10"></Run>
+                                    <Run Text="{x:Bind LastAt, Mode=OneWay}" FontSize="10"></Run>
                                 </TextBlock>
                             </StackPanel>
                         </DataTemplate>

@@ -6,6 +6,7 @@ using Silmoon.AI.Models.OpenAI.Models;
 using Silmoon.AI.OpenAI;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
+using Silmoon.Intelligence.Models;
 using Silmoon.Models;
 using System;
 using System.Collections.Generic;
@@ -28,16 +29,13 @@ namespace Silmoon.Intelligence.Hosting.Services
             ServiceProvider = serviceProvider;
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;
         }
-        public StateSet<bool, JObject> SaveAgentHistory(Guid id, bool overwritten)
+        public StateSet<bool, JObject> SaveAgentState(Guid id, bool overwritten)
         {
             if (IntelligenceService.AgentClients.TryGetValue(id, out var agentClient))
             {
                 var chatHistory = agentClient.NativeChatClient.MessageHistory;
-                var agentHistory = new AgentHistory
+                var agentHistory = new AgentState(id, agentClient.NativeChatClient.ModelProvider.ProviderName, agentClient.NativeChatClient.ModelName)
                 {
-                    Id = id,
-                    ProviderName = agentClient.NativeChatClient.ModelProvider.ProviderName,
-                    ModelName = agentClient.NativeChatClient.ModelName,
                     ChatHistory = [.. chatHistory]
                 };
                 var json = agentHistory.ToJsonString(SseHttpClient.SerializerSettings);
@@ -52,7 +50,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             }
             else return false.ToStateSet<JObject>(null, "Agent not found");
         }
-        public StateSet<bool, AgentHistory> RestoreAgentHistory(Guid id)
+        public StateSet<bool, AgentState> RestoreAgentState(Guid id)
         {
             if (IntelligenceService.AgentClients.TryGetValue(id, out var agentClient))
             {
@@ -60,7 +58,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 if (File.Exists(filePath))
                 {
                     var systemMessage = agentClient.NativeChatClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
-                    var agentHistory = JsonConvert.DeserializeObject<AgentHistory>(File.ReadAllText(filePath), SseHttpClient.SerializerSettings);
+                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), SseHttpClient.SerializerSettings);
 
                     var chatHistory = agentHistory.ChatHistory;
                     if (chatHistory.FirstOrDefault(m => m.Role == Role.System) == null && systemMessage != null) chatHistory = [.. (IMessage[])[systemMessage], .. chatHistory];
@@ -73,11 +71,27 @@ namespace Silmoon.Intelligence.Hosting.Services
 
                     return true.ToStateSet(agentHistory, $"restore {chatHistory.Length} chat histories ");
                 }
-                else return false.ToStateSet<AgentHistory>(null, "Agent history file does not exist.");
+                else return false.ToStateSet<AgentState>(null, "Agent history file does not exist.");
             }
-            else return false.ToStateSet<AgentHistory>(null, "Agent not found");
+            else return false.ToStateSet<AgentState>(null, "Agent not found");
         }
-        public StateSet<bool> DeleteAgentHistory(Guid id)
+
+        public List<AgentState> GetAgentStates()
+        {
+            var historyFileNames = GetHistoryStateFileNames();
+            List<AgentState> histories = [];
+            foreach (var kvp in historyFileNames)
+            {
+                var filePath = Path.Combine(MainAgentMemoryDirectory, kvp.Value);
+                if (File.Exists(filePath))
+                {
+                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), SseHttpClient.SerializerSettings);
+                    histories.Add(agentHistory);
+                }
+            }
+            return [.. histories.OrderBy(h => h.LastAt)];
+        }
+        public StateSet<bool> DeleteAgentStateFile(Guid id)
         {
             string filePath = Path.Combine(MainAgentMemoryDirectory, $"agent_{id}_chat_history.json");
             if (File.Exists(filePath))
@@ -88,7 +102,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             else return false.ToStateSet("Agent history file does not exist.");
         }
 
-        public Dictionary<Guid, string> GetHistoryFileNames()
+        Dictionary<Guid, string> GetHistoryStateFileNames()
         {
             var historyFiles = Directory.GetFiles(MainAgentMemoryDirectory, "agent_*_chat_history.json");
             var result = new Dictionary<Guid, string>();
@@ -106,12 +120,5 @@ namespace Silmoon.Intelligence.Hosting.Services
             }
             return result;
         }
-    }
-    public class AgentHistory
-    {
-        public Guid Id { get; set; }
-        public string ProviderName { get; set; }
-        public string ModelName { get; set; }
-        public IMessage[] ChatHistory { get; set; }
     }
 }

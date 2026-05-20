@@ -16,14 +16,14 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence` | 核心：`AgentClient`（**`Guid Id`**，`History` 为 **`IMessage`**）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
+| `Silmoon.Intelligence` | 核心：`AgentClient`（**`Guid Id`**、**`AgentState`** 表示 **Agent 状态**，`History` 为 **`IMessage`**）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
 | `Silmoon.Intelligence.Tools` | 可复用工具：`GithubTool`、`CSharpTool`、**`WebSearchTool`**（阿里云 OpenSearch，见配置）等 |
 
 ### 宿主（服务注入与通用主机）
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；多会话 **`AgentClients`**（按 **`Guid`**）；**`DefaultChatAgentClient`** 为启动后默认会话，供**未做多会话 UI** 的入口使用（**`Chat(input)`** 无参重载等）。**`NewAgent` / `DeleteAgent` / `Chat(input, agentId, autoSave)`**；启动扫盘恢复 **`workspace/main_agent_memories/`**，**`ReadyResetEvent`**。工具注入、**`AgentHistory`** 持久化等见 **`ModelContextService`**、**`AgentWorkspaceService`** 与 **`ServiceCollectionExtension.cs`** |
+| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。**`SaveChatState` / `RestoreChatState`**、**`AgentWorkspaceService`** 持久化 **`AgentState`**（**`LastAt`** 排序后启动恢复）。**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
 
 ### 客户端应用
 
@@ -36,7 +36,7 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.ConsoleTesting` | 控制台联调：单会话，使用 **`DefaultChatAgentClient`** 与 **`Chat(input)`**；`@save` / `@restore` 等见 **`ConsoleService`** |
+| `Silmoon.Intelligence.ConsoleTesting` | 控制台联调：单会话，**`DefaultChatAgentClient`**、**`Chat(input)`**；`@save` / `@restore` 对应 **`SaveChatState` / `RestoreChatState`**（见 **`ConsoleService`**） |
 | `Silmoon.Intelligence.WinFormTesting` | WinForms 壳与示例配置；**未接入** Hosting / 核心逻辑 |
 
 `slnx` 中「支撑框架」引用 **`../Silmoon.AI`**、**`../Silmoon.Maui`**、**`../Silmoon.Windows`**；完整构建需与主仓库位于同一上级目录。
@@ -87,7 +87,7 @@ MAUI 单平台构建可用 `-f`，TFM 以 `MauiClient.csproj` 为准。需 **Win
 | 路径（相对 `{WorkspaceDirectory}`） | 说明 |
 |-----------------------------------|------|
 | **`system_prompts/`** | `unified_agent_system.md`、`supervisor_agent_system.md` 等；**启动时必读**，缺失会导致启动失败。可从 **`Hosting/workspace/system_prompts`** 或 Hosting 构建输出拷贝 |
-| **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**（**`AgentHistory`**：Id、Provider、Model、**`IMessage[]` ChatHistory**） |
+| **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**，序列化为 **`AgentState`**（Id、Provider、Model、**`IMessage[]`**、**`CreatedAt` / `LastAt`** 等） |
 | **`markdowns/`** | 开发与工具说明文档 |
 
 **`WorkspaceDirectory`** = 各入口 **`ISilmoonPlatformDirectoryService.AppDataDirectory`** + **`workspace`**（控制台/WinUI 多为程序目录下；MAUI 为应用数据目录）。

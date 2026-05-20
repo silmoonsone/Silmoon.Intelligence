@@ -218,7 +218,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             {
                 var agent = kvp.Value;
                 var id = kvp.Key;
-                ChatList.Insert(0, new ChatListItem() { Id = id, ChatCounting = agent.History.Count, CreatedAt = DateTime.Now, LatestAt = DateTime.Now, DisplayName = $"{id}", This = this });
+                ChatList.Insert(0, new ChatListItem() { Id = id, ChatCounting = agent.History.Count, CreatedAt = agent.State.CreatedAt, LastAt = agent.State.LastAt, DisplayName = $"{id}", This = this });
             }
             return ChatList;
         }
@@ -381,7 +381,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         public async Task CopyChat(ChatListItem chatListItem)
         {
             var newChat = IntelligenceService.NewAgent();
-            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LatestAt = DateTime.Now, DisplayName = $"{newChat.Data.Key}", This = this });
+            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, DisplayName = $"{newChat.Data.Key}", This = this });
             var history = new List<IMessage>(IntelligenceService.AgentClients[chatListItem.Id].History);
             newChat.Data.Value.NativeChatClient.MessageHistory = history;
             Page.nameChatList.SelectedIndex = 0;
@@ -415,13 +415,13 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [RelayCommand]
         public void SaveHistory()
         {
-            IntelligenceService.SaveChatHistory(CurrentAgentClient.Key);
+            IntelligenceService.SaveChatState(CurrentAgentClient.Key);
         }
         [RelayCommand]
         public void ClearHistory()
         {
             CurrentAgentClient.Value.NativeChatClient.ResetHistory();
-            IntelligenceService.SaveChatHistory(CurrentAgentClient.Key);
+            IntelligenceService.SaveChatState(CurrentAgentClient.Key);
             Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
         [RelayCommand]
@@ -438,7 +438,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         public async Task<StateSet<bool, KeyValuePair<Guid, AgentClient>>> NewChat()
         {
             var newChat = IntelligenceService.NewAgent();
-            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LatestAt = DateTime.Now, DisplayName = $"{newChat.Data.Key}", This = this });
+            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, DisplayName = $"{newChat.Data.Key}", This = this });
             Page.nameChatList.SelectedIndex = 0;
             return newChat;
         }

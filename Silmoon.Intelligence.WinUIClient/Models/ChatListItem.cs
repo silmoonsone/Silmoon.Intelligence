@@ -17,7 +17,7 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         [ObservableProperty]
         public partial DateTime CreatedAt { get; set; }
         [ObservableProperty]
-        public partial DateTime LatestAt { get; set; }
+        public partial DateTime LastAt { get; set; }
         [ObservableProperty]
         public partial ChatPageViewModel This { get; set; }
     }
