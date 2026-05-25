@@ -108,7 +108,9 @@ namespace Silmoon.Intelligence.Hosting.Services
             {
                 foreach (var agentState in agentStates)
                 {
-                    var agentClient = new AgentClient(agentState.Id, SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, $"Agent-{agentState.Id}", $"Agent-{agentState.Id}", $"""
+                    var modelProvider = SilmoonConfigureService.ModelProviders.Get(agentState.ProviderName, SilmoonConfigureService.DefaultProvider);
+                    var modelName = agentState.ModelName;
+                    var agentClient = new AgentClient(agentState.Id, modelProvider, modelName, $"Agent-{agentState.Id}", $"Agent-{agentState.Id}", $"""
                         {unifiedSystemPrompt}
                         """, agentState, SilmoonConfigureService.NativeClientDisableProxy);
                     ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
