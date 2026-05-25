@@ -232,22 +232,25 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                         if (lastChatItem is not null && (lastChatItem.Role == item.Role))
                         {
                             if (!message.Content.IsNullOrDefault()) lastChatItem.Content += $"\r\n{IntelligenceService.GetUserRealInput(message.Content)}";
+                            if (!message.ReasoningContent.IsNullOrDefault()) lastChatItem.ReasoningContent += $"\r\n{IntelligenceService.GetUserRealInput(message.ReasoningContent)}";
                             message.ToolCalls?.Each(toolcall =>
                             {
                                 if (lastChatItem.Content.EndsWith("\r\n")) lastChatItem.Content += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
                                 else lastChatItem.Content += $"\r\n\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
                             });
                             lastChatItem.ContentVisual = true;
+                            lastChatItem.ReasoningContentVisual = true;
                         }
                         else
                         {
                             var content = IntelligenceService.GetUserRealInput(message.Content);
+                            var reasoningContent = IntelligenceService.GetUserRealInput(message.ReasoningContent);
                             message.ToolCalls?.Each(toolcall =>
                             {
                                 if (content?.EndsWith("\r\n") ?? false) content += $"\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
                                 else content += $"\r\n\r\n*[工具调用：{toolcall.Function.Name}]*\r\n";
                             });
-                            Items.Add(new ChatItem(message.Role, content));
+                            Items.Add(new ChatItem(message.Role, content, reasoningContent));
                         }
                     }
                 }
@@ -319,19 +322,33 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                         if (x.Delta?.ToolCalls is not null)
                         {
                             var indicator = ToolExecuteIndicators.FirstOrDefault(x => x.ToolCallId == string.Empty);
-                            if (indicator is null) ToolExecuteIndicators.Add(new ToolExecuteIndicatorModel { FunctionName = "工具调用", Status = "等待...", Color = new SolidColorBrush(Colors.YellowGreen), ToolCallId = string.Empty });
-                            //lastChatItem.Content += ".";
+                            if (indicator is null) ToolExecuteIndicators.Add(new ToolExecuteIndicatorModel { FunctionName = "工具调用", Status = "生成中...", Color = new SolidColorBrush(Colors.YellowGreen), ToolCallId = string.Empty });
+
+                            if (!lastChatItem.StreamingReasoningContent.IsNullOrEmpty() && !lastChatItem.StreamingReasoningContent.EndsWith("\r\n")) lastChatItem.StreamingReasoningContent += "\r\n";
+                            if (!lastChatItem.StreamingContent.IsNullOrEmpty() && !lastChatItem.StreamingContent.EndsWith("\r\n")) lastChatItem.StreamingContent += "\r\n";
                         }
                         else
                         {
                             var indicator = ToolExecuteIndicators.FirstOrDefault(x => x.ToolCallId == string.Empty);
                             indicator?.Status = "完成";
 
-                            Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
-                            Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.White);
+                            //Console.WriteWithColor(x?.Delta?.GetThinking(), ConsoleColor.DarkGray);
+                            //Console.WriteWithColor(x?.Delta?.Content, ConsoleColor.White);
 
-                            lastChatItem.StreamingContent += x?.Delta?.GetThinking();
-                            lastChatItem.StreamingContent += x?.Delta?.Content;
+                            var thinkingContent = x?.Delta?.GetThinking();
+                            var content = x?.Delta?.Content;
+
+                            if (!thinkingContent.IsNullOrEmpty())
+                            {
+                                if (!lastChatItem.StreamingContent.IsNullOrEmpty() && !lastChatItem.StreamingContent.EndsWith("\r\n")) lastChatItem.StreamingContent += "\r\n";
+                                lastChatItem.StreamingReasoningContent += thinkingContent;
+                            }
+
+                            if (!content.IsNullOrEmpty())
+                            {
+                                if (!lastChatItem.StreamingReasoningContent.IsNullOrEmpty() && !lastChatItem.StreamingReasoningContent.EndsWith("\r\n")) lastChatItem.StreamingReasoningContent += "\r\n";
+                                lastChatItem.StreamingContent += content;
+                            }
                         }
                     });
                 });
@@ -350,10 +367,18 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
 
                 if (result.FinishReason == "stop")
                 {
-                    lastChatItem.Content = lastChatItem.StreamingContent;
-                    lastChatItem.StreamingContent = result.ReasoningContent;
-                    lastChatItem.StreamingContentVisual = !lastChatItem.StreamingContent.IsNullOrEmpty();
-                    lastChatItem.ContentVisual = !lastChatItem.Content.IsNullOrEmpty();
+                    lastChatItem.Content = lastChatItem.StreamingContent.TrimEnd("\r\n").ToString();
+                    lastChatItem.ReasoningContent = lastChatItem.StreamingReasoningContent.TrimEnd("\r\n").ToString();
+
+                    lastChatItem.StreamingContent = string.Empty;
+                    lastChatItem.StreamingReasoningContent = string.Empty;
+
+                    lastChatItem.ContentVisual = true;
+                    lastChatItem.ReasoningContentVisual = true;
+
+
+                    lastChatItem.StreamingContentVisual = false;
+                    lastChatItem.StreamingReasoningContentVisual = false;
                 }
                 else if (result.FinishReason != "stop")
                 {
@@ -399,7 +424,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             else
             {
                 Items.Add(new ChatItem(Role.User, UserInput));
-                Items.Add(new ChatItem(Role.Assistant, string.Empty) { StreamingContentVisual = true });
+                Items.Add(new ChatItem(Role.Assistant, string.Empty) { StreamingContentVisual = true, StreamingReasoningContentVisual = true });
                 await Page.ScrollHistoryToBottomAsync(force: true);
                 string input = UserInput;
                 UserInput = string.Empty;

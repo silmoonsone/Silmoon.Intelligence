@@ -34,14 +34,14 @@ namespace Silmoon.Intelligence
         public bool IsBusy { get; set; } = false;
         public AgentState State { get; set; }
 
-        public AgentClient(Guid id, ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, AgentState state = null, bool disableProxy = false)
+        public AgentClient(Guid id, ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, AgentState state = null, bool disableProxy = false, bool enableThinking = false)
         {
             Id = id;
             Name = name;
             RoleMandate = roleMandate ?? string.Empty;
             State = state is null ? new AgentState(id, modelProvider.ProviderName, modelName) : state;
 
-            NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", disableProxy);
+            NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", enableThinking, disableProxy);
             NativeChatClient.OnToolCallsStart += async (toolCallParameters) => await (OnToolCallsStart is null ? Task.CompletedTask : OnToolCallsStart.Invoke(toolCallParameters));
             NativeChatClient.OnToolCallInvoke += async (toolCallParameter, toolCallResult) => await (OnToolCallInvoke is null ? Task.FromResult(toolCallResult) : OnToolCallInvoke.Invoke(toolCallParameter, toolCallResult));
             NativeChatClient.OnToolExecuting += async (functionName, toolCallParameter) => await (OnToolExecuting is null ? Task.CompletedTask : OnToolExecuting.Invoke(functionName, toolCallParameter));

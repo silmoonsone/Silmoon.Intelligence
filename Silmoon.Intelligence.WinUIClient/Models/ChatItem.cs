@@ -21,15 +21,25 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         public partial string Content { get; set; }
         [ObservableProperty]
         public partial bool ContentVisual { get; set; }
+        [ObservableProperty]
+        public partial string StreamingReasoningContent { get; set; }
+        [ObservableProperty]
+        public partial bool StreamingReasoningContentVisual { get; set; }
+        [ObservableProperty]
+        public partial string ReasoningContent { get; set; }
+        [ObservableProperty]
+        public partial bool ReasoningContentVisual { get; set; }
         public ChatItem()
         {
 
         }
-        public ChatItem(Role role, string finishContent)
+        public ChatItem(Role role, string finishContent, string reasoningContent = null)
         {
             Role = role;
             Content = finishContent;
             ContentVisual = true;
+            ReasoningContent = reasoningContent;
+            ReasoningContentVisual = !string.IsNullOrEmpty(reasoningContent);
         }
         public override string ToString() => $"Role: {Role}, FinishContent: {Content}, {Images?.Count ?? 0} images";
 

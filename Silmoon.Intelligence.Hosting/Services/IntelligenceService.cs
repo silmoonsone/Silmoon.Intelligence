@@ -43,7 +43,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             var agentClient = new AgentClient(id, modelProvider, modelName, $"MainAgent-{id}", $"MainAgent-{id}", $"""
                 你是人工智能执行人，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
                 {unifiedSystemPrompt}
-                """, null, SilmoonConfigureService.NativeClientDisableProxy);
+                """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
             AgentClients[id] = agentClient;
             ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
             return true.ToStateSet(new KeyValuePair<Guid, AgentClient>(id, agentClient));
@@ -98,7 +98,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             SupervisorAgentClient = new AgentClient(Guid.NewGuid(), SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "Agent监管助手", "Agent监管员", $"""
                 {supervisorAdditionSystemPrompt}
                 {unifiedSystemPrompt}
-                """, null, SilmoonConfigureService.NativeClientDisableProxy);
+                """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: false);
 
             ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeChatClient);
 
@@ -112,7 +112,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                     var modelName = agentState.ModelName;
                     var agentClient = new AgentClient(agentState.Id, modelProvider, modelName, $"Agent-{agentState.Id}", $"Agent-{agentState.Id}", $"""
                         {unifiedSystemPrompt}
-                        """, agentState, SilmoonConfigureService.NativeClientDisableProxy);
+                        """, agentState, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
                     ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
                     agentClient.NativeChatClient.MessageHistory = [.. agentState.ChatHistory];
                     AgentClients[agentState.Id] = agentClient;
