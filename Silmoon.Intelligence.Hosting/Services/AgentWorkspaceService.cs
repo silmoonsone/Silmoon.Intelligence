@@ -33,18 +33,14 @@ namespace Silmoon.Intelligence.Hosting.Services
         {
             if (IntelligenceService.AgentClients.TryGetValue(id, out var agentClient))
             {
-                var chatHistory = agentClient.NativeChatClient.MessageHistory;
-                var agentHistory = new AgentState(id, agentClient.NativeChatClient.ModelProvider.ProviderName, agentClient.NativeChatClient.ModelName)
-                {
-                    ChatHistory = [.. chatHistory]
-                };
+                var agentHistory = agentClient.State;
                 var json = agentHistory.ToJsonString(SseHttpClient.SerializerSettings);
                 string filePath = Path.Combine(MainAgentMemoryDirectory, $"agent_{id}_chat_history.json");
                 bool fileExists = File.Exists(filePath);
                 if (!fileExists || (fileExists && overwritten))
                 {
                     File.WriteAllText(filePath, json);
-                    return true.ToStateSet(JObject.FromObject(new { count = chatHistory.Count }), "Chat history saved successfully.");
+                    return true.ToStateSet(JObject.FromObject(new { count = agentClient.State.ChatHistory.Length }), "Chat history saved successfully.");
                 }
                 else return false.ToStateSet<JObject>(null, "Chat history file already exists. Set overwritten to true to overwrite it.");
             }

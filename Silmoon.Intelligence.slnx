@@ -20,6 +20,8 @@
     <Deploy Solution="Debug|*" />
   </Project>
   <Project Path="Silmoon.Intelligence.Tools/Silmoon.Intelligence.Tools.csproj" Id="37f3e0f0-8f1f-42d9-92fb-cd1ecb3c7464" />
-  <Project Path="Silmoon.Intelligence.WinUIClient/Silmoon.Intelligence.WinUIClient.csproj" />
+  <Project Path="Silmoon.Intelligence.WinUIClient/Silmoon.Intelligence.WinUIClient.csproj">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="Silmoon.Intelligence/Silmoon.Intelligence.csproj" />
 </Solution>

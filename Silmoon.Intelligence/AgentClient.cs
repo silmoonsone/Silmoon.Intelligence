@@ -29,7 +29,8 @@ namespace Silmoon.Intelligence
         public Guid Id { get; set; } = Guid.Empty;
         public string Name { get; set; } = string.Empty;
         public string RoleMandate { get; set; } = string.Empty;
-        public List<IMessage> History => NativeChatClient.MessageHistory;
+        public string Topic { get => State.Topic; set => State.Topic = value; }
+        public List<IMessage> History { get => NativeChatClient.MessageHistory; set => NativeChatClient.MessageHistory = value; }
         public bool IsBusy { get; set; } = false;
         public AgentState State { get; set; }
 
@@ -71,6 +72,11 @@ namespace Silmoon.Intelligence
                 State.LastAt = DateTime.Now;
                 return result;
             });
+        }
+        public void RollbackHistory()
+        {
+            NativeChatClient.RollbackHistory();
+            State.ChatHistory = [.. NativeChatClient.MessageHistory];
         }
 
         public void Dispose()

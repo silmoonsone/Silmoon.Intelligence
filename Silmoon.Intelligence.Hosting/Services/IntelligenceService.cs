@@ -68,8 +68,21 @@ namespace Silmoon.Intelligence.Hosting.Services
             if (AgentClients.TryGetValue(agentId, out var agent))
             {
                 var result = await agent.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
+                if (agent.Topic.IsNullOrEmpty() && agent.History.Count > 3) await GenerateAgentTopic(agentId);
                 if (autoSave) SaveChatState(agentId);
                 return result;
+            }
+            return null;
+        }
+        public async Task<string> GenerateAgentTopic(Guid agentId)
+        {
+            if (AgentClients.TryGetValue(agentId, out var agent))
+            {
+                var topicResult = await SupervisorAgentClient.Chat($"根据用户和AI的聊天信息和用户沟通意图，生成一个简短的描述小标题，3-8个文字，如果是英文的沟通信息，可以生成3-5个单词标题，不需要任何格式字符包括但不限于markdown，不得换行，知识一个简短的标题，3-10个字：{string.Join("\n", agent.History.TakeLast(10).ToJsonString())}");
+                var topic = GetUserRealInput(topicResult.Content).Trim();
+                if (!topic.IsNullOrEmpty()) agent.Topic = topic;
+                SaveChatState(agentId);
+                return topic;
             }
             return null;
         }

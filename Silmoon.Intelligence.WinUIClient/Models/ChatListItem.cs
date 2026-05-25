@@ -11,7 +11,7 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         [ObservableProperty]
         public partial Guid Id { get; set; }
         [ObservableProperty]
-        public partial string DisplayName { get; set; }
+        public partial string Topic { get; set; }
         [ObservableProperty]
         public partial int ChatCounting { get; set; }
         [ObservableProperty]

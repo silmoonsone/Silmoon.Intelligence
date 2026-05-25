@@ -10,6 +10,7 @@ namespace Silmoon.Intelligence.Models
         public Guid Id { get; set; }
         public string ProviderName { get; set; }
         public string ModelName { get; set; }
+        public string Topic { get; set; } = string.Empty;
         public IMessage[] ChatHistory { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime LastAt { get; set; } = DateTime.Now;

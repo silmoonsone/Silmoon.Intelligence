@@ -14,13 +14,13 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         [ObservableProperty]
         public partial List<ImageSource> Images { get; set; }
         [ObservableProperty]
-        public partial string StreamContent { get; set; }
+        public partial string StreamingContent { get; set; }
         [ObservableProperty]
-        public partial bool StreamContentVisual { get; set; }
+        public partial bool StreamingContentVisual { get; set; }
         [ObservableProperty]
-        public partial string FinishContent { get; set; }
+        public partial string Content { get; set; }
         [ObservableProperty]
-        public partial bool FinishContentVisual { get; set; }
+        public partial bool ContentVisual { get; set; }
         public ChatItem()
         {
 
@@ -28,10 +28,10 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         public ChatItem(Role role, string finishContent)
         {
             Role = role;
-            FinishContent = finishContent;
-            FinishContentVisual = true;
+            Content = finishContent;
+            ContentVisual = true;
         }
-        public override string ToString() => $"Role: {Role}, FinishContent: {FinishContent}, {Images?.Count ?? 0} images";
+        public override string ToString() => $"Role: {Role}, FinishContent: {Content}, {Images?.Count ?? 0} images";
 
     }
 }
