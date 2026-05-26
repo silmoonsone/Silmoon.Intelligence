@@ -16,21 +16,21 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence` | 核心：`AgentClient`（**`Guid Id`**、**`AgentState`** 表示 **Agent 状态**，`History` 为 **`IMessage`**）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
+| `Silmoon.Intelligence` | 核心：`AgentClient`（**`Guid Id`**、**`AgentState`** 为 **Agent 状态**（含 **`Topic`**、聊天记录等元数据）、`History` 为 **`IMessage`**；主对话可 **`enableThinking`**）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
 | `Silmoon.Intelligence.Tools` | 可复用工具：`GithubTool`、`CSharpTool`、**`WebSearchTool`**（阿里云 OpenSearch，见配置）等 |
 
 ### 宿主（服务注入与通用主机）
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。**`SaveChatState` / `RestoreChatState`**、**`AgentWorkspaceService`** 持久化 **`AgentState`**（**`LastAt`** 排序后启动恢复）。**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
+| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。**`SaveChatState` / `RestoreChatState`** 持久化完整 **`AgentState`**（**`LastAt`** 排序启动恢复）；对话后可 **`GenerateAgentTopic`**（由监管 Agent 生成会话标题）。**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
 
 ### 客户端应用
 
 | 项目 | 说明 |
 |------|------|
 | `Silmoon.Intelligence.MauiClient` | .NET MAUI，单会话联调；走 **`DefaultChatAgentClient`**（与控制台同类）。平台目录 **`FileSystem.AppDataDirectory`**。功能与 WinUI 未必对齐 |
-| `Silmoon.Intelligence.WinUIClient` | WinUI 3 桌面客户端：**多会话**（列表新建/切换/删除/复制，**`ChatPage`** 按当前选中 **`AgentClient`** 操作，**不依赖** **`DefaultChatAgentClient`**）。**Markdown**、流式输出、工具指示器。平台目录 **`AppContext.BaseDirectory`**；依赖 **Silmoon.Windows.WinUI3**、**Windows App SDK** |
+| `Silmoon.Intelligence.WinUIClient` | WinUI 3 桌面客户端：**多会话**（列表以 **`Topic`** 展示，新建/切换/删除/复制；**`ChatPage`** 按当前 **`AgentClient`**，**不依赖** **`DefaultChatAgentClient`**）。**Markdown**、流式正文与**思考/推理**内容分区显示、工具指示器；主对话 Agent 默认开启思考能力（UI 开关待完善）。平台目录 **`AppContext.BaseDirectory`**；依赖 **Silmoon.Windows.WinUI3**、**Windows App SDK** |
 
 ### 测试与联调入口
 
@@ -87,7 +87,7 @@ MAUI 单平台构建可用 `-f`，TFM 以 `MauiClient.csproj` 为准。需 **Win
 | 路径（相对 `{WorkspaceDirectory}`） | 说明 |
 |-----------------------------------|------|
 | **`system_prompts/`** | `unified_agent_system.md`、`supervisor_agent_system.md` 等；**启动时必读**，缺失会导致启动失败。可从 **`Hosting/workspace/system_prompts`** 或 Hosting 构建输出拷贝 |
-| **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**，序列化为 **`AgentState`**（Id、Provider、Model、**`IMessage[]`**、**`CreatedAt` / `LastAt`** 等） |
+| **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**，整份 **`AgentState`**（Id、Provider、Model、**`Topic`**、**`IMessage[]`**、**`CreatedAt` / `LastAt`** 等） |
 | **`markdowns/`** | 开发与工具说明文档 |
 
 **`WorkspaceDirectory`** = 各入口 **`ISilmoonPlatformDirectoryService.AppDataDirectory`** + **`workspace`**（控制台/WinUI 多为程序目录下；MAUI 为应用数据目录）。
