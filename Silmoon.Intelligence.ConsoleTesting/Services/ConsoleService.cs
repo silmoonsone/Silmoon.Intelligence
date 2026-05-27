@@ -147,7 +147,7 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                     switch (command)
                     {
                         case "clear":
-                            IntelligenceService.DefaultChatAgentClient.NativeChatClient.ResetHistory();
+                            IntelligenceService.DefaultChatAgentClient.ClearHistory();
                             Console.WriteLine("历史被清空.");
                             break;
                         case "exit":
@@ -158,7 +158,7 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                             break;
                         case "back":
                             Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
-                            IntelligenceService.DefaultChatAgentClient.NativeChatClient.RollbackHistory();
+                            IntelligenceService.DefaultChatAgentClient.RollbackHistory();
                             Console.WriteLine($"回退后消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
                             Console.WriteLine();
                             break;

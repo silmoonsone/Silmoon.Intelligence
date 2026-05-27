@@ -78,6 +78,11 @@ namespace Silmoon.Intelligence
             NativeChatClient.RollbackHistory();
             State.ChatHistory = [.. NativeChatClient.MessageHistory];
         }
+        public void ClearHistory()
+        {
+            NativeChatClient.ClearHistory();
+            State.ChatHistory = [.. NativeChatClient.MessageHistory];
+        }
 
         public void Dispose()
         {

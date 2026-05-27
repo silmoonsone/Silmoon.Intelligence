@@ -27,7 +27,7 @@
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Margin="5">
                 </StackPanel>
-                <ListView x:Name="nameChatList" x:FieldModifier="public" Grid.Row="1" ItemsSource="{x:Bind ViewModel.ChatList, Mode=TwoWay}" SelectedItem="{x:Bind ViewModel.SelectedChatListItem, Mode=TwoWay}" Padding="3">
+                <ListView x:Name="nameChatList" x:FieldModifier="public" Grid.Row="1" ItemsSource="{x:Bind ViewModel.ChatList, Mode=TwoWay}" SelectedIndex="{x:Bind ViewModel.SelectedChatListIndex}" SelectedItem="{x:Bind ViewModel.SelectedChatListItem, Mode=TwoWay}" Padding="3">
                     <ListView.ContextFlyout>
                         <MenuFlyout>
                             <MenuFlyoutItem Text="新会话" Command="{x:Bind ViewModel.NewChatCommand}" />

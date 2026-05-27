@@ -43,7 +43,7 @@ namespace Silmoon.Intelligence
             var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
             if (nativeChatClient is not null)
             {
-                nativeChatClient.ResetHistory();
+                nativeChatClient.ClearHistory();
                 return true.ToStateSet("success");
             }
             else return false.ToStateSet($"specified model ({providerName},{modelName}) not found");
@@ -120,7 +120,7 @@ namespace Silmoon.Intelligence
             var workerClient = WorkerAgentClients.GetValueOrDefault(name);
             if (workerClient is not null)
             {
-                workerClient.NativeChatClient.ResetHistory();
+                workerClient.NativeChatClient.ClearHistory();
                 return true.ToStateSet("success");
             }
             else return false.ToStateSet($"specified worker agent ({name}) not found");

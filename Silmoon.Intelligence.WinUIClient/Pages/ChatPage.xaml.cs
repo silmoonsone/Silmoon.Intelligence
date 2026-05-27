@@ -161,6 +161,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [ObservableProperty]
         public partial ChatListItem SelectedChatListItem { get; set; }
         [ObservableProperty]
+        public partial int SelectedChatListIndex { get; set; }
+        [ObservableProperty]
         public partial ObservableCollection<ChatItem> Items { get; set; } = [];
         [ObservableProperty]
         public partial ObservableCollection<ChatListItem> ChatList { get; set; } = [];
@@ -185,7 +187,12 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         private async void ChatPageViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(SelectedChatListItem))
-                await SwitchChat(SelectedChatListItem.Id);
+            {
+                if (SelectedChatListItem is not null)
+                    await SwitchChat(SelectedChatListItem.Id);
+                else if (ChatList.Count != 0)
+                    SelectedChatListIndex = 0;
+            }
         }
 
         public void BindEvents()
@@ -447,7 +454,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [RelayCommand]
         public void ClearHistory()
         {
-            CurrentAgentClient.Value.NativeChatClient.ResetHistory();
+            CurrentAgentClient.Value.NativeChatClient.ClearHistory();
             IntelligenceService.SaveChatState(CurrentAgentClient.Key);
             Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
