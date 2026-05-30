@@ -91,21 +91,28 @@
             <!--中间内容布局-->
             <Grid Grid.Row="1">
                 <Frame BorderThickness="1" BorderBrush="Gray" Padding="0,10,0,10" CornerRadius="10">
-                    <ListView x:Name="nameChat" ItemsSource="{x:Bind ViewModel.Items, Mode=TwoWay}" SelectionMode="None">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:ChatItem">
-                                <StackPanel Margin="5" BorderThickness="1" CornerRadius="10" Padding="5" BorderBrush="Gray">
-                                    <TextBlock Text="{x:Bind Role, Converter={StaticResource EnumDisplayConverter}, Mode=OneWay}" Margin="0,0,0,5" FontSize="18" FontWeight="Bold"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <ListView Grid.Row="0" x:Name="nameChat" ItemsSource="{x:Bind ViewModel.Items, Mode=TwoWay}" SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ChatItem">
+                                    <StackPanel Margin="5" BorderThickness="1" CornerRadius="10" Padding="5" BorderBrush="Gray">
+                                        <TextBlock Text="{x:Bind Role, Converter={StaticResource EnumDisplayConverter}, Mode=OneWay}" Margin="0,0,0,5" FontSize="18" FontWeight="Bold"/>
 
-                                    <TextBlock Text="{x:Bind StreamingReasoningContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind StreamingReasoningContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" Foreground="Gray" FontSize="12" Margin="0,0,0,5" />
-                                    <TextBlock Text="{x:Bind StreamingContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind StreamingContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
+                                        <TextBlock Text="{x:Bind StreamingReasoningContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind StreamingReasoningContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" Foreground="Gray" FontSize="12" Margin="0,0,0,5" />
+                                        <TextBlock Text="{x:Bind StreamingContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind StreamingContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
 
-                                    <TextBlock Text="{x:Bind ReasoningContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind ReasoningContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" Foreground="Gray" FontSize="12" Margin="0,0,0,5" />
-                                    <ctk:MarkdownTextBlock Text="{x:Bind Content, Mode=OneWay}" IsTextSelectionEnabled="True" Background="Transparent" TextWrapping="Wrap" Visibility="{x:Bind ContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                                        <TextBlock Text="{x:Bind ReasoningContent, Mode=OneWay}" IsTextSelectionEnabled="True" TextWrapping="Wrap" Visibility="{x:Bind ReasoningContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" Foreground="Gray" FontSize="12" Margin="0,0,0,5" />
+                                        <ctk:MarkdownTextBlock Text="{x:Bind Content, Mode=OneWay}" IsTextSelectionEnabled="True" Background="Transparent" TextWrapping="Wrap" Visibility="{x:Bind ContentVisual, Converter={StaticResource VisibilityToBoolConverter}, Mode=OneWay}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                        <TextBlock Margin="25,5,0,0" Grid.Row="1" Text="{x:Bind ViewModel.UsageInfo, Mode=OneWay}" FontSize="12" Foreground="Gray" Visibility="{x:Bind ViewModel.UsageInfo, Converter={StaticResource HasContentToVisibilityConverter}, Mode=OneWay}"></TextBlock>
+                    </Grid>
                 </Frame>
             </Grid>
             <!--工具执行状况布局-->

@@ -68,8 +68,9 @@ namespace Silmoon.Intelligence.Hosting.Services
             if (AgentClients.TryGetValue(agentId, out var agent))
             {
                 var result = await agent.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
-                if (agent.Topic.IsNullOrEmpty() && agent.History.Count > 3) await GenerateAgentTopic(agentId);
-                if (autoSave) SaveChatState(agentId);
+                if (agent.Topic.IsNullOrEmpty() && agent.History.Count > 3 && autoSave) await GenerateAgentTopic(agentId);
+                if (autoSave)
+                    SaveChatState(agentId);
                 return result;
             }
             return null;

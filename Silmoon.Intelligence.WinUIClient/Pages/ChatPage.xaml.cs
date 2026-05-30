@@ -174,6 +174,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         public partial bool UserInputAvaliable { get; set; } = true;
         [ObservableProperty]
         public partial KeyValuePair<Guid, AgentClient> CurrentAgentClient { get; set; }
+        [ObservableProperty]
+        public partial string UsageInfo { get; set; }
         public ChatPageViewModel(ChatPage page)
         {
             Page = page;
@@ -383,7 +385,6 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                     lastChatItem.ContentVisual = true;
                     lastChatItem.ReasoningContentVisual = true;
 
-
                     lastChatItem.StreamingContentVisual = false;
                     lastChatItem.StreamingReasoningContentVisual = false;
                 }
@@ -392,6 +393,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                     lastChatItem.StreamingContent += "\r\n\r\n";
                 }
                 _ = Page.ScrollHistoryToBottomAsync();
+                UsageInfo = $"total tokens: {result.Usage.TotalTokens:N0}, prompt tokens: {result.Usage.PromptTokens:N0}, completion tokens: {result.Usage.CompletionTokens:N0}";
             });
             return Task.CompletedTask;
         }
@@ -435,6 +437,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 await Page.ScrollHistoryToBottomAsync(force: true);
                 string input = UserInput;
                 UserInput = string.Empty;
+                UsageInfo = string.Empty;
                 var result = await IntelligenceService.Chat(input, CurrentAgentClient.Key, true);
                 if (SelectedChatListItem.Topic.StartsWith('#') && !CurrentAgentClient.Value.Topic.IsNullOrEmpty()) SelectedChatListItem.Topic = CurrentAgentClient.Value.Topic;
             }
@@ -479,6 +482,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [RelayCommand]
         public async Task SwitchChat(Guid chatId)
         {
+            UsageInfo = null;
             UnbindEvents();
             var isFind = IntelligenceService.AgentClients.TryGetValue(chatId, out var agentClient);
             if (isFind)

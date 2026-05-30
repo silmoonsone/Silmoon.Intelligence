@@ -1,10 +1,10 @@
 # Silmoon.Intelligence
 
-基于 **.NET 10** 的 Agent 与工具调用（Tool Calling）项目：在 **Silmoon.AI** 上封装 `AgentClient`、Hosting 编排、工作区与按会话持久化。
+基于 **.NET 10** 的 Agent 与工具调用（Tool Calling）项目：在 **Silmoon.AI** 上封装 `AgentClient`、Hosting 编排与会话持久化。**持久化**正在从 `workspace` 文件机制迁移至 **LiteDB**（已接入 `Core`，业务数据将逐步入库）；`workspace` 仍在使用，后续会逐步淡出。
 
-**运行时模型**：**监管 Agent（Supervisor）** + **多个主对话 Agent（按 `Guid` 区分）**；启动时从工作区扫描并恢复历史会话，无历史则自动新建。用户消息可由宿主附加 `<time>` 等内部前缀（展示时会剥离，见 `IntelligenceService.GetUserRealInput`）。
+**运行时模型**：**监管 Agent（Supervisor）** + **多个主对话 Agent（按 `Guid` 区分）**；启动时从 **`workspace`** 扫描并恢复 **`AgentState`**（无历史则新建）。**LiteDB**（**`Core`**，配置 **`connectionString`**）为长期存储方向，与 **`workspace`** 并存过渡中。用户消息可由宿主附加 `<time>` 等前缀（展示见 **`IntelligenceService.GetUserRealInput`**）。
 
-**入口**：**控制台**适合命令行联调；**WinUI 3** 为当前功能最完整的 Windows 桌面客户端（多会话列表 + 聊天 + Markdown + 工具指示器）；**MAUI** 可运行，侧重跨平台试验。三者通过 **`AddSilmoonIntelligence()`** 挂接同一套 Hosting（各客户端 **`ISilmoonPlatformDirectoryService`** 实现不同，见各项目 `Services`）。
+**入口**：**控制台**适合命令行联调；**WinUI 3** 为当前功能最完整的 Windows 桌面客户端（多会话、Markdown、思考内容、Token 用量等）；**MAUI** 可运行，侧重跨平台试验。三者通过 **`AddSilmoonIntelligence()`** 挂接同一套 Hosting（各客户端 **`ISilmoonPlatformDirectoryService`** 实现不同，见各项目 `Services`）。
 
 解决方案：**`Silmoon.Intelligence.slnx`**。具体 API 以仓库内代码、`*.csproj` 为准。
 
@@ -23,37 +23,50 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。**`SaveChatState` / `RestoreChatState`** 持久化完整 **`AgentState`**（**`LastAt`** 排序启动恢复）；对话后可 **`GenerateAgentTopic`**（由监管 Agent 生成会话标题）。**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
+| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。当前 **`SaveChatState` / `RestoreChatState`** 仍写 **`workspace`** 下 JSON；**`Core`**（**LiteDB**，**`connectionString`**）已接入，**后续持久化将迁入 LiteDB**。**`GenerateAgentTopic`**、**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
 
 ### 客户端应用
 
 | 项目 | 说明 |
 |------|------|
 | `Silmoon.Intelligence.MauiClient` | .NET MAUI，单会话联调；走 **`DefaultChatAgentClient`**（与控制台同类）。平台目录 **`FileSystem.AppDataDirectory`**。功能与 WinUI 未必对齐 |
-| `Silmoon.Intelligence.WinUIClient` | WinUI 3 桌面客户端：**多会话**（列表以 **`Topic`** 展示，新建/切换/删除/复制；**`ChatPage`** 按当前 **`AgentClient`**，**不依赖** **`DefaultChatAgentClient`**）。**Markdown**、流式正文与**思考/推理**内容分区显示、工具指示器；主对话 Agent 默认开启思考能力（UI 开关待完善）。平台目录 **`AppContext.BaseDirectory`**；依赖 **Silmoon.Windows.WinUI3**、**Windows App SDK** |
+| `Silmoon.Intelligence.WinUIClient` | WinUI 3 桌面客户端：**多会话**（**`Topic`** 列表，新建/切换/删除/复制；**`ChatPage`** 按当前 **`AgentClient`**，**不依赖** **`DefaultChatAgentClient`**）。**Markdown**、思考/推理分区、工具指示器、**Token 用量**展示。主对话默认 **`enableThinking`**（UI 开关待完善）。注册 **`Core`** + **`AddSilmoonIntelligence()`**。平台目录 **`AppContext.BaseDirectory`**；依赖 **Silmoon.Windows.WinUI3**、**Windows App SDK** |
 
 ### 测试与联调入口
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.ConsoleTesting` | 控制台联调：单会话，**`DefaultChatAgentClient`**、**`Chat(input)`**；`@save` / `@restore` 对应 **`SaveChatState` / `RestoreChatState`**（见 **`ConsoleService`**） |
+| `Silmoon.Intelligence.ConsoleTesting` | 控制台联调：单会话，**`DefaultChatAgentClient`**、**`Chat(input)`**；`@save` / `@restore` 等见 **`ConsoleService`**（回复后输出 Token 用量） |
 | `Silmoon.Intelligence.WinFormTesting` | WinForms 壳与示例配置；**未接入** Hosting / 核心逻辑 |
 
-`slnx` 中「支撑框架」引用 **`../Silmoon.AI`**、**`../Silmoon.Maui`**、**`../Silmoon.Windows`**；完整构建需与主仓库位于同一上级目录。
+`slnx` 中「支撑框架」引用上述外部仓库（**`Silmoon.AI`**、**`Silmoon.Data`**、**`Silmoon.Maui`**、**`Silmoon.Windows`** 等）；克隆方式见下文 **依赖布局**。
 
 ---
 
 ## 依赖布局
 
+本解决方案通过 **项目引用** 依赖多个**外部仓库**，路径以 `*.csproj` / `*.slnx` 中的 `..\` 为准。这些仓库均在 GitHub 用户 **[silmoonsone](https://github.com/silmoonsone)** 下，请克隆到**与 `Silmoon.Intelligence` 同一上级目录**（文件夹名与下表一致）：
+
 ```text
 <parent>/
-  Silmoon.Intelligence/
+  Silmoon.Intelligence/    ← 本仓库
   Silmoon.AI/
-  Silmoon.Windows/    # WinUI
-  Silmoon.Maui/       # MAUI
+  Silmoon.Data/
+  Silmoon.Windows/         # 构建 WinUI 时需要
+  Silmoon.Maui/            # 构建 MAUI 时需要
 ```
 
-缺少依赖时，可从 `slnx` 中移除不需要的客户端或外部工程引用后再构建。
+示例（在 `<parent>` 目录下执行）：
+
+```bash
+git clone https://github.com/silmoonsone/Silmoon.Intelligence.git
+git clone https://github.com/silmoonsone/Silmoon.AI.git
+git clone https://github.com/silmoonsone/Silmoon.Data.git
+git clone https://github.com/silmoonsone/Silmoon.Windows.git
+git clone https://github.com/silmoonsone/Silmoon.Maui.git
+```
+
+仅构建控制台 / Hosting 核心时，**至少需要 `Silmoon.AI`**；WinUI / MAUI / LiteDB（**`Core`**）分别还需要 **Silmoon.Windows**、**Silmoon.Maui**、**Silmoon.Data**。缺少依赖时，可从 `slnx` 中移除不需要的客户端或外部工程引用后再构建。
 
 ---
 
@@ -81,16 +94,21 @@ MAUI 单平台构建可用 `-f`，TFM 以 `MauiClient.csproj` 为准。需 **Win
 | 字段（JSON） | 说明 |
 |--------------|------|
 | **`aliyunOpenSearchKey`**（可选） | 阿里云 OpenSearch **Bearer** 密钥；未配置时 **WebSearch** 工具会提示未配置 |
+| **`connectionString`**（可选） | **LiteDB** 连接串（如 `Filename=data.db;Mode=Shared`）；**`Core`** 使用，**Agent 状态等持久化将逐步迁入**（WinUI 示例配置已包含） |
 
-### 工作区
+### 持久化与工作区（过渡中）
 
-| 路径（相对 `{WorkspaceDirectory}`） | 说明 |
-|-----------------------------------|------|
-| **`system_prompts/`** | `unified_agent_system.md`、`supervisor_agent_system.md` 等；**启动时必读**，缺失会导致启动失败。可从 **`Hosting/workspace/system_prompts`** 或 Hosting 构建输出拷贝 |
-| **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**，整份 **`AgentState`**（Id、Provider、Model、**`Topic`**、**`IMessage[]`**、**`CreatedAt` / `LastAt`** 等） |
+**当前**：**`AgentState`** 等主要仍通过 **`workspace/main_agent_memories/`** 下 JSON 读写（**`SaveChatState` / `RestoreChatState`**，启动按 **`LastAt`** 恢复）。**`system_prompts/`**、**`markdowns/`** 等同理，仍依赖 **`workspace`** 目录。
+
+**方向**：**LiteDB**（`Core` + `connectionString`）为长期存储；`workspace` 机制会逐步过时，迁移完成前两者并存。路径与字段以当前代码为准。
+
+| 路径（相对 WorkspaceDirectory） | 说明 |
+|--------------------------------|------|
+| **`system_prompts/`** | 系统提示词 Markdown；**启动时必读**。可从 **`Hosting/workspace/system_prompts`** 或 Hosting 构建输出拷贝 |
+| **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**（**`AgentState`**）；**过渡期仍用，后续迁至 LiteDB** |
 | **`markdowns/`** | 开发与工具说明文档 |
 
-**`WorkspaceDirectory`** = 各入口 **`ISilmoonPlatformDirectoryService.AppDataDirectory`** + **`workspace`**（控制台/WinUI 多为程序目录下；MAUI 为应用数据目录）。
+**WorkspaceDirectory** = 各入口 `ISilmoonPlatformDirectoryService.AppDataDirectory` + `workspace`（控制台/WinUI 多为程序目录下；MAUI 为应用数据目录）。
 
 ---
 

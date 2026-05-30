@@ -17,6 +17,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         public bool NativeClientDisableProxy { get; set; } = false;
         public ModelProvider DefaultProvider { get; set; }
         public string DefaultModelName { get; set; }
+        public string ConnectionString { get; set; }
 
         public string AliyunOpenSearchKey { get; set; }
 
@@ -30,6 +31,7 @@ namespace Silmoon.Intelligence.Hosting.Services
 
             Logger.LogInformation($"当前配置文件{CurrentConfigFile}");
 
+            ConnectionString = ConfigJson["connectionString"]?.Value<string>();
             NativeClientDisableProxy = ConfigJson.GetValue("nativeClientDisableProxy")?.Value<bool>() ?? false;
             SystemPrompt = ConfigJson.GetValue("systemPrompt")?.Value<string>();
             var modelObj = ConfigJson["modelProviders"];

@@ -161,6 +161,7 @@ namespace Silmoon.Intelligence.Tools
                         result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>(workerClient));
                     else
                         result = ToolCallResult.Create(toolCallParameter, false.ToStateSet<object>(null, $"specified worker agent ({parameters["name"]?.Value<string>()}) not found"));
+                    await NotifyToolExecuted(functionName, toolCallParameter, result);
                     break;
                 case CreateWorkerAgentFunctionName:
                     await NotifyToolExecuting(functionName, toolCallParameter);

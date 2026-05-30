@@ -1,4 +1,5 @@
 ﻿{
+  "connectionString": "Filename=data.db;Mode=Shared",
   "defaultModel": {
     "defaultProvider": "deepseek",
     "defaultModelName": "deepseek-v4-flash"

@@ -48,7 +48,7 @@ namespace Silmoon.Intelligence.WinUIClient
             InitializeComponent();
             var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
 
-            builder.Services.AddSingleton<ISilmoonConfigureService, SilmoonConfigureServiceImpl>();
+            builder.Services.AddSingleton<Core>();
             builder.Services.AddSingleton<ISilmoonPlatformDirectoryService, SilmoonPlatformDirectoryServiceImpl>();
             builder.Services.AddSilmoonIntelligence();
 

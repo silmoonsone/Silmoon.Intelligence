@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Silmoon.Data\Silmoon.Data.LiteDB\Silmoon.Data.LiteDB.csproj" />
     <ProjectReference Include="..\Silmoon.Intelligence.Tools\Silmoon.Intelligence.Tools.csproj" />
     <ProjectReference Include="..\Silmoon.Intelligence\Silmoon.Intelligence.csproj" />
   </ItemGroup>
