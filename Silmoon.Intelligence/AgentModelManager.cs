@@ -25,7 +25,7 @@ namespace Silmoon.Intelligence
             {
                 foreach (var model in provider.Value.Models)
                 {
-                    NativeChatClients.Add($"{provider.Key}_{model.Name}", new NativeChatClient(provider.Value.ApiUrl, provider.Value.ApiKey, model.Name));
+                    NativeChatClients.Add($"{provider.Key}_{model.Name}", new NativeChatClient(provider.Value.ApiUrl, provider.Value.ApiKey, provider.Value.ProviderName, model.Name));
                 }
             }
         }

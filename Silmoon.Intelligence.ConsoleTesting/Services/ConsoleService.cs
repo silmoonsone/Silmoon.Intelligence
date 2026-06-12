@@ -186,7 +186,8 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                 {
                     Console.Write(Role.Assistant + ": ");
                     var result = await IntelligenceService.Chat(input);
-                    Console.WriteLine($"total tokens: {result.Usage.TotalTokens:N0}, prompt tokens: {result.Usage.PromptTokens:N0}, completion tokens: {result.Usage.CompletionTokens:N0}");
+                    if (result.Usage is not null)
+                        Console.WriteLine($"total tokens: {result.Usage.TotalTokens:N0}, prompt tokens: {result.Usage.PromptTokens:N0}, completion tokens: {result.Usage.CompletionTokens:N0}");
                     Console.WriteLine();
                 }
             }
