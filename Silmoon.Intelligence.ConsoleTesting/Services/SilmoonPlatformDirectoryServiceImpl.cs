@@ -14,3 +14,4 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
         public string AppWorkingDirectory => Path.Combine(AppContext.BaseDirectory);
     }
 }
+

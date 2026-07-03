@@ -1,5 +1,5 @@
 ﻿using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.AI.Tools;
 using Silmoon.Extensions;
 using Silmoon.Intelligence.Hosting.Services;
@@ -62,3 +62,4 @@ namespace Silmoon.Intelligence.Hosting.Tools
         }
     }
 }
+

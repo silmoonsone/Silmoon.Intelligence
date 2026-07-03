@@ -1,4 +1,4 @@
-namespace Silmoon.Intelligence.WinFormTesting
+﻿namespace Silmoon.Intelligence.WinFormTesting
 {
     public partial class Form1 : Form
     {
@@ -8,3 +8,4 @@ namespace Silmoon.Intelligence.WinFormTesting
         }
     }
 }
+

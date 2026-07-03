@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Enums;
-using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI.Models.Enums;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.Extensions;
 using Silmoon.Intelligence.Hosting.Services;
 using Silmoon.Models;
@@ -39,7 +39,7 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
             Console.WriteLine();
             Console.WriteLine("stop reason: " + result.FinishReason);
         }
-        private async Task SupervisorAgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
+        private async Task SupervisorAgentClient_OnStreamOutput(StateSet<bool, ChatCompletionsChunk> chunkState)
         {
             if (chunkState.State)
             {
@@ -86,7 +86,7 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
             Console.WriteLineWithColor($"[TOOL CALLS RESULTS] {string.Join(", ", toolCallParameters.Select(x => $"{x.FunctionName}: {toolCallResults.FirstOrDefault(y => y.Parameter.FunctionName == x.FunctionName)?.Result.State}"))}", ConsoleColor.Yellow);
             return toolCallResults;
         }
-        private async Task AgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
+        private async Task AgentClient_OnStreamOutput(StateSet<bool, ChatCompletionsChunk> chunkState)
         {
             if (chunkState.State)
             {
@@ -194,3 +194,4 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
         }
     }
 }
+

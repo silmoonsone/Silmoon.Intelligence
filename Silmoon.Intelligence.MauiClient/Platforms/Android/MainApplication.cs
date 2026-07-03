@@ -14,3 +14,4 @@ namespace Silmoon.Intelligence.MauiClient
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
     }
 }
+

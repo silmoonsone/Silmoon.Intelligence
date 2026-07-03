@@ -23,3 +23,4 @@ namespace Silmoon.Intelligence.MauiClient.WinUI
     }
 
 }
+

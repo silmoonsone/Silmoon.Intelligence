@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Newtonsoft.Json.Linq;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.AI.Tools;
 using Silmoon.Extensions;
 using System;
@@ -358,3 +358,4 @@ namespace Silmoon.Intelligence.Tools
         }
     }
 }
+

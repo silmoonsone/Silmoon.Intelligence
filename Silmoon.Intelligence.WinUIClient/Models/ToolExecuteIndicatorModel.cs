@@ -18,3 +18,4 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         public required partial Brush Color { get; set; }
     }
 }
+

@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/支撑框架/">
     <Project Path="../Silmoon.AI/Silmoon.AI/Silmoon.AI.csproj" />
     <Project Path="../Silmoon.Data/Silmoon.Data.LiteDB/Silmoon.Data.LiteDB.csproj" />

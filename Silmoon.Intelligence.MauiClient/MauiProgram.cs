@@ -44,3 +44,4 @@ namespace Silmoon.Intelligence.MauiClient
         }
     }
 }
+

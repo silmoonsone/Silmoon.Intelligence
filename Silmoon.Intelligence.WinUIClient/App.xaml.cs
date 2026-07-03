@@ -81,3 +81,4 @@ namespace Silmoon.Intelligence.WinUIClient
         public static T GetService<T>() => ServiceProvider.GetService<T>();
     }
 }
+

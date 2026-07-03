@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media;
-using Silmoon.AI.Models.OpenAI.Enums;
+using Silmoon.AI.OpenAI.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -45,3 +45,4 @@ namespace Silmoon.Intelligence.WinUIClient.Models
 
     }
 }
+

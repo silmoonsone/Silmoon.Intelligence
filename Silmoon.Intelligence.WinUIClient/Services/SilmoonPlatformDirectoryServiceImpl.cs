@@ -15,3 +15,4 @@ namespace Silmoon.Intelligence.WinUIClient.Services
         public string AppWorkingDirectory => Path.Combine(AppContext.BaseDirectory);
     }
 }
+

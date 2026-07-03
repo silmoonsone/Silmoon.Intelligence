@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Enums;
-using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI.Models.Enums;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.AI.OpenAI;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
@@ -19,6 +19,7 @@ namespace Silmoon.Intelligence.Hosting.Services
 {
     public class IntelligenceService : BackgroundService
     {
+        //public AgentClient FastAgentClient { get; set; }
         public AgentClient SupervisorAgentClient { get; set; }
         public AgentClient DefaultChatAgentClient { get; set; }
         public Dictionary<Guid, AgentClient> AgentClients { get; set; } = [];
@@ -101,6 +102,11 @@ namespace Silmoon.Intelligence.Hosting.Services
                 {unifiedSystemPrompt}
                 """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: false);
 
+            //FastAgentClient = new AgentClient(Guid.NewGuid(), SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "Agent小助理", "Agent小助理", $"""
+            //    {supervisorAdditionSystemPrompt}
+            //    {unifiedSystemPrompt}
+            //    """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: false);
+
             ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeChatClient);
 
             var agentStates = AgentWorkspaceService.GetAgentStates();
@@ -153,3 +159,4 @@ namespace Silmoon.Intelligence.Hosting.Services
         }
     }
 }
+

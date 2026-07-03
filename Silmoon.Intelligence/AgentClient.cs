@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using Silmoon.AI;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Models;
-using Silmoon.AI.OpenAI;
+using Silmoon.AI.OpenAI.Models;
+using Silmoon.AI.Interfaces;
 using Silmoon.AI.Prompts;
 using Silmoon.Extensions;
 using Silmoon.Intelligence.Models;
@@ -16,7 +16,7 @@ namespace Silmoon.Intelligence
 {
     public class AgentClient : IDisposable
     {
-        public NativeChatClient NativeChatClient { get; private set; }
+        public INativeChatClient NativeChatClient { get; private set; }
 
         public event ToolCallsStartHandler OnToolCallsStart;
         public event ToolCallInvokeHandler OnToolCallInvoke;
@@ -41,7 +41,14 @@ namespace Silmoon.Intelligence
             RoleMandate = roleMandate ?? string.Empty;
             State = state is null ? new AgentState(id, modelProvider.ProviderName, modelName) : state;
 
-            NativeChatClient = new NativeChatClient(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", enableThinking, disableProxy);
+            try
+            {
+                NativeChatClient = NativeChatClientFactory.Create(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", enableThinking, disableProxy);
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception, log it, or rethrow it as needed
+            }
             NativeChatClient.OnToolCallsStart += async (toolCallParameters) => await (OnToolCallsStart is null ? Task.CompletedTask : OnToolCallsStart.Invoke(toolCallParameters));
             NativeChatClient.OnToolCallInvoke += async (toolCallParameter, toolCallResult) => await (OnToolCallInvoke is null ? Task.FromResult(toolCallResult) : OnToolCallInvoke.Invoke(toolCallParameter, toolCallResult));
             NativeChatClient.OnToolExecuting += async (functionName, toolCallParameter) => await (OnToolExecuting is null ? Task.CompletedTask : OnToolExecuting.Invoke(functionName, toolCallParameter));
@@ -61,7 +68,7 @@ namespace Silmoon.Intelligence
             return await Task.Run(async () =>
             {
                 if (input.IsNullOrEmpty()) return null;
-                List<Chunk> chunks = [];
+                List<ChatCompletionsChunk> chunks = [];
                 IsBusy = true;
                 await foreach (var chunk in NativeChatClient.CompletionsStreamAsync(input, chunks))
                 {
@@ -98,3 +105,5 @@ namespace Silmoon.Intelligence
         }
     }
 }
+
+

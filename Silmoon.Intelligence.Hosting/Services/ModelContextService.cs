@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Silmoon.AI.Interfaces;
-using Silmoon.AI.OpenAI;
 using Silmoon.AI.Tools;
 using Silmoon.Extensions.Hosting.Interfaces;
 using Silmoon.Intelligence.Hosting.Tools;
@@ -27,7 +26,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             AgentModelManager = new AgentModelManager(SilmoonConfigureService.ModelProviders);
             ServiceProvider = serviceProvider;
         }
-        public void InjectMainChatTools(NativeChatClient nativeChatClient)
+        public void InjectMainChatTools(INativeChatClient nativeChatClient)
         {
             AddTools(nativeChatClient, [
                 new WorldStateTool(),
@@ -44,7 +43,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             string systemPrompt = SilmoonConfigureService.SystemPrompt;
             if (systemPrompt is not null) nativeChatClient.SystemPrompt = $"{systemPrompt}\r\n{nativeChatClient.SystemPrompt}";
         }
-        public void InjectSupervisorTools(NativeChatClient nativeChatClient)
+        public void InjectSupervisorTools(INativeChatClient nativeChatClient)
         {
             AddTools(nativeChatClient, [
                 new WorldStateTool(),
@@ -62,3 +61,6 @@ namespace Silmoon.Intelligence.Hosting.Services
         }
     }
 }
+
+
+

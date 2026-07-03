@@ -1,5 +1,4 @@
 ﻿using Silmoon.AI.Interfaces;
-using Silmoon.AI.OpenAI;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,9 +11,12 @@ namespace Silmoon.Intelligence
         {
 
         }
-        public void AddTools(NativeChatClient nativeChatClient, IExecuteTool[] executeTools)
+        public void AddTools(INativeChatClient nativeChatClient, IExecuteTool[] executeTools)
         {
             nativeChatClient.ExecuteToolManager.AddExecuteTools(executeTools);
         }
     }
 }
+
+
+

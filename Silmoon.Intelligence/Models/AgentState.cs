@@ -1,4 +1,4 @@
-﻿using Silmoon.AI.Models.OpenAI.Models;
+﻿using Silmoon.AI.OpenAI.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,3 +23,4 @@ namespace Silmoon.Intelligence.Models
         }
     }
 }
+

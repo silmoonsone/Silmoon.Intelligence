@@ -22,3 +22,4 @@ namespace Silmoon.Intelligence.WinUIClient.Models
         public partial ChatPageViewModel This { get; set; }
     }
 }
+

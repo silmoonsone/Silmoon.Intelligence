@@ -1,7 +1,8 @@
-﻿using Silmoon.AI.OpenAI;
+﻿using Silmoon.AI;
+using Silmoon.AI.Interfaces;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Enums;
-using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI.Models.Enums;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.Extensions;
 using Silmoon.Models;
 using System.Collections.Concurrent;
@@ -14,7 +15,7 @@ namespace Silmoon.Intelligence
     public class AgentModelManager
     {
         public Dictionary<string, ModelProvider> ModelProviders { get; private set; } = [];
-        public Dictionary<string, NativeChatClient> NativeChatClients { get; private set; } = [];
+        public Dictionary<string, INativeChatClient> NativeChatClients { get; private set; } = [];
         public ConcurrentDictionary<string, AgentClient> WorkerAgentClients { get; private set; } = [];
 
 
@@ -25,7 +26,7 @@ namespace Silmoon.Intelligence
             {
                 foreach (var model in provider.Value.Models)
                 {
-                    NativeChatClients.Add($"{provider.Key}_{model.Name}", new NativeChatClient(provider.Value.ApiUrl, provider.Value.ApiKey, provider.Value.ProviderName, model.Name));
+                    NativeChatClients.Add($"{provider.Key}_{model.Name}", NativeChatClientFactory.Create(provider.Value, model.Name));
                 }
             }
         }
@@ -48,12 +49,12 @@ namespace Silmoon.Intelligence
             }
             else return false.ToStateSet($"specified model ({providerName},{modelName}) not found");
         }
-        private static async Task<StateSet<bool, Result>> CallAgentModel(string agentName, NativeChatClient nativeChatClient, string content, string system, bool enableThinking)
+        private static async Task<StateSet<bool, Result>> CallAgentModel(string agentName, INativeChatClient nativeChatClient, string content, string system, bool enableThinking)
         {
             nativeChatClient.EnableThinking = enableThinking;
             if (system is not null) nativeChatClient.SystemPrompt = system;
 
-            List<Chunk> chunks = [];
+            List<ChatCompletionsChunk> chunks = [];
             //Console.WriteLineWithColor($"Agent({agentName}) response start:", ConsoleColor.Green, ConsoleColor.Blue);
             await foreach (var chunk in nativeChatClient.CompletionsStreamAsync([MessageContent.Create(Role.User, content)], chunks))
             {
@@ -135,3 +136,5 @@ namespace Silmoon.Intelligence
         }
     }
 }
+
+

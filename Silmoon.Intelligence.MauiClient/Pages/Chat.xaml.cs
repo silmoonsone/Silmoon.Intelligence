@@ -1,8 +1,8 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Enums;
-using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI.Models.Enums;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.AI.OpenAI;
 using Silmoon.Extensions;
 using Silmoon.Intelligence.Hosting.Services;
@@ -146,6 +146,7 @@ public partial class ChatViewModel : ObservableObject
     {
         //throw new NotImplementedException();
     }
+
     private Task MainChatAgentClient_OnToolExecuting(string functionName, ToolCallParameter toolCallParameter)
     {
         var lastChatItem = Items.LastOrDefault();
@@ -156,13 +157,14 @@ public partial class ChatViewModel : ObservableObject
         switch (functionName)
         {
             case "Test_ToolCallTest":
-                result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>($"这是一个工具调用环境测试，正常！"));
+                result = ToolCallResult.Create(toolCallParameter, true.ToStateSet<object>("这是一个工具调用环境测试，正常！"));
                 break;
             default:
                 break;
         }
         return Task.CompletedTask;
     }
+
     private Task MainChatAgentClient_OnToolExecuted(string functionName, ToolCallParameter toolCallParameter, ToolCallResult toolCallResult)
     {
         var lastChatItem = Items.LastOrDefault();
@@ -171,12 +173,13 @@ public partial class ChatViewModel : ObservableObject
         else lastChatItem.Content += $"[TOOL RESULT] State: {toolCallResult.Result.State}, Message: {toolCallResult.Result.Message}\r\n";
         return Task.CompletedTask;
     }
+
     private Task<ToolCallResult[]> MainChatAgentClient_OnToolCallsFinish(ToolCallParameter[] toolCallParameters, ToolCallResult[] toolCallResults)
     {
         return Task.FromResult(toolCallResults);
     }
 
-    private Task MainChatAgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
+    private Task MainChatAgentClient_OnStreamOutput(StateSet<bool, ChatCompletionsChunk> chunkState)
     {
         if (chunkState.State)
         {
@@ -200,6 +203,7 @@ public partial class ChatViewModel : ObservableObject
         }
         return Task.CompletedTask;
     }
+
     private Task MainChatAgentClient_OnStreamOutputCompleted(Result result)
     {
         var lastChatItem = Items.LastOrDefault();
@@ -212,8 +216,6 @@ public partial class ChatViewModel : ObservableObject
         _ = page.ScrollHistoryToBottomAsync();
         return Task.CompletedTask;
     }
-
-
 
     [RelayCommand]
     public async Task Chat()

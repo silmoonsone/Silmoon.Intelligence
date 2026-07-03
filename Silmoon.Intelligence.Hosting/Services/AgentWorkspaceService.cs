@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Silmoon.AI.Models.OpenAI.Enums;
-using Silmoon.AI.Models.OpenAI.Models;
-using Silmoon.AI.OpenAI;
+using Silmoon.AI;
+using Silmoon.AI.OpenAI.Models.Enums;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.Extensions;
 using Silmoon.Extensions.Hosting.Interfaces;
 using Silmoon.Intelligence.Models;
@@ -34,7 +34,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             if (IntelligenceService.AgentClients.TryGetValue(id, out var agentClient))
             {
                 var agentHistory = agentClient.State;
-                var json = agentHistory.ToJsonString(SseHttpClient.SerializerSettings);
+                var json = agentHistory.ToJsonString(NativeApiJson.SerializerSettings);
                 string filePath = Path.Combine(MainAgentMemoryDirectory, $"agent_{id}_chat_history.json");
                 bool fileExists = File.Exists(filePath);
                 if (!fileExists || (fileExists && overwritten))
@@ -54,7 +54,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 if (File.Exists(filePath))
                 {
                     var systemMessage = agentClient.NativeChatClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
-                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), SseHttpClient.SerializerSettings);
+                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), NativeApiJson.SerializerSettings);
 
                     var chatHistory = agentHistory.ChatHistory;
                     if (chatHistory.FirstOrDefault(m => m.Role == Role.System) == null && systemMessage != null) chatHistory = [.. (IMessage[])[systemMessage], .. chatHistory];
@@ -81,7 +81,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 var filePath = Path.Combine(MainAgentMemoryDirectory, kvp.Value);
                 if (File.Exists(filePath))
                 {
-                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), SseHttpClient.SerializerSettings);
+                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), NativeApiJson.SerializerSettings);
                     histories.Add(agentHistory);
                 }
             }
@@ -118,3 +118,5 @@ namespace Silmoon.Intelligence.Hosting.Services
         }
     }
 }
+
+

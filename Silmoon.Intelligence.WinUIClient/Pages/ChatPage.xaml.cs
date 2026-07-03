@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI;
 using Microsoft.UI.Input;
@@ -10,8 +10,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Silmoon.AI.Models;
-using Silmoon.AI.Models.OpenAI.Enums;
-using Silmoon.AI.Models.OpenAI.Models;
+using Silmoon.AI.OpenAI.Models.Enums;
+using Silmoon.AI.OpenAI.Models;
 using Silmoon.Extensions;
 using Silmoon.Intelligence.Hosting.Services;
 using Silmoon.Intelligence.WinUIClient.Models;
@@ -318,7 +318,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             return Task.FromResult(toolCallResults);
         }
 
-        private Task MainChatAgentClient_OnStreamOutput(StateSet<bool, Chunk> chunkState)
+        private Task MainChatAgentClient_OnStreamOutput(StateSet<bool, ChatCompletionsChunk> chunkState)
         {
             if (chunkState.State)
             {
@@ -497,3 +497,5 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         }
     }
 }
+
+
