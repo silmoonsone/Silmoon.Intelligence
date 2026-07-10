@@ -53,17 +53,17 @@ namespace Silmoon.Intelligence.Hosting.Services
                 string filePath = Path.Combine(MainAgentMemoryDirectory, $"agent_{id}_chat_history.json");
                 if (File.Exists(filePath))
                 {
-                    var systemMessage = agentClient.NativeChatClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
+                    var systemMessage = agentClient.NativeClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
                     var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), NativeApiJson.SerializerSettings);
 
                     var chatHistory = agentHistory.ChatHistory;
                     if (chatHistory.FirstOrDefault(m => m.Role == Role.System) == null && systemMessage != null) chatHistory = [.. (IMessage[])[systemMessage], .. chatHistory];
 
-                    agentClient.NativeChatClient.MessageHistory = [.. chatHistory];
+                    agentClient.NativeClient.MessageHistory = [.. chatHistory];
                     agentClient.Id = agentHistory.Id;
-                    agentClient.NativeChatClient.ModelProvider = SilmoonConfigureService.ModelProviders[agentHistory.ProviderName];
-                    agentClient.NativeChatClient.ModelName = agentHistory.ModelName;
-                    agentClient.NativeChatClient.RebuildHttpClient();
+                    agentClient.NativeClient.ModelProvider = SilmoonConfigureService.ModelProviders[agentHistory.ProviderName];
+                    agentClient.NativeClient.ModelName = agentHistory.ModelName;
+                    agentClient.NativeClient.RebuildHttpClient();
 
                     return true.ToStateSet(agentHistory, $"restore {chatHistory.Length} chat histories ");
                 }

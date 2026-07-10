@@ -16,7 +16,7 @@ namespace Silmoon.Intelligence
 {
     public class AgentClient : IDisposable
     {
-        public INativeChatClient NativeChatClient { get; private set; }
+        public INativeClient NativeClient { get; private set; }
 
         public event ToolCallsStartHandler OnToolCallsStart;
         public event ToolCallInvokeHandler OnToolCallInvoke;
@@ -30,7 +30,7 @@ namespace Silmoon.Intelligence
         public string Name { get; set; } = string.Empty;
         public string RoleMandate { get; set; } = string.Empty;
         public string Topic { get => State.Topic; set => State.Topic = value; }
-        public List<IMessage> History { get => NativeChatClient.MessageHistory; set => NativeChatClient.MessageHistory = value; }
+        public List<IMessage> History { get => NativeClient.MessageHistory; set => NativeClient.MessageHistory = value; }
         public bool IsBusy { get; set; } = false;
         public AgentState State { get; set; }
 
@@ -43,22 +43,22 @@ namespace Silmoon.Intelligence
 
             try
             {
-                NativeChatClient = NativeChatClientFactory.Create(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", enableThinking, disableProxy);
+                NativeClient = NativeClientFactory.Create(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", enableThinking, disableProxy);
             }
             catch (Exception ex)
             {
                 // Handle the exception, log it, or rethrow it as needed
             }
-            NativeChatClient.OnToolCallsStart += async (toolCallParameters) => await (OnToolCallsStart is null ? Task.CompletedTask : OnToolCallsStart.Invoke(toolCallParameters));
-            NativeChatClient.OnToolCallInvoke += async (toolCallParameter, toolCallResult) => await (OnToolCallInvoke is null ? Task.FromResult(toolCallResult) : OnToolCallInvoke.Invoke(toolCallParameter, toolCallResult));
-            NativeChatClient.OnToolExecuting += async (functionName, toolCallParameter) => await (OnToolExecuting is null ? Task.CompletedTask : OnToolExecuting.Invoke(functionName, toolCallParameter));
-            NativeChatClient.OnToolExecuted += async (functionName, toolCallParameter, toolCallResult) => await (OnToolExecuted is null ? Task.CompletedTask : OnToolExecuted.Invoke(functionName, toolCallParameter, toolCallResult));
-            NativeChatClient.OnToolCallsFinish += async (toolCallParameters, toolCallResults) => await (OnToolCallsFinish is null ? Task.FromResult<ToolCallResult[]>(null) : OnToolCallsFinish.Invoke(toolCallParameters, toolCallResults));
-            NativeChatClient.OnStreamOutput += async (chunk) => await (OnStreamOutput is null ? Task.CompletedTask : OnStreamOutput.Invoke(chunk));
-            NativeChatClient.OnStreamOutputCompleted += NativeChatClient_OnStreamOutputCompleted;
+            NativeClient.OnToolCallsStart += async (toolCallParameters) => await (OnToolCallsStart is null ? Task.CompletedTask : OnToolCallsStart.Invoke(toolCallParameters));
+            NativeClient.OnToolCallInvoke += async (toolCallParameter, toolCallResult) => await (OnToolCallInvoke is null ? Task.FromResult(toolCallResult) : OnToolCallInvoke.Invoke(toolCallParameter, toolCallResult));
+            NativeClient.OnToolExecuting += async (functionName, toolCallParameter) => await (OnToolExecuting is null ? Task.CompletedTask : OnToolExecuting.Invoke(functionName, toolCallParameter));
+            NativeClient.OnToolExecuted += async (functionName, toolCallParameter, toolCallResult) => await (OnToolExecuted is null ? Task.CompletedTask : OnToolExecuted.Invoke(functionName, toolCallParameter, toolCallResult));
+            NativeClient.OnToolCallsFinish += async (toolCallParameters, toolCallResults) => await (OnToolCallsFinish is null ? Task.FromResult<ToolCallResult[]>(null) : OnToolCallsFinish.Invoke(toolCallParameters, toolCallResults));
+            NativeClient.OnStreamOutput += async (chunk) => await (OnStreamOutput is null ? Task.CompletedTask : OnStreamOutput.Invoke(chunk));
+            NativeClient.OnStreamOutputCompleted += NativeClient_OnStreamOutputCompleted;
         }
 
-        private Task NativeChatClient_OnStreamOutputCompleted(Result result)
+        private Task NativeClient_OnStreamOutputCompleted(Result result)
         {
             IsBusy = false;
             return OnStreamOutputCompleted?.Invoke(result) ?? Task.CompletedTask;
@@ -70,25 +70,25 @@ namespace Silmoon.Intelligence
                 if (input.IsNullOrEmpty()) return null;
                 List<ChatCompletionsChunk> chunks = [];
                 IsBusy = true;
-                await foreach (var chunk in NativeChatClient.CompletionsStreamAsync(input, chunks))
+                await foreach (var chunk in NativeClient.CompletionsStreamAsync(input, chunks))
                 {
 
                 }
                 var result = Result.Create([.. chunks]);
-                State.ChatHistory = [.. NativeChatClient.MessageHistory];
+                State.ChatHistory = [.. NativeClient.MessageHistory];
                 State.LastAt = DateTime.Now;
                 return result;
             });
         }
         public void RollbackHistory()
         {
-            NativeChatClient.RollbackHistory();
-            State.ChatHistory = [.. NativeChatClient.MessageHistory];
+            NativeClient.RollbackHistory();
+            State.ChatHistory = [.. NativeClient.MessageHistory];
         }
         public void ClearHistory()
         {
-            NativeChatClient.ClearHistory();
-            State.ChatHistory = [.. NativeChatClient.MessageHistory];
+            NativeClient.ClearHistory();
+            State.ChatHistory = [.. NativeClient.MessageHistory];
         }
 
         public void Dispose()
@@ -100,8 +100,8 @@ namespace Silmoon.Intelligence
             OnToolCallsFinish = null;
             OnStreamOutput = null;
             OnStreamOutputCompleted = null;
-            NativeChatClient?.Dispose();
-            NativeChatClient = null;
+            NativeClient?.Dispose();
+            NativeClient = null;
         }
     }
 }

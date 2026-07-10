@@ -132,7 +132,7 @@ public partial class ChatViewModel : ObservableObject
     public ChatViewModel(Chat page)
     {
         this.page = page;
-        page.Title = $"Chat ({page.intelligenceService.DefaultChatAgentClient.NativeChatClient.ModelName})";
+        page.Title = $"Chat ({page.intelligenceService.DefaultChatAgentClient.NativeClient.ModelName})";
         page.intelligenceService.DefaultChatAgentClient.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
         page.intelligenceService.DefaultChatAgentClient.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
 

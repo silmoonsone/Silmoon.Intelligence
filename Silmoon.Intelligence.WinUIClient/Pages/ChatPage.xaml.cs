@@ -414,7 +414,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             var newChat = IntelligenceService.NewAgent();
             ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, Topic = $"#{newChat.Data.Key}", This = this });
             var history = new List<IMessage>(IntelligenceService.AgentClients[chatListItem.Id].History);
-            newChat.Data.Value.NativeChatClient.MessageHistory = history;
+            newChat.Data.Value.NativeClient.MessageHistory = history;
             Page.nameChatList.SelectedIndex = 0;
         }
         [RelayCommand]
@@ -459,7 +459,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [RelayCommand]
         public void ClearHistory()
         {
-            CurrentAgentClient.Value.NativeChatClient.ClearHistory();
+            CurrentAgentClient.Value.NativeClient.ClearHistory();
             IntelligenceService.SaveChatState(CurrentAgentClient.Key);
             Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
@@ -490,7 +490,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             if (isFind)
             {
                 CurrentAgentClient = new KeyValuePair<Guid, AgentClient>(chatId, agentClient);
-                ModelName = agentClient.NativeChatClient.ModelName;
+                ModelName = agentClient.NativeClient.ModelName;
                 BindEvents();
                 await LoadChat();
             }

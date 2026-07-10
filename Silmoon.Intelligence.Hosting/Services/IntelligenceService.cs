@@ -46,7 +46,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 {unifiedSystemPrompt}
                 """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
             AgentClients[id] = agentClient;
-            ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
+            ModelContextService.InjectMainChatTools(agentClient.NativeClient);
             return true.ToStateSet(new KeyValuePair<Guid, AgentClient>(id, agentClient));
         }
         public StateSet<bool> DeleteAgent(Guid id)
@@ -107,7 +107,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             //    {unifiedSystemPrompt}
             //    """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: false);
 
-            ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeChatClient);
+            ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeClient);
 
             var agentStates = AgentWorkspaceService.GetAgentStates();
             if (agentStates.IsNullOrEmpty()) NewAgent();
@@ -120,8 +120,8 @@ namespace Silmoon.Intelligence.Hosting.Services
                     var agentClient = new AgentClient(agentState.Id, modelProvider, modelName, $"Agent-{agentState.Id}", $"Agent-{agentState.Id}", $"""
                         {unifiedSystemPrompt}
                         """, agentState, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
-                    ModelContextService.InjectMainChatTools(agentClient.NativeChatClient);
-                    agentClient.NativeChatClient.MessageHistory = [.. agentState.ChatHistory];
+                    ModelContextService.InjectMainChatTools(agentClient.NativeClient);
+                    agentClient.NativeClient.MessageHistory = [.. agentState.ChatHistory];
                     AgentClients[agentState.Id] = agentClient;
                 }
             }

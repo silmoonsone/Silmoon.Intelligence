@@ -154,16 +154,16 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                             ApplicationLifetime.StopApplication();
                             break;
                         case "getsystemprompt":
-                            Console.WriteLine(IntelligenceService.DefaultChatAgentClient.NativeChatClient.SystemPrompt);
+                            Console.WriteLine(IntelligenceService.DefaultChatAgentClient.NativeClient.SystemPrompt);
                             break;
                         case "back":
-                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
+                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeClient.MessageHistory.Count}");
                             IntelligenceService.DefaultChatAgentClient.RollbackHistory();
-                            Console.WriteLine($"回退后消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
+                            Console.WriteLine($"回退后消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeClient.MessageHistory.Count}");
                             Console.WriteLine();
                             break;
                         case "stat":
-                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.Count}");
+                            Console.WriteLine($"当前消息历史数量：{IntelligenceService.DefaultChatAgentClient.NativeClient.MessageHistory.Count}");
                             break;
                         case "save":
                             Console.WriteLine($"Save reuslt: {IntelligenceService.SaveChatState(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
@@ -171,11 +171,11 @@ namespace Silmoon.Intelligence.ConsoleTesting.Services
                         case "restore":
                             Console.WriteLine($"Restore result: {IntelligenceService.RestoreChatState(IntelligenceService.DefaultChatAgentClient.Id).ToJsonString()}");
                             Console.WriteLine($"Last message:");
-                            Console.WriteLine($"user: {IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.GetContent()}");
-                            Console.WriteLine($"assistant: {IntelligenceService.DefaultChatAgentClient.NativeChatClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.GetContent()}");
+                            Console.WriteLine($"user: {IntelligenceService.DefaultChatAgentClient.NativeClient.MessageHistory.LastOrDefault(x => x.Role == Role.User)?.GetContent()}");
+                            Console.WriteLine($"assistant: {IntelligenceService.DefaultChatAgentClient.NativeClient.MessageHistory.LastOrDefault(x => x.Role == Role.Assistant)?.GetContent()}");
                             break;
                         case "getsystem":
-                            Console.WriteLine(IntelligenceService.DefaultChatAgentClient.NativeChatClient.SystemPrompt);
+                            Console.WriteLine(IntelligenceService.DefaultChatAgentClient.NativeClient.SystemPrompt);
                             break;
                         default:
                             Console.WriteLine($"Unknown command: {command}");

@@ -15,7 +15,7 @@ namespace Silmoon.Intelligence
     public class AgentModelManager
     {
         public Dictionary<string, ModelProvider> ModelProviders { get; private set; } = [];
-        public Dictionary<string, INativeChatClient> NativeChatClients { get; private set; } = [];
+        public Dictionary<string, INativeClient> NativeClients { get; private set; } = [];
         public ConcurrentDictionary<string, AgentClient> WorkerAgentClients { get; private set; } = [];
 
 
@@ -26,7 +26,7 @@ namespace Silmoon.Intelligence
             {
                 foreach (var model in provider.Value.Models)
                 {
-                    NativeChatClients.Add($"{provider.Key}_{model.Name}", NativeChatClientFactory.Create(provider.Value, model.Name));
+                    NativeClients.Add($"{provider.Key}_{model.Name}", NativeClientFactory.Create(provider.Value, model.Name));
                 }
             }
         }
@@ -34,29 +34,29 @@ namespace Silmoon.Intelligence
         public ModelProvider[] GetAgentModelProviders() => [.. ModelProviders.Values];
         public async Task<StateSet<bool, Result>> CallSingletonAgent(string providerName, string modelName, string content, string system = null, bool enableThinking = false)
         {
-            var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
-            if (nativeChatClient is not null)
-                return await CallAgentModel($"{providerName}:{modelName}", nativeChatClient, content, system, enableThinking);
+            var nativeClient = NativeClients.GetValueOrDefault($"{providerName}_{modelName}");
+            if (nativeClient is not null)
+                return await CallAgentModel($"{providerName}:{modelName}", nativeClient, content, system, enableThinking);
             else return false.ToStateSet<Result>(null, $"specified model ({providerName},{modelName}) not found");
         }
         public StateSet<bool> ResetSingletonAgentHistory(string providerName, string modelName)
         {
-            var nativeChatClient = NativeChatClients.GetValueOrDefault($"{providerName}_{modelName}");
-            if (nativeChatClient is not null)
+            var nativeClient = NativeClients.GetValueOrDefault($"{providerName}_{modelName}");
+            if (nativeClient is not null)
             {
-                nativeChatClient.ClearHistory();
+                nativeClient.ClearHistory();
                 return true.ToStateSet("success");
             }
             else return false.ToStateSet($"specified model ({providerName},{modelName}) not found");
         }
-        private static async Task<StateSet<bool, Result>> CallAgentModel(string agentName, INativeChatClient nativeChatClient, string content, string system, bool enableThinking)
+        private static async Task<StateSet<bool, Result>> CallAgentModel(string agentName, INativeClient nativeClient, string content, string system, bool enableThinking)
         {
-            nativeChatClient.EnableThinking = enableThinking;
-            if (system is not null) nativeChatClient.SystemPrompt = system;
+            nativeClient.EnableThinking = enableThinking;
+            if (system is not null) nativeClient.SystemPrompt = system;
 
             List<ChatCompletionsChunk> chunks = [];
             //Console.WriteLineWithColor($"Agent({agentName}) response start:", ConsoleColor.Green, ConsoleColor.Blue);
-            await foreach (var chunk in nativeChatClient.CompletionsStreamAsync([MessageContent.Create(Role.User, content)], chunks))
+            await foreach (var chunk in nativeClient.CompletionsStreamAsync([MessageContent.Create(Role.User, content)], chunks))
             {
                 if (chunk.State)
                 {
@@ -121,7 +121,7 @@ namespace Silmoon.Intelligence
             var workerClient = WorkerAgentClients.GetValueOrDefault(name);
             if (workerClient is not null)
             {
-                workerClient.NativeChatClient.ClearHistory();
+                workerClient.NativeClient.ClearHistory();
                 return true.ToStateSet("success");
             }
             else return false.ToStateSet($"specified worker agent ({name}) not found");

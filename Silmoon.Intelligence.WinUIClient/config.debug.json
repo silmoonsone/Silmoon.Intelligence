@@ -12,7 +12,7 @@
     {
       "providerName": "aliyun",
       "apiUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-      "apiKind": "OpenAIChatCompletions",
+      "apiKind": "Chat",
       "apiKey": "",
       "providerDescription": "Aliyun as know as Qwen models AI platform.",
       "models": [
@@ -29,7 +29,7 @@
     {
       "providerName": "tencent",
       "apiUrl": "https://api.hunyuan.cloud.tencent.com/v1",
-      "apiKind": "OpenAIChatCompletions",
+      "apiKind": "Chat",
       "apiKey": "",
       "providerDescription": "Tenecent as know as HUNYUAN models AI platform.",
       "models": [
@@ -42,7 +42,7 @@
     {
       "providerName": "deepseek",
       "apiUrl": "https://api.deepseek.com",
-      "apiKind": "OpenAIChatCompletions",
+      "apiKind": "Chat",
       "apiKey": "",
       "providerDescription": "DeepSeek AI models platform.",
       "models": [

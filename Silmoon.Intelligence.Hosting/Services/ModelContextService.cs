@@ -26,38 +26,38 @@ namespace Silmoon.Intelligence.Hosting.Services
             AgentModelManager = new AgentModelManager(SilmoonConfigureService.ModelProviders);
             ServiceProvider = serviceProvider;
         }
-        public void InjectMainChatTools(INativeChatClient nativeChatClient)
+        public void InjectMainChatTools(INativeClient nativeClient)
         {
-            AddTools(nativeChatClient, [
+            AddTools(nativeClient, [
                 new WorldStateTool(),
                 new FileTool(),
                 new CommandTool(),
                 new WaitTool(),
                 new CSharpTool(),
-                new MemoryTool(nativeChatClient),
+                new MemoryTool(nativeClient),
                 new AgentModelTool(AgentModelManager),
                 new GithubTool(),
                 new WebSearchTool(SilmoonConfigureService.AliyunOpenSearchKey),
                 ]);
 
             string systemPrompt = SilmoonConfigureService.SystemPrompt;
-            if (systemPrompt is not null) nativeChatClient.SystemPrompt = $"{systemPrompt}\r\n{nativeChatClient.SystemPrompt}";
+            if (systemPrompt is not null) nativeClient.SystemPrompt = $"{systemPrompt}\r\n{nativeClient.SystemPrompt}";
         }
-        public void InjectSupervisorTools(INativeChatClient nativeChatClient)
+        public void InjectSupervisorTools(INativeClient nativeClient)
         {
-            AddTools(nativeChatClient, [
+            AddTools(nativeClient, [
                 new WorldStateTool(),
                 new FileTool(),
                 new WaitTool(),
                 new CSharpTool(),
-                new MemoryTool(nativeChatClient),
+                new MemoryTool(nativeClient),
                 new AgentModelTool(AgentModelManager),
                 new AgentStateTool(IntelligenceService),
                 new WebSearchTool(SilmoonConfigureService.AliyunOpenSearchKey),
                 ]);
 
             string systemPrompt = SilmoonConfigureService.SystemPrompt;
-            if (systemPrompt is not null) nativeChatClient.SystemPrompt = $"{systemPrompt}\r\n{nativeChatClient.SystemPrompt}";
+            if (systemPrompt is not null) nativeClient.SystemPrompt = $"{systemPrompt}\r\n{nativeClient.SystemPrompt}";
         }
     }
 }

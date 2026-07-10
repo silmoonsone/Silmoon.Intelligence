@@ -1,4 +1,4 @@
-# Silmoon.Intelligence
+﻿# Silmoon.Intelligence
 
 基于 **.NET 10** 的 Agent 与工具调用（Tool Calling）项目：在 **Silmoon.AI** 上封装 `AgentClient`、Hosting 编排与会话持久化。**持久化**正在从 `workspace` 文件机制迁移至 **LiteDB**（已接入 `Core`，业务数据将逐步入库）；`workspace` 仍在使用，后续会逐步淡出。
 
@@ -95,6 +95,10 @@ MAUI 单平台构建可用 `-f`，TFM 以 `MauiClient.csproj` 为准。需 **Win
 |--------------|------|
 | **`aliyunOpenSearchKey`**（可选） | 阿里云 OpenSearch **Bearer** 密钥；未配置时 **WebSearch** 工具会提示未配置 |
 | **`connectionString`**（可选） | **LiteDB** 连接串（如 `Filename=data.db;Mode=Shared`）；**`Core`** 使用，**Agent 状态等持久化将逐步迁入**（WinUI 示例配置已包含） |
+| **`defaultModel`** | 默认模型选择；`defaultProvider` 对应 `modelProviders[].providerName`，`defaultModelName` 对应该提供商下的模型名 |
+| **`modelProviders`** | 模型提供商数组；每项会反序列化为 `ModelProvider`，包含 `providerName`、`apiUrl`、`apiKey`、`models` 等 |
+| **`modelProviders[].apiKind`** | Native API 类型；当前使用 `Chat` / `Authropic` / `Responses`，旧值 `OpenAIChatCompletions` 等已不再兼容 |
+| **`nativeClientDisableProxy`**（可选） | 创建 Native Client 时是否禁用系统代理 |
 
 ### 持久化与工作区（过渡中）
 
