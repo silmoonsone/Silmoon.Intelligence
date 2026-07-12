@@ -17,6 +17,7 @@
     <File Path="logo.png" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Silmoon.Intelligence.Client/Silmoon.Intelligence.Client.csproj" Id="c3452d3e-bcb4-45af-8596-b146bec819c2" />
   <Project Path="Silmoon.Intelligence.Hosting/Silmoon.Intelligence.Hosting.csproj" Id="99f618dc-0b84-4e21-8333-34d0e2fe9e2a" />
   <Project Path="Silmoon.Intelligence.MauiClient/Silmoon.Intelligence.MauiClient.csproj" Id="72e5fbb7-6c30-4325-abaa-6e3305ddea67">
     <Deploy Solution="Debug|*" />

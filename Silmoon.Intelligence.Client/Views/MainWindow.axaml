@@ -1,0 +1,294 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Silmoon.Intelligence.Client.ViewModels"
+        xmlns:models="using:Silmoon.Intelligence.Client.Models"
+        xmlns:controls="using:Silmoon.Intelligence.Client.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="1440"
+        d:DesignHeight="900"
+        x:Class="Silmoon.Intelligence.Client.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Silmoon Intelligence"
+        Width="1360"
+        Height="840"
+        MinWidth="1080"
+        MinHeight="680"
+        Background="#F6F7F9">
+
+  <Window.Styles>
+    <StyleInclude Source="avares://Silmoon.Intelligence.Client/Styles/MainWindowStyles.axaml" />
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="250,*,310" RowDefinitions="64,*">
+    <Border Grid.RowSpan="2" Background="#121A2A">
+      <Grid RowDefinitions="64,Auto,*,Auto" Margin="14,0">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10" Margin="4,0">
+          <Border Width="32" Height="32" CornerRadius="8" Background="#5B6FF0">
+            <TextBlock Text="SI" Foreground="White" FontSize="13" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <TextBlock Text="Silmoon Intelligence" Foreground="White" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <Button Grid.Row="1"
+                Command="{Binding NewChatCommand}"
+                Background="#5B6FF0"
+                Foreground="White"
+                HorizontalContentAlignment="Center"
+                Margin="0,12,0,16">
+          <TextBlock Text="+ 新会话" Foreground="White" FontWeight="SemiBold" />
+        </Button>
+
+        <Grid Grid.Row="2" RowDefinitions="Auto,*">
+          <TextBlock Text="最近会话" Classes="label" Margin="8,0,0,8" />
+          <ItemsControl Grid.Row="1"
+                        x:Name="SessionsHost"
+                        ItemsSource="{Binding Sessions}">
+            <ItemsControl.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="新建会话" Command="{Binding NewChatCommand}" />
+                <MenuItem Header="删除当前会话" Command="{Binding RequestDeleteSelectedChatCommand}" />
+              </ContextMenu>
+            </ItemsControl.ContextMenu>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="models:ChatSessionItem">
+                <Button Classes="sessionButton"
+                        Click="SessionItem_Click"
+                        PointerPressed="SessionItem_PointerPressed">
+                  <Button.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="生成标题"
+                                Command="{Binding $parent[Window].DataContext.GenerateSessionTopicCommand}"
+                                CommandParameter="{Binding}" />
+                      <MenuItem Header="删除"
+                                Command="{Binding $parent[Window].DataContext.RequestDeleteChatCommand}"
+                                CommandParameter="{Binding}" />
+                    </ContextMenu>
+                  </Button.ContextMenu>
+                  <Border Classes="sidebarItem" Classes.selected="{Binding IsSelected}">
+                    <Grid RowDefinitions="Auto,Auto">
+                      <TextBlock Grid.Column="0"
+                                 Classes="sessionTitle"
+                                 Text="{Binding Topic}"
+                                 Foreground="#E8EDF5"
+                                 FontSize="13"
+                                 TextTrimming="CharacterEllipsis" />
+                      <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Spacing="6" Margin="0,5,8,0">
+                        <TextBlock Classes="sessionMeta" Text="{Binding ChatCounting}" Foreground="#7E8A9F" FontSize="11" />
+                        <TextBlock Classes="sessionMeta" Text="messages" Foreground="#7E8A9F" FontSize="11" />
+                        <TextBlock Classes="sessionMeta" Text="{Binding LastAtText}" Foreground="#7E8A9F" FontSize="11" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+
+        <Border Grid.Row="3" BorderBrush="#27344A" BorderThickness="0,1,0,0" Padding="4,14" Margin="0,12,0,0">
+          <Grid ColumnDefinitions="32,*,Auto">
+            <Border Width="28" Height="28" CornerRadius="14" Background="#263247">
+              <TextBlock Text=".NET" Foreground="#B8C1D1" FontSize="8" FontWeight="Bold"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="1" Margin="9,0" VerticalAlignment="Center">
+              <TextBlock Text="Local Host" Foreground="#E8EDF5" FontSize="12" />
+              <TextBlock Text="{Binding RunStatus}" Foreground="#7E8A9F" FontSize="10" />
+            </StackPanel>
+            <Ellipse Grid.Column="2" Width="8" Height="8" Fill="#30B981" VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
+
+    <Border Grid.Column="1" Grid.ColumnSpan="2" Background="White" BorderBrush="#E2E6ED" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto" Margin="24,0">
+        <StackPanel VerticalAlignment="Center" Spacing="3">
+          <TextBlock Text="Agent 工作台" FontSize="16" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding ModelName}" Classes="muted" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+          <Button Command="{Binding UndoHistoryCommand}" Content="回退" />
+          <Button Command="{Binding ClearHistoryCommand}" Content="清空" />
+          <Button Command="{Binding SaveHistoryCommand}" Content="保存" />
+          <Button Command="{Binding GenerateTopicCommand}" Content="标题" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Column="1" Grid.Row="1" RowDefinitions="*,Auto,Auto" Margin="24,18,20,22">
+      <Border Classes="panel" Padding="0">
+        <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto">
+          <ItemsControl x:Name="MessagesHost" ItemsSource="{Binding Messages}" Margin="18,12,18,16">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="models:ChatMessageItem">
+                <Grid ColumnDefinitions="38,*" Margin="0,8,0,16">
+                  <Border Width="30" Height="30" CornerRadius="8" Background="#E9EDFF" VerticalAlignment="Top">
+                    <TextBlock Text="{Binding RoleLabel}" Foreground="#4F62D7" FontSize="8" FontWeight="Bold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Spacing="8" Margin="12,0,0,0">
+                    <TextBlock Text="{Binding RoleLabel}" FontSize="11" FontWeight="Bold" Foreground="#596276" />
+                    <Border Background="#FAFBFC"
+                            BorderBrush="#E2E6ED"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14,12"
+                            MaxWidth="760"
+                            HorizontalAlignment="Left"
+                            IsVisible="{Binding HasMessageBody}">
+                      <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding ReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12"
+                                   IsVisible="{Binding HasReasoningContent}" />
+                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="13" LineHeight="21"
+                                   Foreground="#3A4352"
+                                   IsVisible="{Binding IsUser}" />
+                        <Border Classes="markdownSurface" IsVisible="{Binding IsAgentContentVisible}">
+                          <controls:MarkdownBlock Markdown="{Binding Content}" />
+                        </Border>
+                        <TextBlock Text="{Binding StreamingReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12"
+                                   IsVisible="{Binding HasStreamingReasoningContent}" />
+                        <TextBlock Text="{Binding StreamingContent}" TextWrapping="Wrap" FontSize="13" LineHeight="21"
+                                   IsVisible="{Binding HasStreamingContent}" />
+                      </StackPanel>
+                    </Border>
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+
+      <TextBlock Grid.Row="1"
+                 Text="{Binding UsageInfo}"
+                 Classes="muted"
+                 Margin="12,8,0,8" />
+
+      <Border Grid.Row="2" Classes="panel" Padding="5">
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+          <TextBox Grid.Column="0"
+                   x:Name="ChatInput"
+                   Classes="chatInput"
+                   Text="{Binding UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   AcceptsReturn="True"
+                   Height="34"
+                   MinHeight="34"
+                   MaxHeight="150"
+                   PlaceholderText="输入消息..."
+                   Padding="10,6"
+                   FontSize="13"
+                   TextWrapping="Wrap" />
+          <Button Grid.Column="1"
+                  Classes="sendButton"
+                  Command="{Binding SendChatCommand}"
+                  Width="64"
+                  Margin="6"
+                  VerticalAlignment="Bottom"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  Content="发送" />
+          <TextBlock Grid.Row="1" Text="Enter 发送；Shift+Enter 换行" Classes="muted" Margin="12,0,0,8" />
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Column="2" Grid.Row="1" Background="#FAFBFC" BorderBrush="#E2E6ED" BorderThickness="1,0,0,0">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="18,20" Spacing="16">
+          <StackPanel Spacing="5">
+            <TextBlock Text="运行状态" FontSize="15" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding RunStatus}" Classes="muted" />
+            <ProgressBar Classes="activityBar"
+                         IsIndeterminate="True"
+                         Height="3"
+                         IsVisible="{Binding IsToolActivityActive}" />
+          </StackPanel>
+
+          <Border Classes="panel"
+                  Padding="14"
+                  IsVisible="{Binding HasToolIndicators}">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="工具执行" FontSize="13" FontWeight="SemiBold" />
+                <TextBlock Grid.Column="1" Text="{Binding ToolExecuteIndicators.Count}" Classes="muted" />
+              </Grid>
+              <TextBlock Text="{Binding ToolStreamInfo}"
+                         Classes="muted"
+                         IsVisible="{Binding IsToolActivityActive}" />
+              <ItemsControl ItemsSource="{Binding ToolExecuteIndicators}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="models:ToolExecuteIndicatorItem">
+                    <Border BorderBrush="#E2E6ED" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,8" Background="White">
+                      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock Text="{Binding FunctionName}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="{Binding StateText}" Classes="muted" />
+                        <TextBlock Grid.Row="1" Text="{Binding Status}" Classes="muted" Margin="0,4,0,0" />
+                        <ProgressBar Grid.Row="2"
+                                     Grid.ColumnSpan="2"
+                                     Classes="toolActivityBar"
+                                     IsIndeterminate="True"
+                                     Height="3"
+                                     Margin="0,8,0,0"
+                                     IsVisible="{Binding IsActive}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Background="#EDF7F2" CornerRadius="8" Padding="12">
+            <TextBlock Text="Avalonia 客户端复用现有 Hosting 和 Agent 核心。工具、会话恢复与配置文件仍沿用当前项目实现。"
+                       Foreground="#35654D"
+                       FontSize="12"
+                       LineHeight="18"
+                       TextWrapping="Wrap" />
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+    <Border Grid.RowSpan="2"
+            Grid.ColumnSpan="3"
+            Background="#66000000"
+            IsVisible="{Binding IsDeleteConfirmationVisible}">
+      <Border Background="White"
+              BorderBrush="#DDE4EE"
+              BorderThickness="1"
+              CornerRadius="8"
+              Padding="22"
+              Width="430"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+          <TextBlock Text="删除会话"
+                     FontSize="18"
+                     FontWeight="SemiBold"
+                     Foreground="#1F2937" />
+          <TextBlock Text="{Binding DeleteConfirmationText}"
+                     TextWrapping="Wrap"
+                     LineHeight="20"
+                     Foreground="#4B5563" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Content="取消"
+                    Command="{Binding CancelDeleteCommand}"
+                    Background="#F4F6FA"
+                    Foreground="#273142" />
+            <Button Content="确认删除"
+                    Command="{Binding ConfirmDeleteCommand}"
+                    Background="#D92D20"
+                    Foreground="White" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Grid>
+</Window>

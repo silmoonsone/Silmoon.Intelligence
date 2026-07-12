@@ -4,7 +4,7 @@
 
 **运行时模型**：**监管 Agent（Supervisor）** + **多个主对话 Agent（按 `Guid` 区分）**；启动时从 **`workspace`** 扫描并恢复 **`AgentState`**（无历史则新建）。**LiteDB**（**`Core`**，配置 **`connectionString`**）为长期存储方向，与 **`workspace`** 并存过渡中。用户消息可由宿主附加 `<time>` 等前缀（展示见 **`IntelligenceService.GetUserRealInput`**）。
 
-**入口**：**控制台**适合命令行联调；**WinUI 3** 为当前功能最完整的 Windows 桌面客户端（多会话、Markdown、思考内容、Token 用量等）；**MAUI** 可运行，侧重跨平台试验。三者通过 **`AddSilmoonIntelligence()`** 挂接同一套 Hosting（各客户端 **`ISilmoonPlatformDirectoryService`** 实现不同，见各项目 `Services`）。
+**入口**：**Avalonia** 是新的跨平台桌面客户端方向，复用现有 Hosting / Agent 核心并提供多会话、Markdown、思考内容、工具执行指示与 Token 用量展示；**控制台**适合命令行联调；**WinUI 3** 为 legacy Windows 客户端，短期可作为功能参考但不再作为主要维护方向；**MAUI** 已进入过期/实验状态，不建议继续投入新功能。各入口通过 **`AddSilmoonIntelligence()`** 挂接同一套 Hosting（各客户端 **`ISilmoonPlatformDirectoryService`** 实现不同，见各项目 `Services`）。
 
 解决方案：**`Silmoon.Intelligence.slnx`**。具体 API 以仓库内代码、`*.csproj` 为准。
 
@@ -29,8 +29,9 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.MauiClient` | .NET MAUI，单会话联调；走 **`DefaultChatAgentClient`**（与控制台同类）。平台目录 **`FileSystem.AppDataDirectory`**。功能与 WinUI 未必对齐 |
-| `Silmoon.Intelligence.WinUIClient` | WinUI 3 桌面客户端：**多会话**（**`Topic`** 列表，新建/切换/删除/复制；**`ChatPage`** 按当前 **`AgentClient`**，**不依赖** **`DefaultChatAgentClient`**）。**Markdown**、思考/推理分区、工具指示器、**Token 用量**展示。主对话默认 **`enableThinking`**（UI 开关待完善）。注册 **`Core`** + **`AddSilmoonIntelligence()`**。平台目录 **`AppContext.BaseDirectory`**；依赖 **Silmoon.Windows.WinUI3**、**Windows App SDK** |
+| `Silmoon.Intelligence.Client` | **Avalonia 桌面客户端（主维护方向）**：跨平台客户端基础实现；复用 `Silmoon.Intelligence.Hosting` 与现有 Agent 核心，支持多会话恢复/切换/删除、Markdown 正文展示、思考内容、工具调用动态指示、工具 token 流计数、Token 用量展示。该客户端基础实现主要由 Codex 生成与迭代，尚未经过详细人工代码审查，继续开发或发布前需重点复核。配置文件沿用 WinUI `config*.json` 并复制到输出目录；平台目录见 `Services/SilmoonPlatformDirectoryServiceImpl.cs` |
+| `Silmoon.Intelligence.MauiClient` | **已过期/实验性客户端**：.NET MAUI 单会话联调；走 **`DefaultChatAgentClient`**（与控制台同类）。平台目录 **`FileSystem.AppDataDirectory`**。功能不会继续主动追齐 Avalonia |
+| `Silmoon.Intelligence.WinUIClient` | **Legacy Windows 客户端**：功能曾最完整，可作为 Avalonia 迁移参考。支持 **多会话**（**`Topic`** 列表，新建/切换/删除/复制；**`ChatPage`** 按当前 **`AgentClient`**，**不依赖** **`DefaultChatAgentClient`**）、**Markdown**、思考/推理分区、工具指示器、**Token 用量**展示。主对话默认 **`enableThinking`**。平台目录 **`AppContext.BaseDirectory`**；依赖 **Silmoon.Windows.WinUI3**、**Windows App SDK**。后续只建议维护必要修复 |
 
 ### 测试与联调入口
 
@@ -66,7 +67,7 @@ git clone https://github.com/silmoonsone/Silmoon.Windows.git
 git clone https://github.com/silmoonsone/Silmoon.Maui.git
 ```
 
-仅构建控制台 / Hosting 核心时，**至少需要 `Silmoon.AI`**；WinUI / MAUI / LiteDB（**`Core`**）分别还需要 **Silmoon.Windows**、**Silmoon.Maui**、**Silmoon.Data**。缺少依赖时，可从 `slnx` 中移除不需要的客户端或外部工程引用后再构建。
+仅构建控制台 / Hosting 核心时，**至少需要 `Silmoon.AI`**；Avalonia / LiteDB（**`Core`**）需要 **Silmoon.Data**；WinUI / MAUI 分别还需要 **Silmoon.Windows**、**Silmoon.Maui**。缺少依赖时，可从 `slnx` 中移除不需要的客户端或外部工程引用后再构建。
 
 ---
 
@@ -75,10 +76,11 @@ git clone https://github.com/silmoonsone/Silmoon.Maui.git
 ```bash
 dotnet build Silmoon.Intelligence.slnx
 dotnet run --project Silmoon.Intelligence.ConsoleTesting/Silmoon.Intelligence.ConsoleTesting.csproj
+dotnet run --project Silmoon.Intelligence.Client/Silmoon.Intelligence.Client.csproj
 dotnet run --project Silmoon.Intelligence.WinUIClient/Silmoon.Intelligence.WinUIClient.csproj
 ```
 
-MAUI 单平台构建可用 `-f`，TFM 以 `MauiClient.csproj` 为准。需 **Windows App SDK** / **.NET MAUI** 等工作负载；无环境时可从解决方案移除对应客户端后再构建。
+Avalonia 客户端是当前桌面主入口。WinUI / MAUI 构建分别需要 **Windows App SDK** / **.NET MAUI** 等工作负载；MAUI 单平台构建可用 `-f`，TFM 以 `MauiClient.csproj` 为准。无对应环境时，可从解决方案移除不需要的客户端后再构建。
 
 ---
 
@@ -87,6 +89,7 @@ MAUI 单平台构建可用 `-f`，TFM 以 `MauiClient.csproj` 为准。需 **Win
 | 场景 | 配置文件（示例） |
 |------|------------------|
 | 控制台、WinForm、WinUI | 各项目目录下 `config.json`、`config.debug.json`（WinUI 复制到输出目录） |
+| Avalonia | 复用 `WinUIClient/config*.json`，由 `Silmoon.Intelligence.Client.csproj` 链接并复制到输出目录 |
 | MAUI | `MauiClient/Resources/Raw/config*.json` |
 
 敏感项使用 **`config.local.json`** / **`config.local.debug.json`**（已 `.gitignore`）。字段以 **`SilmoonConfigureServiceImpl.cs`** 为准。
