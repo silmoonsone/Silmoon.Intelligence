@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Silmoon.Intelligence.Client.Models;
 using Silmoon.Intelligence.Client.ViewModels;
 using System.Collections.Specialized;
@@ -18,10 +19,27 @@ namespace Silmoon.Intelligence.Client.Views
         public MainWindow()
         {
             InitializeComponent();
+            AddHandler(PointerPressedEvent, MainWindow_PointerPressed, RoutingStrategies.Tunnel);
             ChatInput.AddHandler(KeyDownEvent, ChatInput_KeyDown, RoutingStrategies.Tunnel);
             ChatInput.TextChanged += ChatInput_TextChanged;
             DataContextChanged += MainWindow_DataContextChanged;
             UpdateChatInputHeight();
+        }
+
+        void MainWindow_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (viewModel?.IsUndoHistoryConfirmationPending != true || IsPointerInsideUndoButton(e.Source))
+                return;
+
+            viewModel.IsUndoHistoryConfirmationPending = false;
+        }
+
+        bool IsPointerInsideUndoButton(object? source)
+        {
+            if (source == UndoHistoryButton)
+                return true;
+
+            return source is Visual visual && visual.GetVisualAncestors().Contains(UndoHistoryButton);
         }
 
         void MainWindow_DataContextChanged(object? sender, EventArgs e)
@@ -102,6 +120,43 @@ namespace Silmoon.Intelligence.Client.Views
             SelectSession(session);
             e.Handled = true;
         }
+
+        void DeleteSessionMenuItem_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem item || item.DataContext is not ChatSessionItem session || viewModel is null) return;
+
+            if (!item.Classes.Contains("dangerConfirm"))
+            {
+                item.Header = "确认删除";
+                item.Classes.Set("dangerConfirm", true);
+                e.Handled = true;
+                return;
+            }
+
+            viewModel.DeleteSession(session);
+            ResetDeleteMenuItem(item);
+            FindOwningContextMenu(item)?.Close();
+            e.Handled = true;
+        }
+
+        void SessionContextMenu_Closed(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not ContextMenu menu) return;
+
+            foreach (var item in menu.Items.OfType<MenuItem>())
+                ResetDeleteMenuItem(item);
+        }
+
+        static void ResetDeleteMenuItem(MenuItem item)
+        {
+            if (!item.Classes.Contains("deleteSessionMenuItem")) return;
+
+            item.Header = "删除";
+            item.Classes.Set("dangerConfirm", false);
+        }
+
+        static ContextMenu? FindOwningContextMenu(MenuItem item) =>
+            item.Parent as ContextMenu ?? item.GetVisualAncestors().OfType<ContextMenu>().FirstOrDefault();
 
         void SelectSession(ChatSessionItem session)
         {

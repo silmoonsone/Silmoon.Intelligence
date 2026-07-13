@@ -1,4 +1,10 @@
-﻿<Styles xmlns="https://github.com/avaloniaui">
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Styles.Resources>
+    <SolidColorBrush x:Key="DangerBackgroundBrush" Color="#D92D20" />
+    <SolidColorBrush x:Key="DangerHoverBackgroundBrush" Color="#B42318" />
+    <SolidColorBrush x:Key="DangerForegroundBrush" Color="White" />
+  </Styles.Resources>
+
   <Style Selector="TextBlock">
     <Setter Property="FontFamily" Value="Inter, Microsoft YaHei UI, Microsoft YaHei" />
     <Setter Property="Foreground" Value="#273142" />
@@ -9,6 +15,22 @@
     <Setter Property="Padding" Value="12,8" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Foreground" Value="#273142" />
+  </Style>
+  <Style Selector="Button.dangerConfirm">
+    <Setter Property="Background" Value="{StaticResource DangerBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
+  </Style>
+  <Style Selector="Button.dangerConfirm:pointerover">
+    <Setter Property="Background" Value="{StaticResource DangerHoverBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
+  </Style>
+  <Style Selector="Button.dangerConfirm /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource DangerBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
+  </Style>
+  <Style Selector="Button.dangerConfirm:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource DangerHoverBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
   </Style>
   <Style Selector="TextBlock.muted">
     <Setter Property="Foreground" Value="#748094" />
@@ -45,46 +67,11 @@
   <Style Selector="Button.sessionButton:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="Transparent" />
   </Style>
-  <Style Selector="ListBoxItem">
-    <Setter Property="Padding" Value="0" />
-    <Setter Property="Margin" Value="0" />
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
-  <Style Selector="ListBox#SessionsHost">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Padding" Value="0" />
-  </Style>
-  <Style Selector="ListBox#SessionsHost /template/ ScrollViewer">
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
-  <Style Selector="ListBox#SessionsHost /template/ Border">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
-  </Style>
-  <Style Selector="ListBox#SessionsHost ListBoxItem /template/ ContentPresenter">
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
-  <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
-  <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
-  <Style Selector="ListBoxItem:pointerover Border.sidebarItem">
+  <Style Selector="Button.sessionButton:pointerover Border.sidebarItem">
     <Setter Property="Background" Value="#1C2638" />
-  </Style>
-  <Style Selector="ListBoxItem:selected Border.sidebarItem">
-    <Setter Property="Background" Value="#263247" />
   </Style>
   <Style Selector="Border.sidebarItem.selected">
     <Setter Property="Background" Value="#263247" />
-  </Style>
-  <Style Selector="ListBoxItem:selected TextBlock.sessionTitle">
-    <Setter Property="Foreground" Value="White" />
-  </Style>
-  <Style Selector="ListBoxItem:selected TextBlock.sessionMeta">
-    <Setter Property="Foreground" Value="#B8C1D1" />
   </Style>
   <Style Selector="Border.sidebarItem.selected TextBlock.sessionTitle">
     <Setter Property="Foreground" Value="White" />
@@ -141,6 +128,38 @@
     <Setter Property="Background" Value="#D3DAE8" />
     <Setter Property="Foreground" Value="#6F7A8C" />
     <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm">
+    <Setter Property="Background" Value="{StaticResource DangerBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm:pointerover">
+    <Setter Property="Background" Value="{StaticResource DangerHoverBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm /template/ Border">
+    <Setter Property="Background" Value="{StaticResource DangerBackgroundBrush}" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm:pointerover /template/ Border">
+    <Setter Property="Background" Value="{StaticResource DangerHoverBackgroundBrush}" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm /template/ Panel">
+    <Setter Property="Background" Value="{StaticResource DangerBackgroundBrush}" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm:pointerover /template/ Panel">
+    <Setter Property="Background" Value="{StaticResource DangerHoverBackgroundBrush}" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="MenuItem.dangerConfirm:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
   <Style Selector="Border.markdownSurface">
     <Setter Property="Background" Value="#FFFFFF" />

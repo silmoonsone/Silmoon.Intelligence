@@ -88,6 +88,16 @@ namespace Silmoon.Intelligence.Hosting.Services
             }
             return null;
         }
+        public async Task<string> RenameAgentTopic(Guid agentId, string topic)
+        {
+            if (AgentClients.TryGetValue(agentId, out var agent))
+            {
+                if (!topic.IsNullOrEmpty()) agent.Topic = topic;
+                SaveChatState(agentId);
+                return topic;
+            }
+            return null;
+        }
 
         public StateSet<bool, JObject> SaveChatState(Guid agentId) => AgentWorkspaceService.SaveAgentState(agentId, overwritten: true);
         public StateSet<bool, AgentState> RestoreChatState(Guid agentId) => AgentWorkspaceService.RestoreAgentState(agentId);

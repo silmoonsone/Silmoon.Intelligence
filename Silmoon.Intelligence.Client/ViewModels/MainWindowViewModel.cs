@@ -49,13 +49,21 @@ namespace Silmoon.Intelligence.Client.ViewModels
         public partial ChatSessionItem? SelectedSession { get; set; }
 
         [ObservableProperty]
-        public partial ChatSessionItem? PendingDeleteSession { get; set; }
+        public partial ChatSessionItem? RenameTopicSession { get; set; }
 
-        public bool IsDeleteConfirmationVisible => PendingDeleteSession is not null;
+        [ObservableProperty]
+        public partial bool IsUndoHistoryConfirmationPending { get; set; }
 
-        public string DeleteConfirmationText => PendingDeleteSession is null
-            ? string.Empty
-            : $"确定要删除会话「{PendingDeleteSession.Topic}」吗？此操作会删除该会话的本地历史文件。";
+        public string UndoHistoryButtonText => IsUndoHistoryConfirmationPending ? "确认回退" : "回退";
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ConfirmRenameTopicCommand))]
+        public partial string RenameTopicText { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial bool IsGeneratingRenameTopic { get; set; }
+
+        public bool IsRenameTopicDialogVisible => RenameTopicSession is not null;
 
         public bool HasToolIndicators => ToolExecuteIndicators.Count > 0;
 
@@ -83,19 +91,21 @@ namespace Silmoon.Intelligence.Client.ViewModels
         {
             foreach (var item in Sessions)
                 item.IsSelected = item == value;
+            IsUndoHistoryConfirmationPending = false;
             SendChatCommand.NotifyCanExecuteChanged();
-            ClearHistoryCommand.NotifyCanExecuteChanged();
             UndoHistoryCommand.NotifyCanExecuteChanged();
-            SaveHistoryCommand.NotifyCanExecuteChanged();
-            GenerateTopicCommand.NotifyCanExecuteChanged();
-            RequestDeleteSelectedChatCommand.NotifyCanExecuteChanged();
             SwitchChat(value?.Id);
         }
 
         [RelayCommand]
         public void SelectSession(ChatSessionItem? session)
         {
-            if (session is null || IsBusy) return;
+            if (IsBusy) return;
+            if (session is null)
+            {
+                SelectedSession = null;
+                return;
+            }
 
             if (SelectedSession?.Id == session.Id)
             {
@@ -105,24 +115,35 @@ namespace Silmoon.Intelligence.Client.ViewModels
             SelectedSession = session;
         }
 
-        partial void OnPendingDeleteSessionChanged(ChatSessionItem? value)
-        {
-            OnPropertyChanged(nameof(IsDeleteConfirmationVisible));
-            OnPropertyChanged(nameof(DeleteConfirmationText));
-            ConfirmDeleteCommand.NotifyCanExecuteChanged();
-        }
-
         partial void OnIsBusyChanged(bool value)
         {
+            if (value)
+                IsUndoHistoryConfirmationPending = false;
             SendChatCommand.NotifyCanExecuteChanged();
             NewChatCommand.NotifyCanExecuteChanged();
-            ClearHistoryCommand.NotifyCanExecuteChanged();
             UndoHistoryCommand.NotifyCanExecuteChanged();
-            GenerateTopicCommand.NotifyCanExecuteChanged();
-            GenerateSessionTopicCommand.NotifyCanExecuteChanged();
-            RequestDeleteSelectedChatCommand.NotifyCanExecuteChanged();
-            RequestDeleteChatCommand.NotifyCanExecuteChanged();
-            ConfirmDeleteCommand.NotifyCanExecuteChanged();
+            OpenRenameTopicCommand.NotifyCanExecuteChanged();
+            ConfirmRenameTopicCommand.NotifyCanExecuteChanged();
+            AutoGenerateRenameTopicCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnIsUndoHistoryConfirmationPendingChanged(bool value)
+        {
+            OnPropertyChanged(nameof(UndoHistoryButtonText));
+        }
+
+        partial void OnRenameTopicSessionChanged(ChatSessionItem? value)
+        {
+            OnPropertyChanged(nameof(IsRenameTopicDialogVisible));
+            OpenRenameTopicCommand.NotifyCanExecuteChanged();
+            ConfirmRenameTopicCommand.NotifyCanExecuteChanged();
+            AutoGenerateRenameTopicCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnIsGeneratingRenameTopicChanged(bool value)
+        {
+            ConfirmRenameTopicCommand.NotifyCanExecuteChanged();
+            AutoGenerateRenameTopicCommand.NotifyCanExecuteChanged();
         }
 
         void LoadSessions()
@@ -485,7 +506,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
 
         bool CanSendChat() => !IsBusy && GetSelectedAgent() is not null && !string.IsNullOrWhiteSpace(UserInput);
 
-        bool CanModifyChat() => !IsBusy && GetSelectedAgent() is not null;
+        bool CanUndoHistory() => !IsBusy && GetSelectedAgent() is not null;
 
         [RelayCommand(CanExecute = nameof(CanSendChat))]
         async Task SendChatAsync()
@@ -523,31 +544,17 @@ namespace Silmoon.Intelligence.Client.ViewModels
             }
         }
 
-        [RelayCommand(CanExecute = nameof(CanModifyChat))]
-        void SaveHistory()
-        {
-            if (SelectedSession is null) return;
-            intelligenceService.SaveChatState(SelectedSession.Id);
-        }
-
-        [RelayCommand(CanExecute = nameof(CanModifyChat))]
-        void ClearHistory()
-        {
-            var agent = GetSelectedAgent();
-            if (agent is null || SelectedSession is null) return;
-
-            agent.ClearHistory();
-            intelligenceService.SaveChatState(SelectedSession.Id);
-            Messages.Clear();
-            SelectedSession.ChatCounting = agent.History.Count;
-            SelectedSession.LastAt = agent.State.LastAt;
-        }
-
-        [RelayCommand(CanExecute = nameof(CanModifyChat))]
+        [RelayCommand(CanExecute = nameof(CanUndoHistory))]
         void UndoHistory()
         {
             var agent = GetSelectedAgent();
             if (agent is null || SelectedSession is null) return;
+
+            if (!IsUndoHistoryConfirmationPending)
+            {
+                IsUndoHistoryConfirmationPending = true;
+                return;
+            }
 
             agent.RollbackHistory();
             Messages.Clear();
@@ -555,61 +562,73 @@ namespace Silmoon.Intelligence.Client.ViewModels
                 Messages.Add(message);
             SelectedSession.ChatCounting = agent.History.Count;
             SelectedSession.LastAt = agent.State.LastAt;
+            IsUndoHistoryConfirmationPending = false;
         }
 
-        [RelayCommand(CanExecute = nameof(CanModifyChat))]
-        async Task GenerateTopicAsync()
-        {
-            if (SelectedSession is null) return;
-            await GenerateSessionTopicAsync(SelectedSession);
-        }
-
-        [RelayCommand(CanExecute = nameof(CanEditSession))]
-        async Task GenerateSessionTopicAsync(ChatSessionItem? session)
+        [RelayCommand(CanExecute = nameof(CanOpenRenameTopic))]
+        void OpenRenameTopic(ChatSessionItem? session)
         {
             if (session is null) return;
-            IsBusy = true;
-            try
-            {
-                var topic = await intelligenceService.GenerateAgentTopic(session.Id);
-                if (!topic.IsNullOrEmpty()) session.Topic = topic;
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+
+            RenameTopicSession = session;
+            RenameTopicText = session.Topic.StartsWith('#') ? string.Empty : session.Topic;
         }
 
-        [RelayCommand(CanExecute = nameof(CanRequestDeleteSelectedChat))]
-        void RequestDeleteSelectedChat()
+        [RelayCommand(CanExecute = nameof(CanConfirmRenameTopic))]
+        async Task ConfirmRenameTopicAsync()
         {
-            RequestDeleteChat(SelectedSession);
-        }
+            var session = RenameTopicSession;
+            var topic = RenameTopicText.Trim();
+            if (session is null || topic.IsNullOrEmpty() || IsGeneratingRenameTopic) return;
 
-        [RelayCommand(CanExecute = nameof(CanEditSession))]
-        void RequestDeleteChat(ChatSessionItem? session)
-        {
-            if (session is null) return;
-            SelectedSession = session;
-            PendingDeleteSession = session;
-        }
+            var renamed = await intelligenceService.RenameAgentTopic(session.Id, topic);
+            if (!renamed.IsNullOrEmpty())
+                session.Topic = renamed;
 
-        [RelayCommand(CanExecute = nameof(CanConfirmDelete))]
-        void ConfirmDelete()
-        {
-            var session = PendingDeleteSession;
-            if (session is null) return;
-
-            intelligenceService.DeleteAgent(session.Id);
-            Sessions.Remove(session);
-            PendingDeleteSession = null;
-            SelectSession(Sessions.FirstOrDefault());
+            RenameTopicSession = null;
+            RenameTopicText = string.Empty;
         }
 
         [RelayCommand]
-        void CancelDelete()
+        void CancelRenameTopic()
         {
-            PendingDeleteSession = null;
+            if (IsGeneratingRenameTopic) return;
+
+            RenameTopicSession = null;
+            RenameTopicText = string.Empty;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanAutoGenerateRenameTopic))]
+        async Task AutoGenerateRenameTopicAsync()
+        {
+            var session = RenameTopicSession;
+            if (session is null || IsGeneratingRenameTopic) return;
+
+            IsGeneratingRenameTopic = true;
+            try
+            {
+                var generated = await intelligenceService.GenerateAgentTopic(session.Id);
+                if (!generated.IsNullOrEmpty())
+                {
+                    session.Topic = generated.Trim();
+                    RenameTopicSession = null;
+                    RenameTopicText = string.Empty;
+                }
+            }
+            finally
+            {
+                IsGeneratingRenameTopic = false;
+            }
+        }
+
+        public void DeleteSession(ChatSessionItem? session)
+        {
+            if (session is null || IsBusy) return;
+
+            intelligenceService.DeleteAgent(session.Id);
+            Sessions.Remove(session);
+            if (SelectedSession == session)
+                SelectSession(Sessions.FirstOrDefault());
         }
 
         [RelayCommand(CanExecute = nameof(CanCreateChat))]
@@ -632,10 +651,11 @@ namespace Silmoon.Intelligence.Client.ViewModels
 
         bool CanCreateChat() => !IsBusy;
 
-        bool CanEditSession(ChatSessionItem? session) => !IsBusy && session is not null;
+        bool CanOpenRenameTopic(ChatSessionItem? session) => !IsBusy && RenameTopicSession is null && session is not null;
 
-        bool CanRequestDeleteSelectedChat() => !IsBusy && SelectedSession is not null;
+        bool CanConfirmRenameTopic() => RenameTopicSession is not null && !IsGeneratingRenameTopic && !RenameTopicText.Trim().IsNullOrEmpty();
 
-        bool CanConfirmDelete() => !IsBusy && PendingDeleteSession is not null;
+        bool CanAutoGenerateRenameTopic() => RenameTopicSession is not null && !IsGeneratingRenameTopic;
+
     }
 }
