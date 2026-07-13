@@ -25,9 +25,9 @@ namespace Silmoon.Intelligence.MauiClient.Services
                 ("config.local.json", true),
                 ("config.debug.json", true),
                 ("config.local.debug.json", true),
-                (Path.Combine("workspace","markdowns", "工具疑惑与解惑手册.md"), false),
-                (Path.Combine("workspace","system_prompts", "supervisor_agent_system.md"), false),
-                (Path.Combine("workspace","system_prompts", "unified_agent_system.md"), false),
+                (Path.Combine("workspaces","markdowns", "工具疑惑与解惑手册.md"), false),
+                (Path.Combine("workspaces","system_prompts", "supervisor_agent_system.md"), false),
+                (Path.Combine("workspaces","system_prompts", "unified_agent_system.md"), false),
             ]).Wait();
         }
     }

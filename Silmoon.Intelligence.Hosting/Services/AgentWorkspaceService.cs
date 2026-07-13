@@ -24,7 +24,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         IServiceProvider ServiceProvider { get; set; }
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
 
-        public AgentWorkspaceService(IServiceProvider serviceProvider, ISilmoonConfigureService silmoonConfigureService, ISilmoonPlatformDirectoryService silmoonPlatformDirectoryService = null) : base(Path.Combine(silmoonPlatformDirectoryService?.AppDataDirectory ?? string.Empty, "workspace"))
+        public AgentWorkspaceService(IServiceProvider serviceProvider, ISilmoonConfigureService silmoonConfigureService, ISilmoonPlatformDirectoryService silmoonPlatformDirectoryService = null) : base(Path.Combine(silmoonPlatformDirectoryService?.AppDataDirectory ?? string.Empty, "workspaces"))
         {
             ServiceProvider = serviceProvider;
             SilmoonConfigureService = silmoonConfigureService as SilmoonConfigureServiceImpl;

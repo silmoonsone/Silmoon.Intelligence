@@ -13,7 +13,7 @@ namespace Silmoon.Intelligence
         public string MainAgentMemoryDirectory { get; set; }
         public string MainAgentChatHistoryFile { get; set; }
         public List<MessageContent> MainAgentChatHistory { get; set; } = [];
-        public AgentWorkspaceManager(string workspaceDirectory = "workspace")
+        public AgentWorkspaceManager(string workspaceDirectory = "workspaces")
         {
             WorkspaceDirectory = Path.Combine(AppContext.BaseDirectory, workspaceDirectory);
             Directory.CreateDirectoryRecursive(WorkspaceDirectory);

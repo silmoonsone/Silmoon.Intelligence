@@ -10,7 +10,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSilmoonIntelligence<SilmoonPlatformDirectoryServiceImpl>();
 builder.Services.AddSingleton<ConsoleService>();
-//if not add ISilmoonPlatformDirectoryService or AddSilmoonIntelligence not defined ISilmoonPlatformDirectoryService, default workspace is "workspace" in the application base directory
+//if not add ISilmoonPlatformDirectoryService or AddSilmoonIntelligence not defined ISilmoonPlatformDirectoryService, default workspaces is "workspaces" in the application base directory
 //builder.Services.AddSingleton<ISilmoonPlatformDirectoryService, SilmoonPlatformDirectoryServiceImpl>();
 builder.Services.AddSilmoonConfigure<SilmoonConfigureServiceImpl>(o =>
 {
