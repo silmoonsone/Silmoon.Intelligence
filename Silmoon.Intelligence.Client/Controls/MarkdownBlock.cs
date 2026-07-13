@@ -126,7 +126,7 @@ namespace Silmoon.Intelligence.Client.Controls
             paragraph.Clear();
         }
 
-        static TextBlock CreateText(string text, double size, FontWeight weight, string color) =>
+        static SelectableTextBlock CreateText(string text, double size, FontWeight weight, string color) =>
             new()
             {
                 Text = CleanInline(text),
@@ -145,7 +145,7 @@ namespace Silmoon.Intelligence.Client.Controls
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(10, 8),
-                Child = new TextBlock
+                Child = new SelectableTextBlock
                 {
                     Text = code,
                     TextWrapping = TextWrapping.Wrap,

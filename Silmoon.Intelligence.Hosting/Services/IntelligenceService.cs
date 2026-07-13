@@ -44,7 +44,10 @@ namespace Silmoon.Intelligence.Hosting.Services
             var agentClient = new AgentClient(id, modelProvider, modelName, $"MainAgent-{id}", $"MainAgent-{id}", $"""
                 你是人工智能执行人，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
                 {unifiedSystemPrompt}
-                """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
+                """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true)
+            {
+                Topic = $"新对话({id.ToString()[..8]})",
+            };
             AgentClients[id] = agentClient;
             ModelContextService.InjectMainChatTools(agentClient.NativeClient);
             return true.ToStateSet(new KeyValuePair<Guid, AgentClient>(id, agentClient));
@@ -69,7 +72,7 @@ namespace Silmoon.Intelligence.Hosting.Services
             if (AgentClients.TryGetValue(agentId, out var agent))
             {
                 var result = await agent.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
-                if (agent.Topic.IsNullOrEmpty() && agent.History.Count > 3 && autoSave) await GenerateAgentTopic(agentId);
+                if (agent.Topic.StartsWith("新对话") && agent.History.Count > 2 && autoSave) await GenerateAgentTopic(agentId);
                 if (autoSave)
                     SaveChatState(agentId);
                 return result;

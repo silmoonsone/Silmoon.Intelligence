@@ -21,9 +21,9 @@ namespace Silmoon.Intelligence.Client.Views
             InitializeComponent();
             AddHandler(PointerPressedEvent, MainWindow_PointerPressed, RoutingStrategies.Tunnel);
             ChatInput.AddHandler(KeyDownEvent, ChatInput_KeyDown, RoutingStrategies.Tunnel);
-            ChatInput.TextChanged += ChatInput_TextChanged;
+            ChatInput.TextChanged += (_, _) => Dispatcher.UIThread.Post(UpdateChatInputHeight, DispatcherPriority.Background);
+            ChatInput.PropertyChanged += ChatInput_PropertyChanged;
             DataContextChanged += MainWindow_DataContextChanged;
-            UpdateChatInputHeight();
         }
 
         void MainWindow_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -173,20 +173,21 @@ namespace Silmoon.Intelligence.Client.Views
                 viewModel.SendChatCommand.Execute(null);
         }
 
-        void ChatInput_TextChanged(object? sender, TextChangedEventArgs e)
+        void ChatInput_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateChatInputHeight();
+            if (e.Property.Name == nameof(Bounds))
+                Dispatcher.UIThread.Post(UpdateChatInputHeight, DispatcherPriority.Background);
         }
 
         void UpdateChatInputHeight()
         {
-            const double singleLineHeight = 34;
-            const double lineHeight = 20;
-            const double maxHeight = 150;
+            var lineCount = ChatInput.GetLineCount();
+            if (lineCount < 1)
+                lineCount = 1;
 
-            var text = ChatInput.Text ?? string.Empty;
-            var lineCount = Math.Max(1, text.Replace("\r\n", "\n").Split('\n').Length);
-            ChatInput.Height = Math.Min(maxHeight, singleLineHeight + (lineCount - 1) * lineHeight);
+            var targetHeight = Math.Min(150, 34 + (lineCount - 1) * 20);
+            if (Math.Abs(ChatInput.Height - targetHeight) > 0.5)
+                ChatInput.Height = targetHeight;
         }
 
         void ScrollChatToBottom()

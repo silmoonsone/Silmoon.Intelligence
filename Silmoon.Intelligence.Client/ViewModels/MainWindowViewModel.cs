@@ -158,7 +158,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
                     ChatCounting = agent.History.Count,
                     CreatedAt = agent.State.CreatedAt,
                     LastAt = agent.State.LastAt,
-                    Topic = agent.Topic.IsNullOrEmpty() ? $"#{pair.Key}" : agent.Topic
+                    Topic = agent.Topic,
                 });
             }
         }
@@ -534,7 +534,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
 
                 session.ChatCounting = agent.History.Count;
                 session.LastAt = agent.State.LastAt;
-                if (session.Topic.StartsWith('#') && !agent.Topic.IsNullOrEmpty())
+                if (!agent.Topic.IsNullOrEmpty() && session.Topic != agent.Topic)
                     session.Topic = agent.Topic;
             }
             finally
@@ -571,7 +571,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
             if (session is null) return;
 
             RenameTopicSession = session;
-            RenameTopicText = session.Topic.StartsWith('#') ? string.Empty : session.Topic;
+            RenameTopicText = IsAutoTopic(session.Topic) ? string.Empty : session.Topic;
         }
 
         [RelayCommand(CanExecute = nameof(CanConfirmRenameTopic))]
@@ -643,7 +643,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
                 ChatCounting = newChat.Data.Value.History.Count,
                 CreatedAt = DateTime.Now,
                 LastAt = DateTime.Now,
-                Topic = $"#{newChat.Data.Key}"
+                Topic = newChat.Data.Value.Topic,
             };
             Sessions.Insert(0, session);
             SelectSession(session);
@@ -656,6 +656,9 @@ namespace Silmoon.Intelligence.Client.ViewModels
         bool CanConfirmRenameTopic() => RenameTopicSession is not null && !IsGeneratingRenameTopic && !RenameTopicText.Trim().IsNullOrEmpty();
 
         bool CanAutoGenerateRenameTopic() => RenameTopicSession is not null && !IsGeneratingRenameTopic;
+
+        static bool IsAutoTopic(string topic) =>
+            topic.StartsWith('#') || topic.StartsWith("新对话", StringComparison.Ordinal);
 
     }
 }

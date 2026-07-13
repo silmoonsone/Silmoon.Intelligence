@@ -92,13 +92,13 @@
                                         <TextBlock Text="{Binding RoleLabel}" FontSize="11" FontWeight="Bold" Foreground="#596276" />
                                         <Border Background="#FAFBFC" BorderBrush="#E2E6ED" BorderThickness="1" CornerRadius="8" Padding="14,12" MaxWidth="760" HorizontalAlignment="Left" IsVisible="{Binding HasMessageBody}">
                                             <StackPanel Spacing="8">
-                                                <TextBlock Text="{Binding ReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12" IsVisible="{Binding HasReasoningContent}" />
-                                                <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="13" LineHeight="21" Foreground="#3A4352" IsVisible="{Binding IsUser}" />
+                                                <SelectableTextBlock Text="{Binding ReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12" IsVisible="{Binding HasReasoningContent}" />
+                                                <SelectableTextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="13" LineHeight="21" Foreground="#3A4352" IsVisible="{Binding IsUser}" />
                                                 <Border Classes="markdownSurface" IsVisible="{Binding IsAgentContentVisible}">
                                                     <controls:MarkdownBlock Markdown="{Binding Content}" />
                                                 </Border>
-                                                <TextBlock Text="{Binding StreamingReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12" IsVisible="{Binding HasStreamingReasoningContent}" />
-                                                <TextBlock Text="{Binding StreamingContent}" TextWrapping="Wrap" FontSize="13" LineHeight="21" IsVisible="{Binding HasStreamingContent}" />
+                                                <SelectableTextBlock Text="{Binding StreamingReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12" IsVisible="{Binding HasStreamingReasoningContent}" />
+                                                <SelectableTextBlock Text="{Binding StreamingContent}" TextWrapping="Wrap" FontSize="13" LineHeight="21" IsVisible="{Binding HasStreamingContent}" />
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -113,7 +113,7 @@
 
             <Border Grid.Row="2" Classes="panel" Padding="5">
                 <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-                    <TextBox Grid.Column="0" x:Name="ChatInput" Classes="chatInput" Text="{Binding UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="34" MinHeight="34" MaxHeight="150" PlaceholderText="输入消息..." Padding="10,6" FontSize="13" TextWrapping="Wrap" />
+                    <TextBox Grid.Column="0" x:Name="ChatInput" Classes="chatInput" Text="{Binding UserInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinLines="1" Height="34" MinHeight="34" MaxHeight="150" PlaceholderText="输入消息..." Padding="10,6" FontSize="13" TextWrapping="Wrap" />
                     <Button Grid.Column="1" Classes="sendButton" Command="{Binding SendChatCommand}" Width="64" Margin="6" VerticalAlignment="Bottom" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="发送" />
                     <TextBlock Grid.Row="1" Text="Enter 发送；Shift+Enter 换行" Classes="muted" Margin="12,0,0,8" />
                 </Grid>

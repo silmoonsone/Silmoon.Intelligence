@@ -95,7 +95,10 @@ namespace Silmoon.Intelligence
             var modelExists = modelProvider.Models.Any(x => x.Name == modelName);
             if (!modelExists) return false.ToStateSet<AgentClient>(null, $"specified model ({modelName}) not found in provider ({providerName})");
 
-            var workerClient = new AgentClient(Guid.NewGuid(), modelProvider, modelName, name, roleMandate, systemPrompt);
+            var workerClient = new AgentClient(Guid.NewGuid(), modelProvider, modelName, name, roleMandate, systemPrompt)
+            {
+                Topic = $"Worker Agent ({name})"
+            };
             var result = WorkerAgentClients.TryAdd(name, workerClient);
             if (result) return true.ToStateSet(workerClient);
 
