@@ -15,6 +15,7 @@ namespace Silmoon.Intelligence.Client.Views
     {
         MainWindowViewModel? viewModel;
         int historyScrollVersion;
+        bool shouldAutoScroll = true;
 
         public MainWindow()
         {
@@ -23,6 +24,7 @@ namespace Silmoon.Intelligence.Client.Views
             ChatInput.AddHandler(KeyDownEvent, ChatInput_KeyDown, RoutingStrategies.Tunnel);
             ChatInput.TextChanged += (_, _) => Dispatcher.UIThread.Post(UpdateChatInputHeight, DispatcherPriority.Background);
             ChatInput.PropertyChanged += ChatInput_PropertyChanged;
+            ChatScrollViewer.ScrollChanged += ChatScrollViewer_ScrollChanged;
             DataContextChanged += MainWindow_DataContextChanged;
         }
 
@@ -74,7 +76,7 @@ namespace Silmoon.Intelligence.Client.Views
                     if (version != historyScrollVersion)
                         return;
 
-                    ScrollChatToBottom();
+                    ScrollChatToBottom(true);
                 }
             }, DispatcherPriority.Background);
         }
@@ -94,7 +96,7 @@ namespace Silmoon.Intelligence.Client.Views
             }
 
             if (viewModel?.IsLoadingHistory != true)
-                ScrollChatToBottom();
+                ScrollChatToBottom(e.NewItems?.OfType<ChatMessageItem>().Any(x => x.IsUser) == true);
         }
 
         void Message_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -190,11 +192,28 @@ namespace Silmoon.Intelligence.Client.Views
                 ChatInput.Height = targetHeight;
         }
 
-        void ScrollChatToBottom()
+        void ChatScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
+            var maxOffset = Math.Max(0, ChatScrollViewer.Extent.Height - ChatScrollViewer.Viewport.Height);
+            if (double.IsNaN(maxOffset) || double.IsInfinity(maxOffset))
+                return;
+
+            shouldAutoScroll = maxOffset - ChatScrollViewer.Offset.Y <= 24;
+        }
+
+        void ScrollChatToBottom(bool force = false)
+        {
+            if (!force && !shouldAutoScroll)
+                return;
+
             Dispatcher.UIThread.Post(() =>
             {
-                ChatScrollViewer.Offset = new Vector(ChatScrollViewer.Offset.X, ChatScrollViewer.Extent.Height);
+                var maxOffset = Math.Max(0, ChatScrollViewer.Extent.Height - ChatScrollViewer.Viewport.Height);
+                if (double.IsNaN(maxOffset) || double.IsInfinity(maxOffset))
+                    return;
+
+                ChatScrollViewer.Offset = new Vector(ChatScrollViewer.Offset.X, maxOffset);
+                shouldAutoScroll = true;
             }, DispatcherPriority.Background);
         }
     }
