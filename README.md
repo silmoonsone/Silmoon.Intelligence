@@ -105,23 +105,23 @@ Avalonia 客户端是当前桌面主入口。WinUI / MAUI 构建分别需要 **W
 
 ### 持久化与工作区（过渡中）
 
-**当前**：**`AgentState`** 等主要仍通过 **`workspace/main_agent_memories/`** 下 JSON 读写（**`SaveChatState` / `RestoreChatState`**，启动按 **`LastAt`** 恢复）。**`system_prompts/`**、**`markdowns/`** 等同理，仍依赖 **`workspace`** 目录。
+**当前**：**`AgentState`** 等主要仍通过 **`workspaces/main_agent_memories/`** 下 JSON 读写（**`SaveChatState` / `RestoreChatState`**，启动按 **`LastAt`** 恢复）。**`system_prompts/`**、**`markdowns/`** 等同理，仍依赖 **`workspace`** 目录。
 
 **方向**：**LiteDB**（`Core` + `connectionString`）为长期存储；`workspace` 机制会逐步过时，迁移完成前两者并存。路径与字段以当前代码为准。
 
 | 路径（相对 WorkspaceDirectory） | 说明 |
 |--------------------------------|------|
-| **`system_prompts/`** | 系统提示词 Markdown；**启动时必读**。可从 **`Hosting/workspace/system_prompts`** 或 Hosting 构建输出拷贝 |
+| **`system_prompts/`** | 系统提示词 Markdown；**启动时必读**。可从 **`Hosting/workspaces/system_prompts`** 或 Hosting 构建输出拷贝 |
 | **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**（**`AgentState`**）；**过渡期仍用，后续迁至 LiteDB** |
 | **`markdowns/`** | 开发与工具说明文档 |
 
-**WorkspaceDirectory** = 各入口 `ISilmoonPlatformDirectoryService.AppDataDirectory` + `workspace`（控制台/WinUI 多为程序目录下；MAUI 为应用数据目录）。
+**WorkspaceDirectory** = 各入口 `ISilmoonPlatformDirectoryService.AppDataDirectory` + `workspaces`（控制台/WinUI 多为程序目录下；MAUI 为应用数据目录）。
 
 ---
 
 ## 项目内文档
 
-- `Silmoon.Intelligence.Hosting/workspace/markdowns/`：工具与开发说明（与运行时实际注册工具集以代码为准）。
+- `Silmoon.Intelligence.Hosting/workspaces/markdowns/`：工具与开发说明（与运行时实际注册工具集以代码为准）。
 
 ---
 
