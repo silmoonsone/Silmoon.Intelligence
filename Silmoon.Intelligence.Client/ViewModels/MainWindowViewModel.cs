@@ -213,7 +213,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
             var messages = new ObservableCollection<ChatMessageItem>();
             foreach (var item in agentClient.History)
             {
-                if (item is not MessageContent message) continue;
+                if (item is not NativeMessageContent message) continue;
                 if (item.Role is not Role.Assistant and not Role.User) continue;
 
                 var content = GetDisplayContent(message);
@@ -247,7 +247,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
             return messages;
         }
 
-        static string GetDisplayContent(MessageContent message)
+        static string GetDisplayContent(NativeMessageContent message)
         {
             var content = message.Content ?? string.Empty;
             if (message.Role != Role.User)

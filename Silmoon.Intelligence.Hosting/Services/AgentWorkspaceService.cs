@@ -40,7 +40,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 if (!fileExists || (fileExists && overwritten))
                 {
                     File.WriteAllText(filePath, json);
-                    return true.ToStateSet(JObject.FromObject(new { count = agentClient.State.ChatHistory.Length }), "Chat history saved successfully.");
+                    return true.ToStateSet(JObject.FromObject(new { count = agentClient.State.NativeHistory.Length }), "Chat history saved successfully.");
                 }
                 else return false.ToStateSet<JObject>(null, "Chat history file already exists. Set overwritten to true to overwrite it.");
             }
@@ -54,10 +54,10 @@ namespace Silmoon.Intelligence.Hosting.Services
                 if (File.Exists(filePath))
                 {
                     var systemMessage = agentClient.NativeClient.MessageHistory.FirstOrDefault(m => m.Role == Role.System);
-                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), NativeApiJson.SerializerSettings);
+                    var agentHistory = LoadAgentStateFile(filePath);
 
-                    var chatHistory = agentHistory.ChatHistory;
-                    if (chatHistory.FirstOrDefault(m => m.Role == Role.System) == null && systemMessage != null) chatHistory = [.. (IMessage[])[systemMessage], .. chatHistory];
+                    var chatHistory = agentHistory.NativeHistory;
+                    if (chatHistory.FirstOrDefault(m => m.Role == Role.System) == null && systemMessage != null) chatHistory = [.. (INativeMessage[])[systemMessage], .. chatHistory];
 
                     agentClient.NativeClient.MessageHistory = [.. chatHistory];
                     agentClient.Id = agentHistory.Id;
@@ -81,7 +81,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                 var filePath = Path.Combine(MainAgentMemoryDirectory, kvp.Value);
                 if (File.Exists(filePath))
                 {
-                    var agentHistory = JsonConvert.DeserializeObject<AgentState>(File.ReadAllText(filePath), NativeApiJson.SerializerSettings);
+                    var agentHistory = LoadAgentStateFile(filePath);
                     histories.Add(agentHistory);
                 }
             }
@@ -115,6 +115,19 @@ namespace Silmoon.Intelligence.Hosting.Services
                 }
             }
             return result;
+        }
+
+        static AgentState LoadAgentStateFile(string filePath)
+        {
+            var json = File.ReadAllText(filePath);
+            var agentState = JsonConvert.DeserializeObject<AgentState>(json, NativeApiJson.SerializerSettings);
+            if (agentState is null) throw new JsonException($"Cannot deserialize agent state file: {filePath}");
+            if (agentState.NativeHistory is { Length: > 0 }) return agentState;
+
+            var stateJson = JObject.Parse(json);
+            var nativeHistoryJson = stateJson[nameof(AgentState.NativeHistory)] ?? stateJson["ChatHistory"];
+            agentState.NativeHistory = nativeHistoryJson?.ToObject<INativeMessage[]>(JsonSerializer.Create(NativeApiJson.SerializerSettings)) ?? [];
+            return agentState;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Silmoon.Intelligence
         public string WorkspaceDirectory { get; private set; }
         public string MainAgentMemoryDirectory { get; set; }
         public string MainAgentChatHistoryFile { get; set; }
-        public List<MessageContent> MainAgentChatHistory { get; set; } = [];
+        public List<NativeMessageContent> MainAgentChatHistory { get; set; } = [];
         public AgentWorkspaceManager(string workspaceDirectory = "workspaces")
         {
             WorkspaceDirectory = Path.Combine(AppContext.BaseDirectory, workspaceDirectory);
@@ -24,23 +24,23 @@ namespace Silmoon.Intelligence
             MainAgentChatHistoryFile = Path.Combine(MainAgentMemoryDirectory, "main_agent_chat_history.json");
             if (File.Exists(MainAgentChatHistoryFile)) LoadMainAgentChatHistory();
         }
-        public List<MessageContent> LoadMainAgentChatHistory()
+        public List<NativeMessageContent> LoadMainAgentChatHistory()
         {
             if (File.Exists(MainAgentChatHistoryFile))
             {
                 var jsons = JsonHelperV2.LoadJsonFromFile<JArray>(MainAgentChatHistoryFile);
-                MainAgentChatHistory = [.. jsons.ToObjects<MessageContent>() ?? []];
+                MainAgentChatHistory = [.. jsons.ToObjects<NativeMessageContent>() ?? []];
                 return MainAgentChatHistory;
             }
             else return [];
         }
-        public List<MessageContent> LoadAgentChatHistory(string agentName)
+        public List<NativeMessageContent> LoadAgentChatHistory(string agentName)
         {
             var chatHistoryPath = Path.Combine(MainAgentMemoryDirectory, $"{agentName}_chat_history.json");
             if (File.Exists(chatHistoryPath))
             {
                 var jsons = JsonHelperV2.LoadJsonFromFile<JArray>(chatHistoryPath);
-                List<MessageContent> chatHistory = [.. jsons.ToObjects<MessageContent>() ?? []];
+                List<NativeMessageContent> chatHistory = [.. jsons.ToObjects<NativeMessageContent>() ?? []];
                 return chatHistory;
             }
             else return [];

@@ -134,7 +134,7 @@ namespace Silmoon.Intelligence.Hosting.Services
                         {unifiedSystemPrompt}
                         """, agentState, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
                     ModelContextService.InjectMainChatTools(agentClient.NativeClient);
-                    agentClient.NativeClient.MessageHistory = [.. agentState.ChatHistory];
+                    agentClient.NativeClient.MessageHistory = [.. agentState.NativeHistory];
                     AgentClients[agentState.Id] = agentClient;
                 }
             }

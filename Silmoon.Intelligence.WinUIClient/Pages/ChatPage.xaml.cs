@@ -232,7 +232,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             if (CurrentAgentClient.Value is null) return;
             foreach (var item in CurrentAgentClient.Value.History)
             {
-                if (item is MessageContent message)
+                if (item is NativeMessageContent message)
                 {
                     if (item.Role == Role.Assistant || item.Role == Role.User)
                     {
@@ -413,7 +413,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         {
             var newChat = IntelligenceService.NewAgent();
             ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, Topic = newChat.Data.Value.Topic, This = this });
-            var history = new List<IMessage>(IntelligenceService.AgentClients[chatListItem.Id].History);
+            var history = new NativeMessageCollection(IntelligenceService.AgentClients[chatListItem.Id].History);
             newChat.Data.Value.NativeClient.MessageHistory = history;
             Page.nameChatList.SelectedIndex = 0;
         }
