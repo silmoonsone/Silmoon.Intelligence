@@ -10,6 +10,11 @@ namespace Silmoon.Intelligence.Client.Controls
         public static readonly StyledProperty<string> MarkdownProperty =
             AvaloniaProperty.Register<MarkdownBlock, string>(nameof(Markdown), string.Empty);
 
+        public MarkdownBlock()
+        {
+            ActualThemeVariantChanged += (_, _) => Content = BuildContent(Markdown);
+        }
+
         public string Markdown
         {
             get => GetValue(MarkdownProperty);
@@ -23,7 +28,7 @@ namespace Silmoon.Intelligence.Client.Controls
                 Content = BuildContent(Markdown);
         }
 
-        static Control BuildContent(string markdown)
+        Control BuildContent(string markdown)
         {
             var panel = new StackPanel { Spacing = 8 };
             var lines = (markdown ?? string.Empty).Replace("\r\n", "\n").Split('\n');
@@ -74,12 +79,7 @@ namespace Silmoon.Intelligence.Client.Controls
                 if (trimmed is "---" or "***" or "___")
                 {
                     FlushParagraph(panel, paragraph);
-                    panel.Children.Add(new Border
-                    {
-                        Height = 1,
-                        Background = Brush.Parse("#DDE4EE"),
-                        Margin = new Thickness(0, 4)
-                    });
+                    panel.Children.Add(new Border { Height = 1, Background = GetBrush("PanelBorderBrush", "#DDE4EE"), Margin = new Thickness(0, 4) });
                     continue;
                 }
 
@@ -88,7 +88,7 @@ namespace Silmoon.Intelligence.Client.Controls
                     FlushParagraph(panel, paragraph);
                     var level = trimmed.TakeWhile(c => c == '#').Count();
                     var text = trimmed[level..].Trim();
-                    panel.Children.Add(CreateText(text, level <= 2 ? 17 : 15, FontWeight.SemiBold, "#1F2937"));
+                    panel.Children.Add(CreateText(text, level <= 2 ? 17 : 15, FontWeight.SemiBold, "TextBrush", "#1F2937"));
                     continue;
                 }
 
@@ -97,10 +97,10 @@ namespace Silmoon.Intelligence.Client.Controls
                     FlushParagraph(panel, paragraph);
                     panel.Children.Add(new Border
                     {
-                        BorderBrush = Brush.Parse("#C9D3E4"),
+                        BorderBrush = GetBrush("InputBorderBrush", "#C9D3E4"),
                         BorderThickness = new Thickness(3, 0, 0, 0),
                         Padding = new Thickness(10, 2, 0, 2),
-                        Child = CreateText(trimmed[2..], 13, FontWeight.Normal, "#596276")
+                        Child = CreateText(trimmed[2..], 13, FontWeight.Normal, "SubtleTextBrush", "#596276")
                     });
                     continue;
                 }
@@ -119,29 +119,29 @@ namespace Silmoon.Intelligence.Client.Controls
             return panel;
         }
 
-        static void FlushParagraph(StackPanel panel, List<string> paragraph)
+        void FlushParagraph(StackPanel panel, List<string> paragraph)
         {
             if (paragraph.Count == 0) return;
-            panel.Children.Add(CreateText(string.Join(Environment.NewLine, paragraph).Trim(), 13, FontWeight.Normal, "#273142"));
+            panel.Children.Add(CreateText(string.Join(Environment.NewLine, paragraph).Trim(), 13, FontWeight.Normal, "TextBrush", "#273142"));
             paragraph.Clear();
         }
 
-        static SelectableTextBlock CreateText(string text, double size, FontWeight weight, string color) =>
+        SelectableTextBlock CreateText(string text, double size, FontWeight weight, string brushKey, string fallback) =>
             new()
             {
                 Text = CleanInline(text),
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = size,
                 FontWeight = weight,
-                Foreground = Brush.Parse(color),
+                Foreground = GetBrush(brushKey, fallback),
                 LineHeight = Math.Max(20, size + 7)
             };
 
-        static Border CreateCodeBlock(string code) =>
+        Border CreateCodeBlock(string code) =>
             new()
             {
-                Background = Brush.Parse("#F4F6FA"),
-                BorderBrush = Brush.Parse("#DDE4EE"),
+                Background = GetBrush("MarkdownCodeBackgroundBrush", "#F4F6FA"),
+                BorderBrush = GetBrush("PanelBorderBrush", "#DDE4EE"),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(10, 8),
@@ -151,12 +151,12 @@ namespace Silmoon.Intelligence.Client.Controls
                     TextWrapping = TextWrapping.Wrap,
                     FontFamily = new FontFamily("Cascadia Mono, Consolas"),
                     FontSize = 12,
-                    Foreground = Brush.Parse("#1F2937"),
+                    Foreground = GetBrush("TextBrush", "#1F2937"),
                     LineHeight = 18
                 }
             };
 
-        static Grid CreateTable(List<string> rows)
+        Grid CreateTable(List<string> rows)
         {
             var values = rows.Select(ParsePipeRow).Where(x => x.Count > 0).ToList();
             var columnCount = values.Max(x => x.Count);
@@ -179,11 +179,11 @@ namespace Silmoon.Intelligence.Client.Controls
                     var cellText = col < values[row].Count ? values[row][col] : string.Empty;
                     var cell = new Border
                     {
-                        Background = Brush.Parse(row == 0 ? "#F4F6FA" : "#FFFFFF"),
-                        BorderBrush = Brush.Parse("#DDE4EE"),
+                        Background = GetBrush(row == 0 ? "MarkdownCodeBackgroundBrush" : "MarkdownBackgroundBrush", row == 0 ? "#F4F6FA" : "#FFFFFF"),
+                        BorderBrush = GetBrush("PanelBorderBrush", "#DDE4EE"),
                         BorderThickness = new Thickness(1, 1, col == columnCount - 1 ? 1 : 0, row == values.Count - 1 ? 1 : 0),
                         Padding = new Thickness(9, 7),
-                        Child = CreateText(cellText, 12, row == 0 ? FontWeight.SemiBold : FontWeight.Normal, "#273142")
+                        Child = CreateText(cellText, 12, row == 0 ? FontWeight.SemiBold : FontWeight.Normal, "TextBrush", "#273142")
                     };
                     Grid.SetRow(cell, row);
                     Grid.SetColumn(cell, col);
@@ -194,16 +194,16 @@ namespace Silmoon.Intelligence.Client.Controls
             return grid;
         }
 
-        static Border CreateListItem(string text)
+        Border CreateListItem(string text)
         {
             var marker = new TextBlock
             {
                 Text = "•",
                 Margin = new Thickness(0, 0, 8, 0),
-                Foreground = Brush.Parse("#596276"),
+                Foreground = GetBrush("SubtleTextBrush", "#596276"),
                 FontSize = 13
             };
-            var body = CreateText(text, 13, FontWeight.Normal, "#273142");
+            var body = CreateText(text, 13, FontWeight.Normal, "TextBrush", "#273142");
             var grid = new Grid
             {
                 ColumnDefinitions =
@@ -217,6 +217,15 @@ namespace Silmoon.Intelligence.Client.Controls
             grid.Children.Add(body);
 
             return new Border { Child = grid };
+        }
+
+        IBrush GetBrush(string key, string fallback)
+        {
+            if (this.TryFindResource(key, ActualThemeVariant, out var value) && value is IBrush brush)
+                return brush;
+            if (Application.Current?.TryGetResource(key, ActualThemeVariant, out value) == true && value is IBrush appBrush)
+                return appBrush;
+            return Brush.Parse(fallback);
         }
 
         static bool IsListItem(string line, out string text)

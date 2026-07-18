@@ -1,20 +1,20 @@
-﻿<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Silmoon.Intelligence.Client.ViewModels" xmlns:models="using:Silmoon.Intelligence.Client.Models" xmlns:controls="using:Silmoon.Intelligence.Client.Controls" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900" x:Class="Silmoon.Intelligence.Client.Views.MainWindow" x:DataType="vm:MainWindowViewModel" Icon="/Assets/avalonia-logo.ico" Title="Silmoon Intelligence" Width="1360" Height="840" MinWidth="1080" MinHeight="680" Background="#F6F7F9">
+﻿<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:Silmoon.Intelligence.Client.ViewModels" xmlns:models="using:Silmoon.Intelligence.Client.Models" xmlns:controls="using:Silmoon.Intelligence.Client.Controls" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900" x:Class="Silmoon.Intelligence.Client.Views.MainWindow" x:DataType="vm:MainWindowViewModel" Icon="/Assets/avalonia-logo.ico" Title="Silmoon Intelligence" Width="1360" Height="840" MinWidth="1080" MinHeight="680" Background="{DynamicResource AppBackgroundBrush}">
 
     <Window.Styles>
         <StyleInclude Source="avares://Silmoon.Intelligence.Client/Styles/MainWindowStyles.axaml" />
     </Window.Styles>
 
     <Grid ColumnDefinitions="250,*,310" RowDefinitions="64,*">
-        <Border Grid.RowSpan="2" Background="#121A2A">
+        <Border Grid.RowSpan="2" Background="{DynamicResource SidebarBackgroundBrush}">
             <Grid RowDefinitions="64,Auto,*,Auto" Margin="14,0">
                 <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10" Margin="4,0">
-                    <Border Width="32" Height="32" CornerRadius="8" Background="#5B6FF0">
+                    <Border Width="32" Height="32" CornerRadius="8" Background="{DynamicResource AccentBrush}">
                         <TextBlock Text="SI" Foreground="White" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock Text="Silmoon Intelligence" Foreground="White" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <Button Grid.Row="1" Command="{Binding NewChatCommand}" Background="#5B6FF0" Foreground="White" HorizontalContentAlignment="Center" Margin="0,12,0,16">
+                <Button Grid.Row="1" Command="{Binding NewChatCommand}" Background="{DynamicResource AccentBrush}" Foreground="White" HorizontalContentAlignment="Center" Margin="0,12,0,16">
                     <TextBlock Text="+ 新会话" Foreground="White" FontWeight="SemiBold" />
                 </Button>
 
@@ -37,11 +37,11 @@
                                     </Button.ContextMenu>
                                     <Border Classes="sidebarItem" Classes.selected="{Binding IsSelected}">
                                         <Grid RowDefinitions="Auto,Auto">
-                                            <TextBlock Grid.Column="0" Classes="sessionTitle" Text="{Binding Topic}" Foreground="#E8EDF5" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="0" Classes="sessionTitle" Text="{Binding Topic}" Foreground="{DynamicResource SidebarTextBrush}" FontSize="13" TextTrimming="CharacterEllipsis" />
                                             <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Spacing="6" Margin="0,5,8,0">
-                                                <TextBlock Classes="sessionMeta" Text="{Binding ChatCounting}" Foreground="#7E8A9F" FontSize="11" />
-                                                <TextBlock Classes="sessionMeta" Text="messages" Foreground="#7E8A9F" FontSize="11" />
-                                                <TextBlock Classes="sessionMeta" Text="{Binding LastAtText}" Foreground="#7E8A9F" FontSize="11" />
+                                                <TextBlock Classes="sessionMeta" Text="{Binding ChatCounting}" Foreground="{DynamicResource SidebarMetaTextBrush}" FontSize="11" />
+                                                <TextBlock Classes="sessionMeta" Text="messages" Foreground="{DynamicResource SidebarMetaTextBrush}" FontSize="11" />
+                                                <TextBlock Classes="sessionMeta" Text="{Binding LastAtText}" Foreground="{DynamicResource SidebarMetaTextBrush}" FontSize="11" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -51,22 +51,22 @@
                     </ItemsControl>
                 </Grid>
 
-                <Border Grid.Row="3" BorderBrush="#27344A" BorderThickness="0,1,0,0" Padding="4,14" Margin="0,12,0,0">
+                <Border Grid.Row="3" BorderBrush="{DynamicResource SidebarBorderBrush}" BorderThickness="0,1,0,0" Padding="4,14" Margin="0,12,0,0">
                     <Grid ColumnDefinitions="32,*,Auto">
-                        <Border Width="28" Height="28" CornerRadius="14" Background="#263247">
-                            <TextBlock Text=".NET" Foreground="#B8C1D1" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border Width="28" Height="28" CornerRadius="14" Background="{DynamicResource SidebarItemSelectedBrush}">
+                            <TextBlock Text=".NET" Foreground="{DynamicResource SidebarSelectedMetaTextBrush}" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Grid.Column="1" Margin="9,0" VerticalAlignment="Center">
-                            <TextBlock Text="Local Host" Foreground="#E8EDF5" FontSize="12" />
-                            <TextBlock Text="{Binding RunStatus}" Foreground="#7E8A9F" FontSize="10" />
+                            <TextBlock Text="Local Host" Foreground="{DynamicResource SidebarTextBrush}" FontSize="12" />
+                            <TextBlock Text="{Binding RunStatus}" Foreground="{DynamicResource SidebarMetaTextBrush}" FontSize="10" />
                         </StackPanel>
-                        <Ellipse Grid.Column="2" Width="8" Height="8" Fill="#30B981" VerticalAlignment="Center" />
+                        <Ellipse Grid.Column="2" Width="8" Height="8" Fill="{DynamicResource OnlineBrush}" VerticalAlignment="Center" />
                     </Grid>
                 </Border>
             </Grid>
         </Border>
 
-        <Border Grid.Column="1" Grid.ColumnSpan="2" Background="White" BorderBrush="#E2E6ED" BorderThickness="0,0,0,1">
+        <Border Grid.Column="1" Grid.ColumnSpan="2" Background="{DynamicResource TopBarBackgroundBrush}" BorderBrush="{DynamicResource TopBarBorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto" Margin="24,0">
                 <StackPanel VerticalAlignment="Center" Spacing="3">
                     <TextBlock Text="Agent 工作台" FontSize="16" FontWeight="SemiBold" />
@@ -85,20 +85,20 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ChatMessageItem">
                                 <Grid ColumnDefinitions="38,*" Margin="0,8,0,16">
-                                    <Border Width="30" Height="30" CornerRadius="8" Background="#E9EDFF" VerticalAlignment="Top">
-                                        <TextBlock Text="{Binding RoleLabel}" Foreground="#4F62D7" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Border Width="30" Height="30" CornerRadius="8" Background="{DynamicResource MessageAvatarBackgroundBrush}" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding RoleLabel}" Foreground="{DynamicResource AccentTextBrush}" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
                                     <StackPanel Grid.Column="1" Spacing="8" Margin="12,0,0,0">
-                                        <TextBlock Text="{Binding RoleLabel}" FontSize="11" FontWeight="Bold" Foreground="#596276" />
-                                        <Border Background="#FAFBFC" BorderBrush="#E2E6ED" BorderThickness="1" CornerRadius="8" Padding="14,12" MaxWidth="760" HorizontalAlignment="Left" IsVisible="{Binding HasMessageBody}">
+                                        <TextBlock Text="{Binding RoleLabel}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SubtleTextBrush}" />
+                                        <Border Background="{DynamicResource PanelAltBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12" MaxWidth="760" HorizontalAlignment="Left" IsVisible="{Binding HasMessageBody}">
                                             <StackPanel Spacing="8">
-                                                <SelectableTextBlock Text="{Binding ReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12" IsVisible="{Binding HasReasoningContent}" />
-                                                <SelectableTextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="13" LineHeight="21" Foreground="#3A4352" IsVisible="{Binding IsUser}" />
+                                                <SelectableTextBlock Text="{Binding ReasoningContent}" TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}" FontSize="12" IsVisible="{Binding HasReasoningContent}" />
+                                                <SelectableTextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="13" LineHeight="21" Foreground="{DynamicResource TextBrush}" IsVisible="{Binding IsUser}" />
                                                 <Border Classes="markdownSurface" IsVisible="{Binding IsAgentContentVisible}">
                                                     <controls:MarkdownBlock Markdown="{Binding Content}" />
                                                 </Border>
-                                                <SelectableTextBlock Text="{Binding StreamingReasoningContent}" TextWrapping="Wrap" Foreground="#7A8494" FontSize="12" IsVisible="{Binding HasStreamingReasoningContent}" />
-                                                <SelectableTextBlock Text="{Binding StreamingContent}" TextWrapping="Wrap" FontSize="13" LineHeight="21" IsVisible="{Binding HasStreamingContent}" />
+                                                <SelectableTextBlock Text="{Binding StreamingReasoningContent}" TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}" FontSize="12" IsVisible="{Binding HasStreamingReasoningContent}" />
+                                                <SelectableTextBlock Text="{Binding StreamingContent}" TextWrapping="Wrap" FontSize="13" LineHeight="21" Foreground="{DynamicResource TextBrush}" IsVisible="{Binding HasStreamingContent}" />
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -120,7 +120,7 @@
             </Border>
         </Grid>
 
-        <Border Grid.Column="2" Grid.Row="1" Background="#FAFBFC" BorderBrush="#E2E6ED" BorderThickness="1,0,0,0">
+        <Border Grid.Column="2" Grid.Row="1" Background="{DynamicResource PanelAltBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1,0,0,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="18,20" Spacing="16">
                     <StackPanel Spacing="5">
@@ -139,7 +139,7 @@
                             <ItemsControl ItemsSource="{Binding ToolExecuteIndicators}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:ToolExecuteIndicatorItem">
-                                        <Border BorderBrush="#E2E6ED" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,8" Background="White">
+                                        <Border BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,8" Background="{DynamicResource PanelBackgroundBrush}">
                                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                                                 <TextBlock Text="{Binding FunctionName}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Grid.Column="1" Text="{Binding StateText}" Classes="muted" />
@@ -153,26 +153,26 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Background="#EDF7F2" CornerRadius="8" Padding="12">
-                        <TextBlock Text="Avalonia 客户端复用现有 Hosting 和 Agent 核心。工具、会话恢复与配置文件仍沿用当前项目实现。" Foreground="#35654D" FontSize="12" LineHeight="18" TextWrapping="Wrap" />
+                    <Border Background="{DynamicResource InfoBackgroundBrush}" CornerRadius="8" Padding="12">
+                        <TextBlock Text="Avalonia 客户端复用现有 Hosting 和 Agent 核心。工具、会话恢复与配置文件仍沿用当前项目实现。" Foreground="{DynamicResource InfoTextBrush}" FontSize="12" LineHeight="18" TextWrapping="Wrap" />
                     </Border>
                 </StackPanel>
             </ScrollViewer>
         </Border>
 
-        <Border Grid.RowSpan="2" Grid.ColumnSpan="3" Background="#66000000" IsVisible="{Binding IsRenameTopicDialogVisible}">
-            <Border Background="White" BorderBrush="#DDE4EE" BorderThickness="1" CornerRadius="8" Padding="22" Width="460" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border Grid.RowSpan="2" Grid.ColumnSpan="3" Background="{DynamicResource OverlayBrush}" IsVisible="{Binding IsRenameTopicDialogVisible}">
+            <Border Background="{DynamicResource PanelBackgroundBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="22" Width="460" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="14">
-                    <TextBlock Text="重命名标题" FontSize="18" FontWeight="SemiBold" Foreground="#1F2937" />
+                    <TextBlock Text="重命名标题" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" />
                     <TextBox Text="{Binding RenameTopicText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="输入新的 Topic..." MinHeight="38" Padding="10,7" />
                     <StackPanel IsVisible="{Binding IsGeneratingRenameTopic}" Spacing="8">
                         <TextBlock Text="正在生成 Topic..." Classes="muted" />
                         <ProgressBar IsIndeterminate="True" Classes="activityBar" Height="3" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                        <Button Content="取消" Command="{Binding CancelRenameTopicCommand}" Background="#F4F6FA" Foreground="#273142" />
-                        <Button Content="自动生成 Topic" Command="{Binding AutoGenerateRenameTopicCommand}" Background="#EDF7F2" Foreground="#35654D" />
-                        <Button Content="重命名" Command="{Binding ConfirmRenameTopicCommand}" Background="#5B6FF0" Foreground="White" />
+                        <Button Content="取消" Command="{Binding CancelRenameTopicCommand}" Background="{DynamicResource MarkdownCodeBackgroundBrush}" Foreground="{DynamicResource TextBrush}" />
+                        <Button Content="自动生成 Topic" Command="{Binding AutoGenerateRenameTopicCommand}" Background="{DynamicResource InfoBackgroundBrush}" Foreground="{DynamicResource InfoTextBrush}" />
+                        <Button Content="重命名" Command="{Binding ConfirmRenameTopicCommand}" Background="{DynamicResource AccentBrush}" Foreground="White" />
                     </StackPanel>
                 </StackPanel>
             </Border>

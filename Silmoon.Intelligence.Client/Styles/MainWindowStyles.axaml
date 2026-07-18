@@ -1,20 +1,92 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Styles.Resources>
-    <SolidColorBrush x:Key="DangerBackgroundBrush" Color="#D92D20" />
-    <SolidColorBrush x:Key="DangerHoverBackgroundBrush" Color="#B42318" />
-    <SolidColorBrush x:Key="DangerForegroundBrush" Color="White" />
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary x:Key="Light">
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F6F7F9" />
+        <SolidColorBrush x:Key="TopBarBackgroundBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="TopBarBorderBrush" Color="#E2E6ED" />
+        <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#121A2A" />
+        <SolidColorBrush x:Key="SidebarBorderBrush" Color="#27344A" />
+        <SolidColorBrush x:Key="SidebarItemHoverBrush" Color="#1C2638" />
+        <SolidColorBrush x:Key="SidebarItemSelectedBrush" Color="#263247" />
+        <SolidColorBrush x:Key="TextBrush" Color="#273142" />
+        <SolidColorBrush x:Key="SubtleTextBrush" Color="#748094" />
+        <SolidColorBrush x:Key="LabelTextBrush" Color="#8B95A6" />
+        <SolidColorBrush x:Key="SidebarTextBrush" Color="#E8EDF5" />
+        <SolidColorBrush x:Key="SidebarMetaTextBrush" Color="#7E8A9F" />
+        <SolidColorBrush x:Key="SidebarSelectedMetaTextBrush" Color="#B8C1D1" />
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="PanelAltBackgroundBrush" Color="#FAFBFC" />
+        <SolidColorBrush x:Key="PanelBorderBrush" Color="#E2E6ED" />
+        <SolidColorBrush x:Key="MessageAvatarBackgroundBrush" Color="#E9EDFF" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#5B6FF0" />
+        <SolidColorBrush x:Key="AccentTextBrush" Color="#4F62D7" />
+        <SolidColorBrush x:Key="InputBackgroundBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="InputTextBrush" Color="#202938" />
+        <SolidColorBrush x:Key="InputBorderBrush" Color="#C9D3E4" />
+        <SolidColorBrush x:Key="InputHoverBorderBrush" Color="#AAB8CC" />
+        <SolidColorBrush x:Key="InputSelectionBrush" Color="#BFD7FF" />
+        <SolidColorBrush x:Key="DisabledButtonBackgroundBrush" Color="#D3DAE8" />
+        <SolidColorBrush x:Key="DisabledButtonTextBrush" Color="#6F7A8C" />
+        <SolidColorBrush x:Key="MarkdownBackgroundBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="MarkdownCodeBackgroundBrush" Color="#F4F6FA" />
+        <SolidColorBrush x:Key="InfoBackgroundBrush" Color="#EDF7F2" />
+        <SolidColorBrush x:Key="InfoTextBrush" Color="#35654D" />
+        <SolidColorBrush x:Key="OverlayBrush" Color="#66000000" />
+        <SolidColorBrush x:Key="OnlineBrush" Color="#30B981" />
+      </ResourceDictionary>
+      <ResourceDictionary x:Key="Dark">
+        <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0E1420" />
+        <SolidColorBrush x:Key="TopBarBackgroundBrush" Color="#131B2A" />
+        <SolidColorBrush x:Key="TopBarBorderBrush" Color="#283346" />
+        <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#0B1220" />
+        <SolidColorBrush x:Key="SidebarBorderBrush" Color="#253145" />
+        <SolidColorBrush x:Key="SidebarItemHoverBrush" Color="#1B2638" />
+        <SolidColorBrush x:Key="SidebarItemSelectedBrush" Color="#22304A" />
+        <SolidColorBrush x:Key="TextBrush" Color="#E5EAF2" />
+        <SolidColorBrush x:Key="SubtleTextBrush" Color="#A7B2C3" />
+        <SolidColorBrush x:Key="LabelTextBrush" Color="#94A3B8" />
+        <SolidColorBrush x:Key="SidebarTextBrush" Color="#F0F4FA" />
+        <SolidColorBrush x:Key="SidebarMetaTextBrush" Color="#94A3B8" />
+        <SolidColorBrush x:Key="SidebarSelectedMetaTextBrush" Color="#C7D2E4" />
+        <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#151E2D" />
+        <SolidColorBrush x:Key="PanelAltBackgroundBrush" Color="#111827" />
+        <SolidColorBrush x:Key="PanelBorderBrush" Color="#2E3B50" />
+        <SolidColorBrush x:Key="MessageAvatarBackgroundBrush" Color="#243252" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#7C8CFF" />
+        <SolidColorBrush x:Key="AccentTextBrush" Color="#AEB8FF" />
+        <SolidColorBrush x:Key="InputBackgroundBrush" Color="#0F1724" />
+        <SolidColorBrush x:Key="InputTextBrush" Color="#E8EDF5" />
+        <SolidColorBrush x:Key="InputBorderBrush" Color="#40506A" />
+        <SolidColorBrush x:Key="InputHoverBorderBrush" Color="#61718C" />
+        <SolidColorBrush x:Key="InputSelectionBrush" Color="#334B7D" />
+        <SolidColorBrush x:Key="DisabledButtonBackgroundBrush" Color="#2C3749" />
+        <SolidColorBrush x:Key="DisabledButtonTextBrush" Color="#8B96A8" />
+        <SolidColorBrush x:Key="MarkdownBackgroundBrush" Color="#111A27" />
+        <SolidColorBrush x:Key="MarkdownCodeBackgroundBrush" Color="#0C1320" />
+        <SolidColorBrush x:Key="InfoBackgroundBrush" Color="#142B25" />
+        <SolidColorBrush x:Key="InfoTextBrush" Color="#9EE6C0" />
+        <SolidColorBrush x:Key="OverlayBrush" Color="#99000000" />
+        <SolidColorBrush x:Key="OnlineBrush" Color="#35D399" />
+      </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <SolidColorBrush x:Key="DangerBackgroundBrush" Color="#D92D20" />
+      <SolidColorBrush x:Key="DangerHoverBackgroundBrush" Color="#B42318" />
+      <SolidColorBrush x:Key="DangerForegroundBrush" Color="White" />
+    </ResourceDictionary>
   </Styles.Resources>
 
   <Style Selector="TextBlock">
     <Setter Property="FontFamily" Value="Inter, Microsoft YaHei UI, Microsoft YaHei" />
-    <Setter Property="Foreground" Value="#273142" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
   </Style>
   <Style Selector="Button">
     <Setter Property="FontFamily" Value="Inter, Microsoft YaHei UI, Microsoft YaHei" />
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Padding" Value="12,8" />
     <Setter Property="Cursor" Value="Hand" />
-    <Setter Property="Foreground" Value="#273142" />
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
   </Style>
   <Style Selector="Button.dangerConfirm">
     <Setter Property="Background" Value="{StaticResource DangerBackgroundBrush}" />
@@ -33,17 +105,17 @@
     <Setter Property="Foreground" Value="{StaticResource DangerForegroundBrush}" />
   </Style>
   <Style Selector="TextBlock.muted">
-    <Setter Property="Foreground" Value="#748094" />
+    <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}" />
     <Setter Property="FontSize" Value="12" />
   </Style>
   <Style Selector="TextBlock.label">
-    <Setter Property="Foreground" Value="#8B95A6" />
+    <Setter Property="Foreground" Value="{DynamicResource LabelTextBrush}" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="Border.panel">
-    <Setter Property="Background" Value="White" />
-    <Setter Property="BorderBrush" Value="#E2E6ED" />
+    <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="8" />
   </Style>
@@ -68,45 +140,45 @@
     <Setter Property="Background" Value="Transparent" />
   </Style>
   <Style Selector="Button.sessionButton:pointerover Border.sidebarItem">
-    <Setter Property="Background" Value="#1C2638" />
+    <Setter Property="Background" Value="{DynamicResource SidebarItemHoverBrush}" />
   </Style>
   <Style Selector="Border.sidebarItem.selected">
-    <Setter Property="Background" Value="#263247" />
+    <Setter Property="Background" Value="{DynamicResource SidebarItemSelectedBrush}" />
   </Style>
   <Style Selector="Border.sidebarItem.selected TextBlock.sessionTitle">
     <Setter Property="Foreground" Value="White" />
   </Style>
   <Style Selector="Border.sidebarItem.selected TextBlock.sessionMeta">
-    <Setter Property="Foreground" Value="#B8C1D1" />
+    <Setter Property="Foreground" Value="{DynamicResource SidebarSelectedMetaTextBrush}" />
   </Style>
   <Style Selector="TextBox.chatInput">
-    <Setter Property="Background" Value="White" />
-    <Setter Property="Foreground" Value="#202938" />
-    <Setter Property="CaretBrush" Value="#202938" />
-    <Setter Property="SelectionBrush" Value="#BFD7FF" />
-    <Setter Property="BorderBrush" Value="#C9D3E4" />
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource InputTextBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource InputTextBrush}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource InputSelectionBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="MinHeight" Value="34" />
     <Setter Property="LineHeight" Value="20" />
   </Style>
   <Style Selector="TextBox.chatInput:pointerover">
-    <Setter Property="Background" Value="White" />
-    <Setter Property="Foreground" Value="#202938" />
-    <Setter Property="BorderBrush" Value="#AAB8CC" />
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource InputTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource InputHoverBorderBrush}" />
   </Style>
   <Style Selector="TextBox.chatInput:focus">
-    <Setter Property="Background" Value="White" />
-    <Setter Property="Foreground" Value="#202938" />
-    <Setter Property="BorderBrush" Value="#5B6FF0" />
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource InputTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
   </Style>
   <Style Selector="TextBox.chatInput:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="White" />
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
   </Style>
   <Style Selector="TextBox.chatInput:focus /template/ ContentPresenter">
-    <Setter Property="Background" Value="White" />
+    <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
   </Style>
   <Style Selector="Button.sendButton">
-    <Setter Property="Background" Value="#5B6FF0" />
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="MinWidth" Value="64" />
     <Setter Property="Height" Value="34" />
@@ -120,13 +192,13 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
   <Style Selector="Button.sendButton:disabled">
-    <Setter Property="Background" Value="#D3DAE8" />
-    <Setter Property="Foreground" Value="#6F7A8C" />
+    <Setter Property="Background" Value="{DynamicResource DisabledButtonBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource DisabledButtonTextBrush}" />
     <Setter Property="Opacity" Value="1" />
   </Style>
   <Style Selector="Button.sendButton:disabled /template/ ContentPresenter">
-    <Setter Property="Background" Value="#D3DAE8" />
-    <Setter Property="Foreground" Value="#6F7A8C" />
+    <Setter Property="Background" Value="{DynamicResource DisabledButtonBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource DisabledButtonTextBrush}" />
     <Setter Property="Opacity" Value="1" />
   </Style>
   <Style Selector="MenuItem.dangerConfirm">
@@ -162,20 +234,20 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
   <Style Selector="Border.markdownSurface">
-    <Setter Property="Background" Value="#FFFFFF" />
-    <Setter Property="BorderBrush" Value="#DDE4EE" />
+    <Setter Property="Background" Value="{DynamicResource MarkdownBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Padding" Value="10" />
   </Style>
   <Style Selector="ProgressBar.activityBar">
-    <Setter Property="Background" Value="#E7ECF5" />
-    <Setter Property="Foreground" Value="#5B6FF0" />
+    <Setter Property="Background" Value="{DynamicResource DisabledButtonBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="CornerRadius" Value="2" />
   </Style>
   <Style Selector="ProgressBar.toolActivityBar">
-    <Setter Property="Background" Value="#EEF2F8" />
-    <Setter Property="Foreground" Value="#5B6FF0" />
+    <Setter Property="Background" Value="{DynamicResource DisabledButtonBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
     <Setter Property="CornerRadius" Value="2" />
   </Style>
 </Styles>
