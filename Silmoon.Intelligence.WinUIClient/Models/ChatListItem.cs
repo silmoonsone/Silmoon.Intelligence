@@ -9,7 +9,7 @@ namespace Silmoon.Intelligence.WinUIClient.Models
     public partial class ChatListItem : ObservableObject
     {
         [ObservableProperty]
-        public partial Guid Id { get; set; }
+        public partial string Id { get; set; }
         [ObservableProperty]
         public partial string Topic { get; set; }
         [ObservableProperty]

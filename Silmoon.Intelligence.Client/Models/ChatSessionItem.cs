@@ -5,7 +5,7 @@ namespace Silmoon.Intelligence.Client.Models
     public partial class ChatSessionItem : ObservableObject
     {
         [ObservableProperty]
-        public partial Guid Id { get; set; }
+        public partial string Id { get; set; }
 
         [ObservableProperty]
         public partial string Topic { get; set; } = string.Empty;

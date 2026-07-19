@@ -22,7 +22,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         //public AgentClient FastAgentClient { get; set; }
         public AgentClient SupervisorAgentClient { get; set; }
         public AgentClient DefaultChatAgentClient { get; set; }
-        public Dictionary<Guid, AgentClient> AgentClients { get; set; } = [];
+        public Dictionary<string, AgentClient> AgentClients { get; set; } = [];
         ModelContextService ModelContextService { get; set; }
         SilmoonConfigureServiceImpl SilmoonConfigureService { get; set; }
         AgentWorkspaceService AgentWorkspaceService { get; set; }
@@ -35,24 +35,17 @@ namespace Silmoon.Intelligence.Hosting.Services
             AgentWorkspaceService = agentWorkspaceService;
         }
 
-        public StateSet<bool, KeyValuePair<Guid, AgentClient>> NewAgent() => NewAgent(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName);
-        public StateSet<bool, KeyValuePair<Guid, AgentClient>> NewAgent(ModelProvider modelProvider, string modelName)
+        public StateSet<bool, AgentClient> NewAgent() => NewAgent(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName);
+        public StateSet<bool, AgentClient> NewAgent(ModelProvider modelProvider, string modelName)
         {
             var unifiedSystemPrompt = File.ReadAllText(Path.Combine(AgentWorkspaceService.WorkspaceDirectory, "system_prompts", "unified_agent_system.md"));
 
-            var id = Guid.NewGuid();
-            var agentClient = new AgentClient(id, modelProvider, modelName, $"MainAgent-{id}", $"MainAgent-{id}", $"""
-                你是人工智能执行人，意思是你可以调用其他的Agent进行工作，你需要合理的分配任务给其他Agent，并且管理他们的工作进度和结果，确保任务的完成。
-                {unifiedSystemPrompt}
-                """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true)
-            {
-                Topic = $"新对话({id.ToString()[..8]})",
-            };
-            AgentClients[id] = agentClient;
+            var agentClient = new AgentClient(modelProvider, modelName, $"\r\n{unifiedSystemPrompt}\r\n", SilmoonConfigureService.NativeClientDisableProxy, true);
+            AgentClients[agentClient.Id] = agentClient;
             ModelContextService.InjectMainChatTools(agentClient.NativeClient);
-            return true.ToStateSet(new KeyValuePair<Guid, AgentClient>(id, agentClient));
+            return true.ToStateSet(agentClient);
         }
-        public StateSet<bool> DeleteAgent(Guid id)
+        public StateSet<bool> DeleteAgent(string id)
         {
             var find = AgentClients.TryGetValue(id, out var agent);
             if (find)
@@ -62,63 +55,55 @@ namespace Silmoon.Intelligence.Hosting.Services
                 AgentClients.Remove(id);
                 return true.ToStateSet();
             }
-            else
-                return false.ToStateSet("Agent not found");
+            else return false.ToStateSet("Agent not found");
         }
 
         public async Task<Result> Chat(string input, bool autoSave = false) => await Chat(input, DefaultChatAgentClient.Id, autoSave);
-        public async Task<Result> Chat(string input, Guid agentId, bool autoSave = false)
+        public async Task<Result> Chat(string input, string id, bool autoSave = false)
         {
-            if (AgentClients.TryGetValue(agentId, out var agent))
+            if (AgentClients.TryGetValue(id, out var agent))
             {
                 var result = await agent.Chat($"<time>{DateTime.Now:yyyy-MM-dd HH:mm:ss}</time>{input}");
-                if (agent.Topic.StartsWith("新对话") && agent.History.Count > 2 && autoSave) await GenerateAgentTopic(agentId);
+                if (agent.State.Topic.StartsWith("新对话") && agent.History.Count > 2 && autoSave) await GenerateAgentTopic(id);
                 if (autoSave)
-                    SaveChatState(agentId);
+                    SaveChatState(id);
                 return result;
             }
             return null;
         }
-        public async Task<string> GenerateAgentTopic(Guid agentId)
+        public async Task<string> GenerateAgentTopic(string id)
         {
-            if (AgentClients.TryGetValue(agentId, out var agent))
+            if (AgentClients.TryGetValue(id, out var agent))
             {
                 var topicResult = await SupervisorAgentClient.Chat($"根据用户和AI的聊天信息和用户沟通意图，生成一个简短的描述小标题，3-8个文字，如果是英文的沟通信息，可以生成3-5个单词标题，不需要任何格式字符包括但不限于markdown，不得换行，知识一个简短的标题，3-10个字：{string.Join("\n", agent.History.TakeLast(10).ToJsonString())}");
                 var topic = GetUserRealInput(topicResult.Content).Trim();
-                if (!topic.IsNullOrEmpty()) agent.Topic = topic;
-                SaveChatState(agentId);
+                if (!topic.IsNullOrEmpty()) agent.State.Topic = topic;
+                SaveChatState(id);
                 return topic;
             }
             return null;
         }
-        public async Task<string> RenameAgentTopic(Guid agentId, string topic)
+        public async Task<string> RenameAgentTopic(string id, string topic)
         {
-            if (AgentClients.TryGetValue(agentId, out var agent))
+            if (AgentClients.TryGetValue(id, out var agent))
             {
-                if (!topic.IsNullOrEmpty()) agent.Topic = topic;
-                SaveChatState(agentId);
+                if (!topic.IsNullOrEmpty()) agent.State.Topic = topic;
+                SaveChatState(id);
                 return topic;
             }
             return null;
         }
 
-        public StateSet<bool, JObject> SaveChatState(Guid agentId) => AgentWorkspaceService.SaveAgentState(agentId, overwritten: true);
-        public StateSet<bool, AgentState> RestoreChatState(Guid agentId) => AgentWorkspaceService.RestoreAgentState(agentId);
+        public StateSet<bool, JObject> SaveChatState(string id) => AgentWorkspaceService.SaveAgentState(id, overwritten: true);
+        public StateSet<bool, AgentState> RestoreChatState(string id) => AgentWorkspaceService.RestoreAgentState(id);
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var supervisorAdditionSystemPrompt = File.ReadAllText(Path.Combine(AgentWorkspaceService.WorkspaceDirectory, "system_prompts", "supervisor_agent_system.md"));
             var unifiedSystemPrompt = File.ReadAllText(Path.Combine(AgentWorkspaceService.WorkspaceDirectory, "system_prompts", "unified_agent_system.md"));
 
-            SupervisorAgentClient = new AgentClient(Guid.NewGuid(), SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "Agent监管助手", "Agent监管员", $"""
-                {supervisorAdditionSystemPrompt}
-                {unifiedSystemPrompt}
-                """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: false);
-
-            //FastAgentClient = new AgentClient(Guid.NewGuid(), SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, "Agent小助理", "Agent小助理", $"""
-            //    {supervisorAdditionSystemPrompt}
-            //    {unifiedSystemPrompt}
-            //    """, null, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: false);
+            SupervisorAgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, $"\r\n{supervisorAdditionSystemPrompt}\r\n{unifiedSystemPrompt}\r\n", SilmoonConfigureService.NativeClientDisableProxy, false);
+            //FastAgentClient = new AgentClient(SilmoonConfigureService.DefaultProvider, SilmoonConfigureService.DefaultModelName, $"\r\n{supervisorAdditionSystemPrompt}\r\n{unifiedSystemPrompt}\r\n", SilmoonConfigureService.NativeClientDisableProxy, false);
 
             ModelContextService.InjectSupervisorTools(SupervisorAgentClient.NativeClient);
 
@@ -129,13 +114,10 @@ namespace Silmoon.Intelligence.Hosting.Services
                 foreach (var agentState in agentStates)
                 {
                     var modelProvider = SilmoonConfigureService.ModelProviders.Get(agentState.ProviderName, SilmoonConfigureService.DefaultProvider);
-                    var modelName = agentState.ModelName;
-                    var agentClient = new AgentClient(agentState.Id, modelProvider, modelName, $"Agent-{agentState.Id}", $"Agent-{agentState.Id}", $"""
-                        {unifiedSystemPrompt}
-                        """, agentState, disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
+                    var agentClient = new AgentClient(agentState, modelProvider, agentState.ModelName, $"\r\n{unifiedSystemPrompt}\r\n", disableProxy: SilmoonConfigureService.NativeClientDisableProxy, enableThinking: true);
                     ModelContextService.InjectMainChatTools(agentClient.NativeClient);
                     agentClient.NativeClient.MessageHistory = [.. agentState.NativeHistory];
-                    AgentClients[agentState.Id] = agentClient;
+                    AgentClients[agentClient.Id] = agentClient;
                 }
             }
 

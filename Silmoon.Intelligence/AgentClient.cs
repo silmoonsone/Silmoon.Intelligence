@@ -27,37 +27,59 @@ namespace Silmoon.Intelligence
         public event StreamOutputHandler OnStreamOutput;
         public event StreamOutputCompletedHandler OnStreamOutputCompleted;
 
-        public required Guid Id { get; set; } = Guid.Empty;
+        public string Id { get => State.Id; set => State.Id = value; }
         public string Name { get; set; } = string.Empty;
         public string RoleMandate { get; set; } = string.Empty;
-        public string Topic { get => State.Topic; set => State.Topic = value; }
         public NativeMessageCollection History { get => NativeClient.MessageHistory; set => NativeClient.MessageHistory = value; }
         public bool IsBusy { get; set; } = false;
         public AgentState State { get; set; }
 
         [SetsRequiredMembers]
-        public AgentClient(Guid id, ModelProvider modelProvider, string modelName, string name, string roleMandate, string systemPrompt = StringHelper.EmptyString, AgentState state = null, bool disableProxy = false, bool enableThinking = false)
+        public AgentClient(AgentState state, ModelProvider modelProvider, string modelName, string systemPrompt = StringHelper.EmptyString, bool disableProxy = false, bool enableThinking = false)
         {
-            Id = id;
-            Name = name;
-            RoleMandate = roleMandate ?? string.Empty;
-            State = state is null ? new AgentState(id, modelProvider.ProviderName, modelName) : state;
-
+            State = state;
+            Name = $"agent-{GetShortId(Id)}";
+            RoleMandate = $"agent";
             try
             {
-                NativeClient = NativeClientFactory.Create(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", enableThinking, disableProxy);
-                NativeClient.OnToolCallsStart += async (toolCallParameters) => await (OnToolCallsStart is null ? Task.CompletedTask : OnToolCallsStart.Invoke(toolCallParameters));
-                NativeClient.OnToolCallInvoke += async (toolCallParameter, toolCallResult) => await (OnToolCallInvoke is null ? Task.FromResult(toolCallResult) : OnToolCallInvoke.Invoke(toolCallParameter, toolCallResult));
-                NativeClient.OnToolExecuting += async (functionName, toolCallParameter) => await (OnToolExecuting is null ? Task.CompletedTask : OnToolExecuting.Invoke(functionName, toolCallParameter));
-                NativeClient.OnToolExecuted += async (functionName, toolCallParameter, toolCallResult) => await (OnToolExecuted is null ? Task.CompletedTask : OnToolExecuted.Invoke(functionName, toolCallParameter, toolCallResult));
-                NativeClient.OnToolCallsFinish += async (toolCallParameters, toolCallResults) => await (OnToolCallsFinish is null ? Task.FromResult<ToolCallResult[]>(null) : OnToolCallsFinish.Invoke(toolCallParameters, toolCallResults));
-                NativeClient.OnStreamOutput += async (chunk) => await (OnStreamOutput is null ? Task.CompletedTask : OnStreamOutput.Invoke(chunk));
-                NativeClient.OnStreamOutputCompleted += NativeClient_OnStreamOutputCompleted;
+                CreateNativeClient(modelProvider, modelName, systemPrompt, disableProxy, enableThinking);
             }
             catch (Exception)
             {
                 // Handle the exception, log it, or rethrow it as needed
             }
+        }
+        [SetsRequiredMembers]
+        public AgentClient(ModelProvider modelProvider, string modelName, string systemPrompt = StringHelper.EmptyString, bool disableProxy = false, bool enableThinking = false)
+        {
+            State = new AgentState(modelProvider.ProviderName, modelName);
+            State.Topic = $"新对话({GetShortId(State.Id)})";
+            Name = $"agent-{GetShortId(Id)}";
+            RoleMandate = $"agent";
+            try
+            {
+                CreateNativeClient(modelProvider, modelName, systemPrompt, disableProxy, enableThinking);
+            }
+            catch (Exception)
+            {
+                // Handle the exception, log it, or rethrow it as needed
+            }
+        }
+        void CreateNativeClient(ModelProvider modelProvider, string modelName, string systemPrompt, bool disableProxy, bool enableThinking)
+        {
+            NativeClient = NativeClientFactory.Create(modelProvider, modelName, $"{UtilPrompt.ContextPrompt}\r\n{systemPrompt}", enableThinking, disableProxy);
+            NativeClient.OnToolCallsStart += async (toolCallParameters) => await (OnToolCallsStart is null ? Task.CompletedTask : OnToolCallsStart.Invoke(toolCallParameters));
+            NativeClient.OnToolCallInvoke += async (toolCallParameter, toolCallResult) => await (OnToolCallInvoke is null ? Task.FromResult(toolCallResult) : OnToolCallInvoke.Invoke(toolCallParameter, toolCallResult));
+            NativeClient.OnToolExecuting += async (functionName, toolCallParameter) => await (OnToolExecuting is null ? Task.CompletedTask : OnToolExecuting.Invoke(functionName, toolCallParameter));
+            NativeClient.OnToolExecuted += async (functionName, toolCallParameter, toolCallResult) => await (OnToolExecuted is null ? Task.CompletedTask : OnToolExecuted.Invoke(functionName, toolCallParameter, toolCallResult));
+            NativeClient.OnToolCallsFinish += async (toolCallParameters, toolCallResults) => await (OnToolCallsFinish is null ? Task.FromResult<ToolCallResult[]>(null) : OnToolCallsFinish.Invoke(toolCallParameters, toolCallResults));
+            NativeClient.OnStreamOutput += async (chunk) => await (OnStreamOutput is null ? Task.CompletedTask : OnStreamOutput.Invoke(chunk));
+            NativeClient.OnStreamOutputCompleted += NativeClient_OnStreamOutputCompleted;
+        }
+        static string GetShortId(string id)
+        {
+            if (id.IsNullOrEmpty()) return Guid.NewGuid().ToString("N")[..8];
+            return id.Length <= 8 ? id : id[..8];
         }
 
         private Task NativeClient_OnStreamOutputCompleted(Result result)

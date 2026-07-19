@@ -2,7 +2,7 @@
 
 基于 **.NET 10** 的 Agent 与工具调用（Tool Calling）项目：在 **Silmoon.AI** 上封装 `AgentClient`、Hosting 编排与会话持久化。**持久化**正在从 `workspace` 文件机制迁移至 **LiteDB**（已接入 `Core`，业务数据将逐步入库）；`workspace` 仍在使用，后续会逐步淡出。
 
-**运行时模型**：**监管 Agent（Supervisor）** + **多个主对话 Agent（按 `Guid` 区分）**；启动时从 **`workspace`** 扫描并恢复 **`AgentState`**（无历史则新建）。**LiteDB**（**`Core`**，配置 **`connectionString`**）为长期存储方向，与 **`workspace`** 并存过渡中。用户消息可由宿主附加 `<time>` 等前缀（展示见 **`IntelligenceService.GetUserRealInput`**）。
+**运行时模型**：**监管 Agent（Supervisor）** + **多个主对话 Agent（按字符串 `Id` 区分，兼容既有 Guid 字符串）**；启动时从 **`workspace`** 扫描并恢复 **`AgentState`**（无历史则新建）。**LiteDB**（**`Core`**，配置 **`connectionString`**）为长期存储方向，与 **`workspace`** 并存过渡中。用户消息可由宿主附加 `<time>` 等前缀（展示见 **`IntelligenceService.GetUserRealInput`**）。
 
 **入口**：**Avalonia** 是新的跨平台桌面客户端方向，复用现有 Hosting / Agent 核心并提供多会话、Markdown、思考内容、工具执行指示与 Token 用量展示；**控制台**适合命令行联调；**WinUI 3** 为 legacy Windows 客户端，短期可作为功能参考但不再作为主要维护方向；**MAUI** 已进入过期/实验状态，不建议继续投入新功能。各入口通过 **`AddSilmoonIntelligence()`** 挂接同一套 Hosting（各客户端 **`ISilmoonPlatformDirectoryService`** 实现不同，见各项目 `Services`）。
 
@@ -16,14 +16,14 @@
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence` | 核心：`AgentClient`（**`Guid Id`**、**`AgentState`** 为 **Agent 状态**（含 **`Topic`**、聊天记录等元数据）、`History` 为 **`IMessage`**；主对话可 **`enableThinking`**）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
+| `Silmoon.Intelligence` | 核心：`AgentClient`（**字符串 `Id`**、**`AgentState`** 为 **Agent 状态**（含 **`Topic`**、`NativeHistory` 等元数据）、`History` 为 **`NativeMessageCollection`**；主对话可 **`enableThinking`**）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
 | `Silmoon.Intelligence.Tools` | 可复用工具：`GithubTool`、`CSharpTool`、**`WebSearchTool`**（阿里云 OpenSearch，见配置）等 |
 
 ### 宿主（服务注入与通用主机）
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。当前 **`SaveChatState` / `RestoreChatState`** 仍写 **`workspace`** 下 JSON；**`Core`**（**LiteDB**，**`connectionString`**）已接入，**后续持久化将迁入 LiteDB**。**`GenerateAgentTopic`**、**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
+| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。当前 **`SaveChatState` / `RestoreChatState`** 仍写 **`workspace`** 下 JSON；启动时会先升级 `main_agent_memories/` 旧记忆文件到当前结构；**`Core`**（**LiteDB**，**`connectionString`**）已接入，**后续持久化将迁入 LiteDB**。**`GenerateAgentTopic`**、**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
 
 ### 客户端应用
 
@@ -100,19 +100,19 @@ Avalonia 客户端是当前桌面主入口。WinUI / MAUI 构建分别需要 **W
 | **`connectionString`**（可选） | **LiteDB** 连接串（如 `Filename=data.db;Mode=Shared`）；**`Core`** 使用，**Agent 状态等持久化将逐步迁入**（WinUI 示例配置已包含） |
 | **`defaultModel`** | 默认模型选择；`defaultProvider` 对应 `modelProviders[].providerName`，`defaultModelName` 对应该提供商下的模型名 |
 | **`modelProviders`** | 模型提供商数组；每项会反序列化为 `ModelProvider`，包含 `providerName`、`apiUrl`、`apiKey`、`models` 等 |
-| **`modelProviders[].apiKind`** | Native API 类型；当前使用 `Chat` / `Authropic` / `Responses`，旧值 `OpenAIChatCompletions` 等已不再兼容 |
+| **`modelProviders[].apiKind`** | Native API 类型；当前使用 `Chat` / `Responses` / `Authropic`，旧值 `OpenAIChatCompletions` 等已不再兼容 |
 | **`nativeClientDisableProxy`**（可选） | 创建 Native Client 时是否禁用系统代理 |
 
 ### 持久化与工作区（过渡中）
 
-**当前**：**`AgentState`** 等主要仍通过 **`workspaces/main_agent_memories/`** 下 JSON 读写（**`SaveChatState` / `RestoreChatState`**，启动按 **`LastAt`** 恢复）。**`system_prompts/`**、**`markdowns/`** 等同理，仍依赖 **`workspace`** 目录。
+**当前**：**`AgentState`** 等主要仍通过 **`workspaces/main_agent_memories/`** 下 JSON 读写（**`SaveChatState` / `RestoreChatState`**，启动按 **`LastAt`** 恢复）。`AgentWorkspaceService` 创建时会先执行记忆文件升级：旧文件名 **`agent_{id}_chat_history.json`** 会迁移为 **`agentState-{id}.json`**，文件名中的 dashed Guid 会转换为无 `-` 的字符串 Id；随后旧字段 **`ChatHistory`** 会迁移为 **`NativeHistory`**，消息里的旧 **`hash` / `Hash`** 会迁移为当前 **`id`**，旧消息 `$type` 会迁移为 **`Silmoon.AI.OpenAI.Models.NativeMessage*`** 类型名。正常读取流程只面向当前结构，后续结构变更也应继续收敛到这个启动迁移入口。**`system_prompts/`**、**`markdowns/`** 等同理，仍依赖 **`workspace`** 目录。
 
 **方向**：**LiteDB**（`Core` + `connectionString`）为长期存储；`workspace` 机制会逐步过时，迁移完成前两者并存。路径与字段以当前代码为准。
 
 | 路径（相对 WorkspaceDirectory） | 说明 |
 |--------------------------------|------|
 | **`system_prompts/`** | 系统提示词 Markdown；**启动时必读**。可从 **`Hosting/workspaces/system_prompts`** 或 Hosting 构建输出拷贝 |
-| **`main_agent_memories/`** | 各会话 **`agent_{guid}_chat_history.json`**（**`AgentState`**）；**过渡期仍用，后续迁至 LiteDB** |
+| **`main_agent_memories/`** | 各会话 **`agentState-{id}.json`**（**`AgentState`**）；**过渡期仍用，后续迁至 LiteDB** |
 | **`markdowns/`** | 开发与工具说明文档 |
 
 **WorkspaceDirectory** = 各入口 `ISilmoonPlatformDirectoryService.AppDataDirectory` + `workspaces`（控制台/WinUI 多为程序目录下；MAUI 为应用数据目录）。

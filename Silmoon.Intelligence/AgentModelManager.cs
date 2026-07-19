@@ -12,6 +12,9 @@ using System.Text;
 
 namespace Silmoon.Intelligence
 {
+    /// <summary>
+    /// 目前只用于工具调用创造辅助Agent，后续需要重构。
+    /// </summary>
     public class AgentModelManager
     {
         public Dictionary<string, ModelProvider> ModelProviders { get; private set; } = [];
@@ -95,10 +98,13 @@ namespace Silmoon.Intelligence
             var modelExists = modelProvider.Models.Any(x => x.Name == modelName);
             if (!modelExists) return false.ToStateSet<AgentClient>(null, $"specified model ({modelName}) not found in provider ({providerName})");
 
-            var workerClient = new AgentClient(Guid.NewGuid(), modelProvider, modelName, name, roleMandate, systemPrompt)
+            var workerClient = new AgentClient(modelProvider, modelName, systemPrompt)
             {
-                Topic = $"Worker Agent ({name})"
+                Name = name,
+                RoleMandate = roleMandate,
             };
+            workerClient.State.Topic = $"Worker Agent ({name})";
+
             var result = WorkerAgentClients.TryAdd(name, workerClient);
             if (result) return true.ToStateSet(workerClient);
 

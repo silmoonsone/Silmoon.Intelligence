@@ -158,12 +158,12 @@ namespace Silmoon.Intelligence.Client.ViewModels
                     ChatCounting = agent.History.Count,
                     CreatedAt = agent.State.CreatedAt,
                     LastAt = agent.State.LastAt,
-                    Topic = agent.Topic,
+                    Topic = agent.State.Topic,
                 });
             }
         }
 
-        void SwitchChat(Guid? chatId)
+        void SwitchChat(string chatId)
         {
             UnbindCurrentAgentEvents();
             chatViewVersion++;
@@ -184,7 +184,7 @@ namespace Silmoon.Intelligence.Client.ViewModels
                 return;
             }
 
-            if (!intelligenceService.AgentClients.TryGetValue(chatId.Value, out var agentClient))
+            if (!intelligenceService.AgentClients.TryGetValue(chatId, out var agentClient))
             {
                 IsLoadingHistory = false;
                 ChatHistoryLoaded?.Invoke();
@@ -534,8 +534,8 @@ namespace Silmoon.Intelligence.Client.ViewModels
 
                 session.ChatCounting = agent.History.Count;
                 session.LastAt = agent.State.LastAt;
-                if (!agent.Topic.IsNullOrEmpty() && session.Topic != agent.Topic)
-                    session.Topic = agent.Topic;
+                if (!agent.State.Topic.IsNullOrEmpty() && session.Topic != agent.State.Topic)
+                    session.Topic = agent.State.Topic;
             }
             finally
             {
@@ -639,11 +639,11 @@ namespace Silmoon.Intelligence.Client.ViewModels
 
             var session = new ChatSessionItem
             {
-                Id = newChat.Data.Key,
-                ChatCounting = newChat.Data.Value.History.Count,
+                Id = newChat.Data.Id,
+                ChatCounting = newChat.Data.History.Count,
                 CreatedAt = DateTime.Now,
                 LastAt = DateTime.Now,
-                Topic = newChat.Data.Value.Topic,
+                Topic = newChat.Data.State.Topic,
             };
             Sessions.Insert(0, session);
             SelectSession(session);

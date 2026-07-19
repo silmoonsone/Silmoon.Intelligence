@@ -7,7 +7,7 @@ namespace Silmoon.Intelligence.Models
 {
     public class AgentState
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString("N");
         public string ProviderName { get; set; }
         public string ModelName { get; set; }
         public string Topic { get; set; } = string.Empty;
@@ -15,12 +15,13 @@ namespace Silmoon.Intelligence.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime LastAt { get; set; } = DateTime.Now;
 
-        public AgentState(Guid id, string providerName, string modelName)
+
+        public AgentState(string providerName, string modelName)
         {
-            Id = id;
             ProviderName = providerName;
             ModelName = modelName;
         }
+        public AgentState() { }
     }
 }
 

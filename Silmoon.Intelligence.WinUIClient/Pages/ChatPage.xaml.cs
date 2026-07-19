@@ -173,7 +173,7 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [ObservableProperty]
         public partial bool UserInputAvaliable { get; set; } = true;
         [ObservableProperty]
-        public partial KeyValuePair<Guid, AgentClient> CurrentAgentClient { get; set; }
+        public partial AgentClient CurrentAgentClient { get; set; }
         [ObservableProperty]
         public partial string UsageInfo { get; set; }
         public ChatPageViewModel(ChatPage page)
@@ -199,21 +199,21 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
 
         public void BindEvents()
         {
-            CurrentAgentClient.Value?.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
-            CurrentAgentClient.Value?.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
-            CurrentAgentClient.Value?.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart; ;
-            CurrentAgentClient.Value?.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
-            CurrentAgentClient.Value?.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
-            CurrentAgentClient.Value?.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
+            CurrentAgentClient?.OnStreamOutput += MainChatAgentClient_OnStreamOutput;
+            CurrentAgentClient?.OnStreamOutputCompleted += MainChatAgentClient_OnStreamOutputCompleted;
+            CurrentAgentClient?.OnToolCallsStart += MainChatAgentClient_OnToolCallsStart; ;
+            CurrentAgentClient?.OnToolExecuting += MainChatAgentClient_OnToolExecuting;
+            CurrentAgentClient?.OnToolExecuted += MainChatAgentClient_OnToolExecuted;
+            CurrentAgentClient?.OnToolCallsFinish += MainChatAgentClient_OnToolCallsFinish;
         }
         public void UnbindEvents()
         {
-            CurrentAgentClient.Value?.OnStreamOutput -= MainChatAgentClient_OnStreamOutput;
-            CurrentAgentClient.Value?.OnStreamOutputCompleted -= MainChatAgentClient_OnStreamOutputCompleted;
-            CurrentAgentClient.Value?.OnToolCallsStart -= MainChatAgentClient_OnToolCallsStart; ;
-            CurrentAgentClient.Value?.OnToolExecuting -= MainChatAgentClient_OnToolExecuting;
-            CurrentAgentClient.Value?.OnToolExecuted -= MainChatAgentClient_OnToolExecuted;
-            CurrentAgentClient.Value?.OnToolCallsFinish -= MainChatAgentClient_OnToolCallsFinish;
+            CurrentAgentClient?.OnStreamOutput -= MainChatAgentClient_OnStreamOutput;
+            CurrentAgentClient?.OnStreamOutputCompleted -= MainChatAgentClient_OnStreamOutputCompleted;
+            CurrentAgentClient?.OnToolCallsStart -= MainChatAgentClient_OnToolCallsStart; ;
+            CurrentAgentClient?.OnToolExecuting -= MainChatAgentClient_OnToolExecuting;
+            CurrentAgentClient?.OnToolExecuted -= MainChatAgentClient_OnToolExecuted;
+            CurrentAgentClient?.OnToolCallsFinish -= MainChatAgentClient_OnToolCallsFinish;
         }
         public ObservableCollection<ChatListItem> LoadChatList()
         {
@@ -222,15 +222,15 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             {
                 var agent = kvp.Value;
                 var id = kvp.Key;
-                ChatList.Insert(0, new ChatListItem() { Id = id, ChatCounting = agent.History.Count, CreatedAt = agent.State.CreatedAt, LastAt = agent.State.LastAt, Topic = agent.Topic, This = this });
+                ChatList.Insert(0, new ChatListItem() { Id = id, ChatCounting = agent.History.Count, CreatedAt = agent.State.CreatedAt, LastAt = agent.State.LastAt, Topic = agent.State.Topic, This = this });
             }
             return ChatList;
         }
         public async Task LoadChat()
         {
             Items.Clear();
-            if (CurrentAgentClient.Value is null) return;
-            foreach (var item in CurrentAgentClient.Value.History)
+            if (CurrentAgentClient is null) return;
+            foreach (var item in CurrentAgentClient.History)
             {
                 if (item is NativeMessageContent message)
                 {
@@ -405,16 +405,16 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         {
             IntelligenceService.DeleteAgent(chatListItem.Id);
             ChatList.Remove(chatListItem);
-            if (chatListItem.Id == CurrentAgentClient.Key)
+            if (chatListItem.Id == CurrentAgentClient.Id)
                 Page.nameChatList.SelectedIndex = 0;
         }
         [RelayCommand]
         public async Task CopyChat(ChatListItem chatListItem)
         {
             var newChat = IntelligenceService.NewAgent();
-            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, Topic = newChat.Data.Value.Topic, This = this });
+            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Id, ChatCounting = newChat.Data.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, Topic = newChat.Data.State.Topic, This = this });
             var history = new NativeMessageCollection(IntelligenceService.AgentClients[chatListItem.Id].History);
-            newChat.Data.Value.NativeClient.MessageHistory = history;
+            newChat.Data.NativeClient.MessageHistory = history;
             Page.nameChatList.SelectedIndex = 0;
         }
         [RelayCommand]
@@ -440,8 +440,8 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
                 string input = UserInput;
                 UserInput = string.Empty;
                 UsageInfo = string.Empty;
-                var result = await IntelligenceService.Chat(input, CurrentAgentClient.Key, true);
-                if (SelectedChatListItem.Topic.StartsWith('#') && !CurrentAgentClient.Value.Topic.IsNullOrEmpty()) SelectedChatListItem.Topic = CurrentAgentClient.Value.Topic;
+                var result = await IntelligenceService.Chat(input, CurrentAgentClient.Id, true);
+                if (SelectedChatListItem.Topic.StartsWith('#') && !CurrentAgentClient.State.Topic.IsNullOrEmpty()) SelectedChatListItem.Topic = CurrentAgentClient.State.Topic;
             }
         }
         [RelayCommand]
@@ -454,19 +454,19 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
         [RelayCommand]
         public void SaveHistory()
         {
-            IntelligenceService.SaveChatState(CurrentAgentClient.Key);
+            IntelligenceService.SaveChatState(CurrentAgentClient.Id);
         }
         [RelayCommand]
         public void ClearHistory()
         {
-            CurrentAgentClient.Value.NativeClient.ClearHistory();
-            IntelligenceService.SaveChatState(CurrentAgentClient.Key);
+            CurrentAgentClient.NativeClient.ClearHistory();
+            IntelligenceService.SaveChatState(CurrentAgentClient.Id);
             Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
         [RelayCommand]
         public async Task UndoHistory()
         {
-            CurrentAgentClient.Value.RollbackHistory();
+            CurrentAgentClient.RollbackHistory();
             Items.Clear();
             await LoadChat();
 
@@ -474,22 +474,22 @@ namespace Silmoon.Intelligence.WinUIClient.Pages
             //Page.DispatcherQueue.TryEnqueue(Items.Clear);
         }
         [RelayCommand]
-        public async Task<StateSet<bool, KeyValuePair<Guid, AgentClient>>> NewChat()
+        public async Task<StateSet<bool, AgentClient>> NewChat()
         {
             var newChat = IntelligenceService.NewAgent();
-            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Key, ChatCounting = newChat.Data.Value.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, Topic = newChat.Data.Value.Topic, This = this });
+            ChatList.Insert(0, new ChatListItem() { Id = newChat.Data.Id, ChatCounting = newChat.Data.History.Count, CreatedAt = DateTime.Now, LastAt = DateTime.Now, Topic = newChat.Data.State.Topic, This = this });
             Page.nameChatList.SelectedIndex = 0;
             return newChat;
         }
         [RelayCommand]
-        public async Task SwitchChat(Guid chatId)
+        public async Task SwitchChat(string chatId)
         {
             UsageInfo = null;
             UnbindEvents();
             var isFind = IntelligenceService.AgentClients.TryGetValue(chatId, out var agentClient);
             if (isFind)
             {
-                CurrentAgentClient = new KeyValuePair<Guid, AgentClient>(chatId, agentClient);
+                CurrentAgentClient = agentClient;
                 ModelName = agentClient.NativeClient.ModelName;
                 BindEvents();
                 await LoadChat();
