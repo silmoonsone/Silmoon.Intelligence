@@ -166,12 +166,12 @@
                     <TextBlock Text="重命名标题" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" />
                     <TextBox Text="{Binding RenameTopicText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="输入新的 Topic..." MinHeight="38" Padding="10,7" />
                     <StackPanel IsVisible="{Binding IsGeneratingRenameTopic}" Spacing="8">
-                        <TextBlock Text="正在生成 Topic..." Classes="muted" />
+                        <TextBlock Text="正在生成标题..." Classes="muted" />
                         <ProgressBar IsIndeterminate="True" Classes="activityBar" Height="3" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
                         <Button Content="取消" Command="{Binding CancelRenameTopicCommand}" Background="{DynamicResource MarkdownCodeBackgroundBrush}" Foreground="{DynamicResource TextBrush}" />
-                        <Button Content="自动生成 Topic" Command="{Binding AutoGenerateRenameTopicCommand}" Background="{DynamicResource InfoBackgroundBrush}" Foreground="{DynamicResource InfoTextBrush}" />
+                        <Button Content="自动生成标题" Command="{Binding AutoGenerateRenameTopicCommand}" Background="{DynamicResource InfoBackgroundBrush}" Foreground="{DynamicResource InfoTextBrush}" />
                         <Button Content="重命名" Command="{Binding ConfirmRenameTopicCommand}" Background="{DynamicResource AccentBrush}" Foreground="White" />
                     </StackPanel>
                 </StackPanel>

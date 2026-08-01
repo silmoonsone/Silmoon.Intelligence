@@ -607,13 +607,9 @@ namespace Silmoon.Intelligence.Client.ViewModels
             IsGeneratingRenameTopic = true;
             try
             {
-                var generated = await intelligenceService.GenerateAgentTopic(session.Id);
+                var generated = await intelligenceService.GenerateAgentTopicSuggestion(session.Id);
                 if (!generated.IsNullOrEmpty())
-                {
-                    session.Topic = generated.Trim();
-                    RenameTopicSession = null;
-                    RenameTopicText = string.Empty;
-                }
+                    RenameTopicText = generated.Trim();
             }
             finally
             {
