@@ -11,12 +11,9 @@ namespace Silmoon.Intelligence
         {
 
         }
-        public void AddTools(INativeClient nativeClient, IExecuteTool[] executeTools)
+        public void AddTools(INativeClient nativeClient, IToolSet[] executeTools)
         {
-            nativeClient.ExecuteToolManager.AddExecuteTools(executeTools);
+            nativeClient.ToolSetManager.AddToolSets(executeTools);
         }
     }
 }
-
-
-

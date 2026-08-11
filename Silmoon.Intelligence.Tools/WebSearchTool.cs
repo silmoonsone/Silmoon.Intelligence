@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Silmoon.Intelligence.Tools
 {
-    public class WebSearchTool : ExecuteTool
+    public class WebSearchTool : ToolSet
     {
         JsonRequestSetting JsonRequestSetting { get; set; }
         string AliyunOpenSearchKey { get; set; }

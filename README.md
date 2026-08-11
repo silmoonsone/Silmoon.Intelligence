@@ -17,13 +17,13 @@
 | 项目 | 说明 |
 |------|------|
 | `Silmoon.Intelligence` | 核心：`AgentClient`（**字符串 `Id`**、**`AgentState`** 为 **Agent 状态**（含 **`Topic`**、`NativeHistory` 等元数据）、`History` 为 **`NativeMessageCollection`**；主对话可 **`enableThinking`**）、`AgentModelManager`、`AgentWorkspaceManager`、`ModelContextManager` 等 |
-| `Silmoon.Intelligence.Tools` | 可复用工具：`GithubTool`、`CSharpTool`、**`WebSearchTool`**（阿里云 OpenSearch，见配置）等 |
+| `Silmoon.Intelligence.Tools` | 可复用工具：`GithubTool`、`CSharpTool`、**`WebSearchTool`**（阿里云 OpenSearch，见配置）等；工具实现以 `Silmoon.AI` 的 `ToolSet` / `IToolSet` 体系注册 |
 
 ### 宿主（服务注入与通用主机）
 
 | 项目 | 说明 |
 |------|------|
-| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。当前 **`SaveChatState` / `RestoreChatState`** 仍写 **`workspace`** 下 JSON；启动时会先升级 `main_agent_memories/` 旧记忆文件到当前结构；**`Core`**（**LiteDB**，**`connectionString`**）已接入，**后续持久化将迁入 LiteDB**。**`GenerateAgentTopic`**、**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ServiceCollectionExtension.cs`** |
+| `Silmoon.Intelligence.Hosting` | **`IntelligenceService`**（`BackgroundService`）：**`SupervisorAgentClient`**；**`AgentClients`**；**`DefaultChatAgentClient`**（单会话入口 **`Chat(input)`** 等）。当前 **`SaveChatState` / `RestoreChatState`** 仍写 **`workspace`** 下 JSON；启动时会先升级 `main_agent_memories/` 旧记忆文件到当前结构；**`Core`**（**LiteDB**，**`connectionString`**）已接入，**后续持久化将迁入 LiteDB**。**`GenerateAgentTopic`**、**`ReadyResetEvent`**；工具注入见 **`ModelContextService`**、**`ModelContextManager`**、**`ServiceCollectionExtension.cs`**，并通过 Native Client 的 `ToolSetManager` 挂接 |
 
 ### 客户端应用
 

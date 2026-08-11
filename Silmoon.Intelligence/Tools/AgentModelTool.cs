@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Silmoon.Intelligence.Tools
 {
-    public class AgentModelTool : ExecuteTool
+    public class AgentModelTool : ToolSet
     {
         public const string GetAgentModelProvidersFunctionName = "AgentModel_GetAgentModelProviders";
         public const string CallSingletonAgentFunctionName = "AgentModel_CallSingletonAgent";

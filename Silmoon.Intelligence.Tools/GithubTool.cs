@@ -11,7 +11,7 @@ using Silmoon.Models;
 
 namespace Silmoon.Intelligence.Tools
 {
-    public class GithubTool : ExecuteTool
+    public class GithubTool : ToolSet
     {
         public override Tool[] GetTools()
         {

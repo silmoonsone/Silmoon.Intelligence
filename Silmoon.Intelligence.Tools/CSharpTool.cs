@@ -19,7 +19,7 @@ using System.Threading;
 
 namespace Silmoon.Intelligence.Tools
 {
-    public class CSharpTool : ExecuteTool
+    public class CSharpTool : ToolSet
     {
         public const string RunFunctionName = "CSharp_Run";
         static readonly object ConsoleRedirectLock = new();

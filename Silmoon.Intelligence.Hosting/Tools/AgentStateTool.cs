@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Silmoon.Intelligence.Hosting.Tools
 {
-    public class AgentStateTool : ExecuteTool
+    public class AgentStateTool : ToolSet
     {
         IntelligenceService IntelligenceService { get; set; }
         public AgentStateTool(IntelligenceService intelligenceService)
