@@ -29,7 +29,7 @@ namespace Silmoon.Intelligence.Hosting.Services
         {
             Logger = logger;
 
-            Logger.LogInformation($"当前配置文件{CurrentConfigFile}");
+            Logger.LogInformation($"当前配置文件{CurrentConfigFilePath}");
 
             ConnectionString = ConfigJson["connectionString"]?.Value<string>();
             NativeClientDisableProxy = ConfigJson.GetValue("nativeClientDisableProxy")?.Value<bool>() ?? false;
